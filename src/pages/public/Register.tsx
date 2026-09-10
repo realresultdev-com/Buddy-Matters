@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
+import GoogleLoginButton from "../../components/common/GoogleLoginButton";
 import { Sparkles, AlertCircle, ArrowRight } from "lucide-react";
 
 export default function Register() {
@@ -45,6 +46,23 @@ export default function Register() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Google OAuth One-Click Registration */}
+      <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
+        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">
+          Single Sign-On
+        </p>
+        <GoogleLoginButton
+          onSuccess={() => navigate("/")}
+          onError={(msg) => setError(msg)}
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-800" />
+        <span className="text-[11px] font-semibold text-slate-500 uppercase">Or register with email</span>
+        <div className="h-px flex-1 bg-slate-800" />
+      </div>
 
       <form onSubmit={handleSubmit} className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
         <div>

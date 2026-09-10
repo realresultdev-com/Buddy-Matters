@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
+import GoogleLoginButton from "../../components/common/GoogleLoginButton";
 import { Sparkles, AlertCircle, ArrowRight, UserCheck, ShieldAlert } from "lucide-react";
 
 export default function Login() {
@@ -52,6 +53,23 @@ export default function Login() {
           <span>{error}</span>
         </div>
       )}
+
+      {/* Google OAuth One-Click Login */}
+      <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
+        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">
+          Single Sign-On
+        </p>
+        <GoogleLoginButton
+          onSuccess={() => navigate(redirectPath)}
+          onError={(msg) => setError(msg)}
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-800" />
+        <span className="text-[11px] font-semibold text-slate-500 uppercase">Or continue with email</span>
+        <div className="h-px flex-1 bg-slate-800" />
+      </div>
 
       {/* Quick Demo Fill Pills */}
       <div className="p-3 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-2">

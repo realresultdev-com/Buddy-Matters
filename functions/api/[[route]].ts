@@ -9,6 +9,7 @@ export type Env = {
   JWT_SECRET?: string;
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
+  GOOGLE_CLIENT_ID?: string;
 };
 
 type UserPayload = {
@@ -121,6 +122,55 @@ app.post("/auth/login", async (c) => {
     user: { id: user.id, name: user.name, email: user.email, role: user.role },
     token,
   });
+});
+
+app.post("/auth/google", async (c) => {
+  const { credential } = await c.req.json();
+  if (!credential) {
+    return c.json({ message: "Google credential token is required" }, 400);
+  }
+
+  let googleUser: any;
+  try {
+    const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error("Invalid Google token: " + errText);
+    }
+    googleUser = await res.json();
+  } catch (err: any) {
+    return c.json({ message: err.message || "Failed to verify Google token" }, 401);
+  }
+
+  const email = (googleUser.email || "").toLowerCase();
+  const name = googleUser.name || googleUser.given_name || "Google User";
+  if (!email) {
+    return c.json({ message: "Email not provided by Google account" }, 400);
+  }
+
+  // Look up existing user in D1
+  let user: any = await c.env.DB.prepare(
+    "SELECT id, name, email, role FROM users WHERE email = ?"
+  ).bind(email).first();
+
+  if (!user) {
+    const userId = `usr-google-${googleUser.sub || crypto.randomUUID().slice(0, 8)}`;
+    const role = "USER";
+    const dummyPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+
+    await c.env.DB.prepare(
+      "INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)"
+    ).bind(userId, name, email, dummyPassword, role).run();
+
+    user = { id: userId, name, email, role };
+  }
+
+  const token = await sign(
+    { userId: user.id, role: user.role, exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7 },
+    getJwtSecret(c.env)
+  );
+
+  return c.json({ user, token });
 });
 
 app.get("/auth/me", authMiddleware, async (c) => {
