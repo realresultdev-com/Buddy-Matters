@@ -39,9 +39,6 @@ export const router = createBrowserRouter([
       { path: "cart", element: <Cart /> },
       { path: "checkout", element: <Checkout /> },
       { path: "order-success", element: <OrderSuccess /> },
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-
       // User Authenticated
       {
         element: <PrivateRoute />,
@@ -52,6 +49,15 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+  // Standalone Auth Pages (Google OAuth Only)
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/register",
+    element: <Login />,
   },
   // Admin Portal
   {
