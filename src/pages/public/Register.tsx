@@ -95,9 +95,9 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-1.5 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+            className="w-full py-2.5 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-sm transition-colors"
           >
-            {loading ? "Creating account..." : "Continue"}
+            {loading ? "Creating account..." : "Create Account & Join Sleep Club"}
           </button>
         </form>
 

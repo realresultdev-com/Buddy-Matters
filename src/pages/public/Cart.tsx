@@ -7,16 +7,16 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 p-8 text-center space-y-4 shadow-sm max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-900">Your Amazon Cart is empty.</h2>
+      <div className="bg-white border border-gray-200 p-8 rounded-xl text-center space-y-4 shadow-sm max-w-3xl mx-auto">
+        <h2 className="text-2xl font-bold text-[#191142]">Your Buddy Mattress Cart is empty.</h2>
         <p className="text-xs text-gray-600">
-          Your shopping cart is waiting. Give it purpose – fill it with groceries, electronics, and more.
+          Your shopping cart is waiting. Treat yourself to deeper, restorative sleep with our orthopedic mattresses and ergonomic pillows.
         </p>
         <Link
           to="/"
-          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-gray-900 shadow-sm"
+          className="inline-block py-2.5 px-6 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-sm transition-colors"
         >
-          Continue Shopping
+          Explore Mattresses & Pillows
         </Link>
       </div>
     );
@@ -149,12 +149,12 @@ export default function Cart() {
           <label htmlFor="gift">This order contains a gift</label>
         </div>
 
-        {/* Proceed to Buy Yellow Button */}
+        {/* Proceed to Buy Cyan Button */}
         <Link
           to="/checkout"
-          className="block w-full py-2.5 px-4 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] text-center font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+          className="block w-full py-3 px-4 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] text-center font-bold text-xs text-white shadow-xs hover:shadow-md transition-all"
         >
-          Proceed to Buy
+          Proceed to Buy ({totalCount} {totalCount === 1 ? "item" : "items"})
         </Link>
 
         {/* EMI info */}

@@ -37,7 +37,7 @@ export default function Checkout() {
         <p className="text-xs text-gray-600">Please sign in to proceed with your address and payment.</p>
         <Link
           to="/login?redirect=/checkout"
-          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-semibold text-xs text-gray-900"
+          className="inline-block py-2.5 px-6 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-sm transition-colors"
         >
           Sign in to your account
         </Link>
@@ -47,11 +47,11 @@ export default function Checkout() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4 bg-white border border-gray-200 p-8 shadow-sm">
+      <div className="max-w-md mx-auto py-16 text-center space-y-4 bg-white border border-gray-200 p-8 shadow-sm rounded-xl">
         <p className="text-gray-800 text-sm">Your cart is empty.</p>
         <Link
           to="/"
-          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-semibold text-xs text-gray-900"
+          className="inline-block py-2.5 px-6 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-sm transition-colors"
         >
           Continue Shopping
         </Link>
@@ -260,7 +260,7 @@ export default function Checkout() {
           <button
             type="submit"
             disabled={processing}
-            className="w-full py-2.5 px-4 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+            className="w-full py-3 px-4 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-xs hover:shadow-md transition-all"
           >
             {processing ? "Processing Order..." : "Place Your Order and Pay"}
           </button>

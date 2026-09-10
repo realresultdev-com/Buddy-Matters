@@ -22,9 +22,9 @@ export default function AdminSidebar() {
   return (
     <aside className="w-64 shrink-0 border-r border-gray-200 bg-white p-4 min-h-[calc(100vh-6rem)] flex flex-col justify-between shadow-sm">
       <div>
-        <div className="flex items-center gap-2 px-3 py-2.5 mb-6 rounded-md bg-[#232f3e] text-white">
+        <div className="flex items-center gap-2 px-3 py-2.5 mb-6 rounded-md bg-[#191142] text-white">
           <img src="/logo-white.png" alt="Buddy Mattress" className="h-5 w-auto object-contain" />
-          <span className="text-[11px] font-bold tracking-wide uppercase border-l border-gray-600 pl-2">
+          <span className="text-[11px] font-bold tracking-wide uppercase border-l border-white/30 pl-2">
             Seller Central
           </span>
         </div>
@@ -40,7 +40,7 @@ export default function AdminSidebar() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-bold transition-colors ${
                     isActive
-                      ? "bg-amazon-btnYellow text-gray-900 border border-[#a88734] shadow-sm"
+                      ? "bg-cyan-50 text-[#0ea9df] border border-cyan-200 shadow-2xs"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                   }`
                 }

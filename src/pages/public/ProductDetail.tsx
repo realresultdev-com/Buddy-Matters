@@ -92,12 +92,12 @@ export default function ProductDetail() {
     <div className="bg-white border border-gray-200 p-4 sm:p-6 shadow-sm space-y-6">
       {/* Breadcrumb trail */}
       <nav className="text-xs text-gray-500 flex items-center gap-1.5 flex-wrap">
-        <Link to="/" className="hover:text-amazon-linkHover hover:underline">
-          Electronics
+        <Link to="/" className="text-[#0ea9df] hover:underline font-medium">
+          Buddy Mattress
         </Link>
         <ChevronRight className="w-3 h-3 text-gray-400" />
-        <span className="hover:text-amazon-linkHover hover:underline cursor-pointer">
-          {product.category?.name || "General"}
+        <span className="hover:text-[#0ea9df] hover:underline cursor-pointer">
+          {product.category?.name || "Sleep Collection"}
         </span>
         <ChevronRight className="w-3 h-3 text-gray-400" />
         <span className="text-gray-700 truncate max-w-xs">{product.name}</span>
@@ -117,7 +117,7 @@ export default function ProductDetail() {
                   onClick={() => setSelectedImage(img)}
                   className={`w-12 h-12 rounded border p-0.5 overflow-hidden transition-all ${
                     (selectedImage || images[0]) === img
-                      ? "border-amazon-orange shadow-sm"
+                      ? "border-[#0ea9df] ring-2 ring-[#0ea9df]/20 shadow-sm"
                       : "border-gray-300 hover:border-gray-500"
                   }`}
                 >
@@ -128,7 +128,7 @@ export default function ProductDetail() {
           )}
 
           {/* Main Stage Image */}
-          <div className="flex-1 aspect-square bg-white flex items-center justify-center p-4 border border-gray-200">
+          <div className="flex-1 aspect-square bg-white flex items-center justify-center p-4 border border-gray-200 rounded-lg">
             <img
               src={selectedImage || images[0]}
               alt={product.name}
@@ -140,10 +140,10 @@ export default function ProductDetail() {
         {/* Column 2: Product Specifications & Details (5 cols on lg) */}
         <div className="lg:col-span-5 space-y-4">
           <div>
-            <Link to="/" className="text-xs font-semibold text-amazon-blue hover:text-amazon-linkHover hover:underline">
-              Visit the Lumina Store
+            <Link to="/" className="text-xs font-bold text-[#0ea9df] hover:underline">
+              Official Buddy Mattress Store
             </Link>
-            <h1 className="text-xl sm:text-2xl font-medium text-[#0f1111] leading-snug mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-[#191142] leading-snug mt-1">
               {product.name}
             </h1>
           </div>
@@ -298,11 +298,11 @@ export default function ProductDetail() {
                 {/* Add to Cart Button */}
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-2.5 rounded-full font-medium text-xs bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] text-[#0f1111] shadow-sm transition-colors flex items-center justify-center gap-1.5"
+                  className="w-full py-3 rounded-lg font-bold text-xs bg-[#0ea9df] hover:bg-[#0c93c4] text-white shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5"
                 >
                   {added ? (
                     <>
-                      <Check className="w-4 h-4 text-green-700" /> Added to Cart
+                      <Check className="w-4 h-4 text-white" /> Added to Cart
                     </>
                   ) : (
                     "Add to Cart"
@@ -312,7 +312,7 @@ export default function ProductDetail() {
                 {/* Buy Now Button */}
                 <button
                   onClick={handleBuyNow}
-                  className="w-full py-2.5 rounded-full font-medium text-xs bg-amazon-btnOrange hover:bg-amazon-btnOrangeHover border border-[#d97c00] text-[#0f1111] shadow-sm transition-colors"
+                  className="w-full py-3 rounded-lg font-bold text-xs bg-[#191142] hover:bg-[#251b5c] text-white shadow-xs hover:shadow-md transition-all"
                 >
                   Buy Now
                 </button>
@@ -320,9 +320,9 @@ export default function ProductDetail() {
             )}
 
             {/* Secure Transaction */}
-            <div className="flex items-center gap-1.5 text-gray-500 text-[11px] pt-1">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Secure transaction</span>
+            <div className="flex items-center gap-1.5 text-gray-500 text-[11px] pt-2 border-t border-gray-100">
+              <Lock className="w-3.5 h-3.5 text-[#0ea9df]" />
+              <span>100% Secure Checkout & 100-Night Trial Guarantee</span>
             </div>
           </div>
         </div>
