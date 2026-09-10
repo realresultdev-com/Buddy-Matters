@@ -103,73 +103,43 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-[#f8fafc] to-transparent pointer-events-none" />
       </div>
 
-      {/* 2. Brand 4-Box Promo Grid (Overlapping the hero banner) */}
+      {/* 2. Brand Dynamic Promo Grid (Overlapping the hero banner) */}
       <div className="relative -mt-24 sm:-mt-36 md:-mt-48 z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-1">
-        {/* Card 1: Orthopedic Mattresses */}
-        <div className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
-              Orthopedic Spine Support Mattresses
-            </h3>
-            <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2">
-              <img
-                src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&auto=format&fit=crop&q=80"
-                alt="Orthopedic Mattress"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </div>
-          <Link
-            to={`/category/${categories[0]?.id || ""}`}
-            className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-2"
-          >
-            Explore Orthopedic range <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        {categories.slice(0, 3).map((cat) => {
+          const sampleProduct = products.find((p) => p.categoryId === cat.id);
+          const sampleImage =
+            sampleProduct?.images?.[0] ||
+            "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&auto=format&fit=crop&q=80";
 
-        {/* Card 2: Ergonomic Pillows */}
-        <div className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
-              Ergonomic Contour & Cooling Pillows
-            </h3>
-            <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2">
-              <img
-                src="https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=600&auto=format&fit=crop&q=80"
-                alt="Cooling Gel Pillows"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
+          return (
+            <div
+              key={cat.id}
+              className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow"
+            >
+              <div>
+                <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
+                  {cat.name}
+                </h3>
+                <Link
+                  to={`/category/${cat.id}`}
+                  className="block aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2"
+                >
+                  <img
+                    src={sampleImage}
+                    alt={cat.name}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </Link>
+              </div>
+              <Link
+                to={`/category/${cat.id}`}
+                className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-2"
+              >
+                Explore {cat.name} <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-          </div>
-          <Link
-            to={`/category/${categories[1]?.id || ""}`}
-            className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-2"
-          >
-            Shop Pillows & Cushions <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Card 3: Bedding & Protectors */}
-        <div className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
-              Mattress Protectors & Comfort Toppers
-            </h3>
-            <div className="aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2">
-              <img
-                src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&auto=format&fit=crop&q=80"
-                alt="Bedding and Protectors"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          </div>
-          <Link
-            to={`/category/${categories[2]?.id || ""}`}
-            className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-2"
-          >
-            Discover Bedding Essentials <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+          );
+        })}
 
         {/* Card 4: Member Sleep Club Box */}
         <div className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">

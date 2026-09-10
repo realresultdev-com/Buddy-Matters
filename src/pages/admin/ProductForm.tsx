@@ -113,8 +113,8 @@ export default function ProductForm() {
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g. AuraSound Wireless ANC Headphones"
-            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            placeholder="e.g. Buddy Orthopedic Dual-Comfort Memory Foam Mattress"
+            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
           />
         </div>
 
@@ -124,7 +124,7 @@ export default function ProductForm() {
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs bg-white text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs bg-white text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -142,7 +142,7 @@ export default function ProductForm() {
               min={1}
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
             />
           </div>
 
@@ -154,7 +154,7 @@ export default function ProductForm() {
               min={0}
               value={formData.stock}
               onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
             />
           </div>
         </div>
@@ -167,7 +167,7 @@ export default function ProductForm() {
             value={formData.imageUrl}
             onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
             placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
           />
         </div>
 
@@ -178,8 +178,8 @@ export default function ProductForm() {
             rows={4}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Key product attributes, technical specifications, warranty..."
-            className="w-full px-3 py-2 border border-gray-400 rounded text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none leading-relaxed"
+            placeholder="Describe mattress layers, firmness rating, materials, dimensions, and warranty coverage..."
+            className="w-full px-3 py-2 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none leading-relaxed"
           />
         </div>
 

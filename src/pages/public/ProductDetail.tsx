@@ -224,32 +224,41 @@ export default function ProductDetail() {
 
           {/* About this item */}
           <div className="space-y-2 pt-2">
-            <h3 className="font-bold text-sm text-[#0f1111]">About this item</h3>
-            <ul className="list-disc pl-5 space-y-1.5 text-xs text-gray-800 leading-relaxed">
-              <li>{product.description}</li>
-              <li>Engineered with cutting-edge edge architecture and low-latency precision.</li>
-              <li>High-durability ergonomic form factor built with aerospace-grade composite materials.</li>
-              <li>Full compatibility across iOS, Android, macOS, and Windows ecosystems.</li>
+            <h3 className="font-bold text-sm text-[#191142]">About this item</h3>
+            <ul className="list-disc pl-5 space-y-2 text-xs text-gray-800 leading-relaxed">
+              <li className="font-semibold text-[#191142]">{product.description}</li>
+              <li>
+                <span className="font-bold">Orthopedic Ergonomics:</span> Engineered to maintain natural spinal alignment and distribute body pressure evenly across all sleeping postures.
+              </li>
+              <li>
+                <span className="font-bold">Breathable Airflow Technology:</span> Open-cell breathable structure dissipates trapped body heat, keeping you cool and comfortable all night.
+              </li>
+              <li>
+                <span className="font-bold">CertiPUR-US & OEKO-TEX Certified:</span> Free from harmful chemicals, heavy metals, ozone depleters, and formaldehyde.
+              </li>
+              <li>
+                <span className="font-bold">Peace of Mind:</span> Backed by our 100-Night Risk-Free Home Trial and 10-Year Comprehensive Warranty.
+              </li>
             </ul>
           </div>
         </div>
 
         {/* Column 3: Amazon Buy Box (3 cols on lg) */}
         <div className="lg:col-span-3">
-          <div className="border border-gray-300 rounded-lg p-4 bg-white text-xs space-y-3.5 shadow-sm">
+          <div className="border border-gray-200 rounded-xl p-4 bg-white text-xs space-y-3.5 shadow-xs">
             {/* Price */}
-            <div className="text-2xl font-bold text-[#0f1111]">
+            <div className="text-2xl font-black text-[#191142]">
               ₹{product.price.toLocaleString("en-IN")}
             </div>
 
             {/* Delivery Promise */}
             <div className="space-y-1">
               <p className="text-xs">
-                <span className="font-bold text-[#00a8e1] italic">✓prime</span>{" "}
+                <span className="font-bold text-[#0ea9df]">✓ Buddy Prime</span>{" "}
                 <span className="font-bold text-gray-900">FREE delivery</span>{" "}
-                <span className="font-bold">Tomorrow, 11 AM.</span>
+                <span className="font-bold text-emerald-700">within 2-4 days</span>
               </p>
-              <div className="flex items-center gap-1 text-amazon-blue hover:underline cursor-pointer text-[11px]">
+              <div className="flex items-center gap-1 text-[#0ea9df] hover:underline cursor-pointer text-[11px] font-medium">
                 <MapPin className="w-3.5 h-3.5" />
                 <span>Deliver to Bengaluru 560001</span>
               </div>
@@ -257,22 +266,26 @@ export default function ProductDetail() {
 
             {/* Stock State */}
             {product.stock > 0 ? (
-              <p className="text-base font-bold text-[#007600]">In stock</p>
+              <p className="text-sm font-bold text-emerald-700">In stock ({product.stock} available)</p>
             ) : (
-              <p className="text-base font-bold text-[#b12704]">Currently unavailable</p>
+              <p className="text-sm font-bold text-rose-600">Currently unavailable</p>
             )}
 
             {/* Seller info */}
-            <div className="space-y-1 text-[11px] text-gray-600 border-t border-b border-gray-200 py-2">
+            <div className="space-y-1.5 text-[11px] text-gray-600 border-t border-b border-gray-100 py-2.5">
               <div className="flex justify-between">
                 <span>Ships from</span>
-                <span className="font-medium text-gray-900">Amazon</span>
+                <span className="font-bold text-[#191142]">Buddy Mattress Logistics</span>
               </div>
               <div className="flex justify-between">
                 <span>Sold by</span>
-                <span className="font-medium text-amazon-blue hover:underline cursor-pointer">
-                  Lumina Retail Ltd.
+                <span className="font-bold text-[#0ea9df] hover:underline cursor-pointer">
+                  Buddy Mattress Direct
                 </span>
+              </div>
+              <div className="flex justify-between">
+                <span>Trial Period</span>
+                <span className="font-bold text-emerald-700">100 Nights Free</span>
               </div>
             </div>
 

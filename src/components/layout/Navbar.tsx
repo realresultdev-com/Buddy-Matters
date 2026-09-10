@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
+import { categoryService } from "../../services/category.service";
+import type { Category } from "../../types/product.types";
 import {
   Search,
   ShoppingCart,
@@ -17,10 +19,17 @@ export default function Navbar() {
   const { totalCount } = useCart();
   const navigate = useNavigate();
 
+  const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchCategory, setSearchCategory] = useState("All");
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    categoryService.getAll().then((res) => {
+      if (res.data) setCategories(res.data);
+    }).catch(console.error);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,11 +86,11 @@ export default function Navbar() {
               className="bg-transparent text-xs text-[#191142] font-medium focus:outline-none cursor-pointer pr-1"
             >
               <option value="All">All Categories</option>
-              <option value="Mattress">Mattresses</option>
-              <option value="Pillows">Pillows</option>
-              <option value="Bedding">Bedding</option>
-              <option value="Protectors">Protectors</option>
-              <option value="Toppers">Toppers</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -222,27 +231,18 @@ export default function Navbar() {
             <Menu className="w-4 h-4 text-[#0ea9df]" />
             <span>All Departments</span>
           </button>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            Orthopedic Mattresses
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            Memory Foam
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            Ergonomic Pillows
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            Mattress Protectors
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            100-Night Free Trial
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
+          {categories.map((cat) => (
+            <Link
+              key={cat.id}
+              to={`/category/${cat.id}`}
+              className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
+            >
+              {cat.name}
+            </Link>
+          ))}
+          <a href="/#catalog" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
             Today's Deals
-          </Link>
-          <Link to="/" className="py-1 px-1.5 hover:text-[#0ea9df] transition-colors whitespace-nowrap">
-            Sleep Consultation
-          </Link>
+          </a>
         </div>
 
         {/* Right Promotional Pill & Admin Portal */}

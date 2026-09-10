@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
@@ -20,8 +20,8 @@ export default function Checkout() {
   const [shippingAddress, setShippingAddress] = useState({
     fullName: user?.name || "",
     email: user?.email || "",
-    phone: "9876543210",
-    street: "123 Silicon Boulevard, 4th Floor",
+    phone: "",
+    street: "",
     city: "Bengaluru",
     state: "Karnataka",
     pincode: "560001",
@@ -29,6 +29,30 @@ export default function Checkout() {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const storageKey = `buddy_addresses_${user?.id || "guest"}`;
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const list = JSON.parse(saved);
+        const def = list.find((a: any) => a.isDefault) || list[0];
+        if (def) {
+          setShippingAddress({
+            fullName: def.name,
+            email: user?.email || "",
+            phone: def.phone || "",
+            street: def.addressLine,
+            city: def.city,
+            state: def.state,
+            pincode: def.pincode,
+          });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [user]);
 
   if (!user) {
     return (
