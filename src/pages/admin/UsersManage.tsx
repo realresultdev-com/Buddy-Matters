@@ -25,47 +25,47 @@ export default function UsersManage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="border-b border-slate-800 pb-4">
-        <h1 className="text-2xl font-bold text-white">Registered Users</h1>
-        <p className="text-xs text-slate-400 mt-1">User registry stored in Cloudflare D1</p>
+      <div className="border-b border-gray-300 pb-4">
+        <h1 className="text-2xl font-bold text-gray-900">Manage Users</h1>
+        <p className="text-xs text-gray-500 mt-1">User registry stored in Cloudflare D1</p>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 overflow-hidden">
+      <div className="rounded-lg border border-gray-300 bg-white overflow-hidden shadow-xs">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold">
+          <thead className="border-b border-gray-200 bg-gray-100 text-gray-700 uppercase tracking-wider font-bold">
             <tr>
-              <th className="p-4">User</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Role</th>
-              <th className="p-4">Joined Date</th>
+              <th className="p-3.5">User</th>
+              <th className="p-3.5">Email</th>
+              <th className="p-3.5">Role</th>
+              <th className="p-3.5">Registered Date</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 text-slate-300">
+          <tbody className="divide-y divide-gray-200 text-gray-800">
             {users.map((u) => (
-              <tr key={u.id} className="hover:bg-slate-900/60 transition-colors">
-                <td className="p-4 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-xs text-indigo-400">
+              <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                <td className="p-3.5 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center font-bold text-xs text-gray-700">
                     {u.name?.charAt(0).toUpperCase() || "U"}
                   </div>
                   <div>
-                    <p className="font-semibold text-white">{u.name}</p>
-                    <p className="text-[10px] font-mono text-slate-500">{u.id}</p>
+                    <p className="font-semibold text-gray-900">{u.name}</p>
+                    <p className="text-[10px] font-mono text-gray-400">{u.id}</p>
                   </div>
                 </td>
-                <td className="p-4 text-slate-300">{u.email}</td>
-                <td className="p-4">
+                <td className="p-3.5 text-gray-700">{u.email}</td>
+                <td className="p-3.5">
                   <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-semibold ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-bold ${
                       u.role === "ADMIN"
-                        ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                        : "bg-slate-800 text-slate-400"
+                        ? "bg-amber-100 text-amber-900 border border-amber-300"
+                        : "bg-gray-100 text-gray-700 border border-gray-200"
                     }`}
                   >
-                    {u.role === "ADMIN" ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
+                    {u.role === "ADMIN" ? <Shield className="w-3 h-3 text-amber-700" /> : <User className="w-3 h-3 text-gray-500" />}
                     {u.role}
                   </span>
                 </td>
-                <td className="p-4 text-slate-400">
+                <td className="p-3.5 text-gray-500">
                   {u.createdAt
                     ? new Date(u.createdAt).toLocaleDateString("en-IN", {
                         day: "numeric",

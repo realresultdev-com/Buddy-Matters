@@ -3,11 +3,12 @@ import { orderService } from "../../services/order.service";
 import type { Order } from "../../types/order.types";
 import Loader from "../../components/common/Loader";
 import { Link } from "react-router-dom";
-import { Package, Clock, CheckCircle, Truck, XCircle, ArrowRight } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("Orders");
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -15,7 +16,7 @@ export default function OrderHistory() {
         const res = await orderService.myOrders();
         setOrders(res.data);
       } catch (err) {
-        console.error("Failed to load user orders:", err);
+        console.error("Failed to load orders:", err);
       } finally {
         setLoading(false);
       }
@@ -23,117 +24,173 @@ export default function OrderHistory() {
     fetchOrders();
   }, []);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "PAID":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle className="w-3.5 h-3.5" /> Paid
-          </span>
-        );
-      case "SHIPPED":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-            <Truck className="w-3.5 h-3.5" /> Shipped
-          </span>
-        );
-      case "DELIVERED":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            <CheckCircle className="w-3.5 h-3.5" /> Delivered
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <XCircle className="w-3.5 h-3.5" /> Cancelled
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <Clock className="w-3.5 h-3.5" /> Pending Payment
-          </span>
-        );
-    }
-  };
-
-  if (loading) return <Loader text="Fetching your orders..." />;
-
-  if (orders.length === 0) {
-    return (
-      <div className="py-20 text-center space-y-4">
-        <div className="w-14 h-14 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500">
-          <Package className="w-7 h-7" />
-        </div>
-        <h2 className="text-xl font-bold text-white">No orders yet</h2>
-        <p className="text-xs text-slate-400">When you complete a purchase, your order history appears here.</p>
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/25"
-        >
-          Explore Catalog <ArrowRight className="w-4 h-4" />
-        </Link>
-      </div>
-    );
-  }
+  if (loading) return <Loader text="Loading your orders..." />;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-16">
-      <div className="border-b border-slate-800 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Order History</h1>
-        <p className="text-xs text-slate-400 mt-1">Review status and receipts for your past purchases</p>
+    <div className="max-w-5xl mx-auto space-y-6 pb-12">
+      {/* Title & Search bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl font-normal text-[#0f1111]">Your Orders</h1>
+
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search all orders"
+              className="pl-9 pr-3 py-1.5 border border-gray-400 rounded text-xs bg-white text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+          </div>
+          <button className="py-1.5 px-3 rounded-full bg-[#131921] hover:bg-gray-800 text-white text-xs font-semibold">
+            Search Orders
+          </button>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="p-5 rounded-2xl border border-slate-800 bg-slate-900/50 space-y-4 hover:border-slate-700 transition-all"
+      {/* Tabs: Orders, Buy Again, Not Yet Shipped, Cancelled */}
+      <div className="flex border-b border-gray-300 text-xs font-medium text-gray-600 gap-6">
+        {["Orders", "Buy Again", "Not Yet Shipped", "Cancelled Orders"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-2 border-b-2 font-semibold transition-colors ${
+              activeTab === tab
+                ? "border-amazon-orange text-[#0f1111]"
+                : "border-transparent text-gray-600 hover:text-black"
+            }`}
           >
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-              <div>
-                <span className="text-[11px] text-slate-400">Order ID</span>
-                <p className="font-mono text-xs font-semibold text-white">{order.id}</p>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[11px] text-slate-400">Date</span>
-                <p className="text-xs text-slate-300">
-                  {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-
-              <div>{getStatusBadge(order.status)}</div>
-            </div>
-
-            {/* Items in order */}
-            <div className="space-y-2">
-              {order.items?.map((item: any, idx: number) => (
-                <div key={idx} className="flex justify-between items-center text-xs">
-                  <span className="text-slate-300">
-                    {item.name || `Product #${item.productId.slice(0, 8)}`} × {item.quantity}
-                  </span>
-                  <span className="font-medium text-white">
-                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
-              <span className="text-slate-400">Total Paid</span>
-              <span className="text-sm font-bold text-white">
-                ₹{order.totalAmount.toLocaleString("en-IN")}
-              </span>
-            </div>
-          </div>
+            {tab}
+          </button>
         ))}
       </div>
+
+      {/* Orders Count and Filter */}
+      <div className="text-xs text-gray-700">
+        <span className="font-bold">{orders.length} orders</span> placed in the past 3 months
+      </div>
+
+      {orders.length === 0 ? (
+        <div className="bg-white border border-gray-200 p-8 text-center space-y-3">
+          <p className="text-gray-800 font-semibold text-sm">You haven't placed any orders in this period.</p>
+          <Link to="/" className="text-amazon-blue hover:underline text-xs font-bold inline-block">
+            Start shopping today's deals
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <div key={order.id} className="bg-white border border-gray-300 rounded-lg overflow-hidden shadow-sm">
+              {/* Order Header (#f0f2f2) */}
+              <div className="bg-[#f0f2f2] border-b border-gray-300 p-4 text-xs text-gray-600 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-8">
+                  <div>
+                    <span className="uppercase text-[10px] text-gray-500 font-bold block">ORDER PLACED</span>
+                    <span className="font-semibold text-gray-800">
+                      {new Date(order.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="uppercase text-[10px] text-gray-500 font-bold block">TOTAL</span>
+                    <span className="font-semibold text-gray-800">
+                      ₹{order.totalAmount.toLocaleString("en-IN")}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="uppercase text-[10px] text-gray-500 font-bold block">SHIP TO</span>
+                    <span className="font-semibold text-amazon-blue hover:underline cursor-pointer flex items-center gap-0.5">
+                      Delivery Address <ChevronDown className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="uppercase text-[10px] text-gray-500 font-bold block">
+                    ORDER # {order.id.slice(0, 16)}...
+                  </span>
+                  <div className="flex gap-2 justify-end text-amazon-blue hover:underline text-[11px] font-semibold">
+                    <a href="#">View order details</a>
+                    <span>|</span>
+                    <a href="#">Invoice</a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Body */}
+              <div className="p-5 space-y-4">
+                {/* Delivery status */}
+                <div>
+                  <h3 className="text-base font-bold text-[#007600]">
+                    {order.status === "PAID"
+                      ? "Arriving Tomorrow by 11 AM"
+                      : order.status === "DELIVERED"
+                      ? "Delivered"
+                      : order.status === "SHIPPED"
+                      ? "Shipped"
+                      : "Pending Payment Confirmation"}
+                  </h3>
+                  <p className="text-xs text-gray-500">Package was dispatched with Amazon Prime delivery</p>
+                </div>
+
+                {/* Items in order */}
+                <div className="space-y-4">
+                  {order.items?.map((item: any, idx: number) => (
+                    <div key={idx} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={item.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
+                          alt=""
+                          className="w-16 h-16 object-contain p-1 border border-gray-200"
+                        />
+                        <div>
+                          <p className="text-xs sm:text-sm font-semibold text-amazon-blue hover:underline cursor-pointer">
+                            {item.name || `Hardware Item #${item.productId.slice(0, 8)}`}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Quantity: {item.quantity} | ₹{item.price.toLocaleString("en-IN")} each
+                          </p>
+                          <div className="flex gap-2 mt-2">
+                            <Link
+                              to={`/product/${item.productId}`}
+                              className="py-1 px-3 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] text-[11px] font-medium text-gray-900 shadow-sm"
+                            >
+                              Buy it again
+                            </Link>
+                            <Link
+                              to={`/product/${item.productId}`}
+                              className="py-1 px-3 rounded-full border border-gray-300 hover:bg-gray-50 text-[11px] font-medium text-gray-900 shadow-sm"
+                            >
+                              View your item
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right action button */}
+                      <div className="w-full sm:w-44 space-y-1.5 shrink-0 text-xs">
+                        <button className="w-full py-1.5 rounded-full border border-gray-300 hover:bg-gray-50 font-medium text-gray-900 shadow-sm">
+                          Track package
+                        </button>
+                        <button className="w-full py-1.5 rounded-full border border-gray-300 hover:bg-gray-50 font-medium text-gray-900 shadow-sm">
+                          Leave seller feedback
+                        </button>
+                        <button className="w-full py-1.5 rounded-full border border-gray-300 hover:bg-gray-50 font-medium text-gray-900 shadow-sm">
+                          Write a product review
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

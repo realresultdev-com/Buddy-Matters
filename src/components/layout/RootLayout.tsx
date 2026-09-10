@@ -4,9 +4,9 @@ import Footer from "./Footer";
 
 export default function RootLayout() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[#eaeded] text-[#0f1111]">
       <Navbar />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 w-full max-w-[1500px] mx-auto px-2 sm:px-4 py-4">
         <Outlet />
       </main>
       <Footer />

@@ -3,205 +3,315 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import {
-  ShoppingBag,
-  User as UserIcon,
-  LogOut,
-  ShieldCheck,
-  Package,
+  Search,
+  ShoppingCart,
+  MapPin,
   Menu,
   X,
-  Sparkles,
+  ChevronDown,
+  ShieldCheck,
+  Package,
+  User as UserIcon,
+  LogOut,
 } from "lucide-react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { totalCount } = useCart();
   const navigate = useNavigate();
+
+  const [searchCategory, setSearchCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [accountDropdown, setAccountDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate("/");
+    }
+  };
 
   const handleLogout = () => {
     logout();
-    setDropdownOpen(false);
+    setAccountDropdown(false);
     navigate("/");
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                Lumina
-              </span>
-              <span className="hidden sm:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md">
-                Edge
-              </span>
-            </div>
-          </Link>
+    <header className="w-full select-none text-white sticky top-0 z-50">
+      {/* 1. Main Header Bar (Amazon Dark #131921) */}
+      <div className="bg-amazon-dark px-3 sm:px-4 py-2 flex items-center justify-between gap-2 sm:gap-4 h-[60px]">
+        {/* Brand Logo */}
+        <Link
+          to="/"
+          className="flex items-center p-1.5 border border-transparent hover:border-white rounded transition-colors shrink-0"
+        >
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
+              amazon<span className="text-amazon-orange text-sm font-bold ml-0.5">.in</span>
+            </span>
+            <div className="w-16 sm:w-20 h-1.5 bg-gradient-to-r from-transparent via-amazon-orange to-transparent rounded-full -mt-0.5 opacity-90" />
+          </div>
+        </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-            <Link to="/" className="hover:text-white transition-colors">
-              Explore Products
-            </Link>
-            {user && (
-              <Link to="/orders" className="hover:text-white transition-colors flex items-center gap-1.5">
-                <Package className="w-4 h-4 text-slate-400" />
-                My Orders
-              </Link>
-            )}
-            {user?.role === "ADMIN" && (
-              <Link
-                to="/admin"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/20 transition-colors"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                Admin Portal
-              </Link>
-            )}
-          </nav>
-
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-3 sm:gap-4">
-            {/* Cart Icon */}
-            <Link
-              to="/cart"
-              className="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {totalCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-[11px] font-bold text-white shadow-md animate-pulse">
-                  {totalCount}
-                </span>
-              )}
-            </Link>
-
-            {/* User Profile / Auth State */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:border-slate-700 text-sm font-medium text-slate-200 transition-all"
-                >
-                  <div className="w-6 h-6 rounded-full bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-xs font-semibold text-indigo-300">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="hidden sm:inline-block max-w-[100px] truncate">{user.name}</span>
-                </button>
-
-                {/* Dropdown Menu */}
-                {dropdownOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-800 bg-slate-900/95 backdrop-blur-lg p-2 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    <div className="px-3 py-2 border-b border-slate-800/80 mb-1">
-                      <p className="text-xs text-slate-400">Signed in as</p>
-                      <p className="text-sm font-medium text-white truncate">{user.email}</p>
-                      <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] rounded font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                        {user.role}
-                      </span>
-                    </div>
-
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-colors"
-                    >
-                      <UserIcon className="w-4 h-4 text-slate-400" />
-                      Account Profile
-                    </Link>
-
-                    <Link
-                      to="/orders"
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800/60 rounded-xl transition-colors"
-                    >
-                      <Package className="w-4 h-4 text-slate-400" />
-                      Order History
-                    </Link>
-
-                    {user.role === "ADMIN" && (
-                      <Link
-                        to="/admin"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-xl transition-colors"
-                      >
-                        <ShieldCheck className="w-4 h-4" />
-                        Admin Dashboard
-                      </Link>
-                    )}
-
-                    <div className="my-1 border-t border-slate-800/80" />
-
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-colors text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-3.5 py-1.5 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
-                >
-                  Sign in
-                </Link>
-                <Link
-                  to="/register"
-                  className="hidden sm:inline-flex px-3.5 py-1.5 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02]"
-                >
-                  Register
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+        {/* Deliver to Location Pin */}
+        <div className="hidden lg:flex items-center gap-1.5 p-1.5 border border-transparent hover:border-white rounded cursor-pointer transition-colors shrink-0">
+          <MapPin className="w-4 h-4 text-white shrink-0 mt-2" />
+          <div className="text-xs leading-tight">
+            <span className="text-gray-300 text-[11px] block">
+              Deliver to {user ? user.name.split(" ")[0] : "India"}
+            </span>
+            <span className="font-bold text-white text-xs">Bengaluru 560001</span>
           </div>
         </div>
+
+        {/* Search Bar (Amazon Signature Large Search Bar) */}
+        <form onSubmit={handleSearch} className="flex-1 max-w-3xl flex items-center h-10 rounded-md overflow-hidden bg-white focus-within:ring-2 focus-within:ring-amazon-orange">
+          {/* Category dropdown */}
+          <div className="hidden sm:flex items-center bg-gray-100 hover:bg-gray-200 px-3 h-full border-r border-gray-300 text-xs text-gray-700 cursor-pointer">
+            <select
+              value={searchCategory}
+              onChange={(e) => setSearchCategory(e.target.value)}
+              className="bg-transparent text-xs text-gray-700 focus:outline-none cursor-pointer pr-1"
+            >
+              <option value="All">All Categories</option>
+              <option value="Audio">Audio</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Laptops">Laptops</option>
+              <option value="Wearables">Wearables</option>
+            </select>
+          </div>
+
+          {/* Input text */}
+          <input
+            type="text"
+            placeholder="Search Amazon.in"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none h-full"
+          />
+
+          {/* Yellow Search Button */}
+          <button
+            type="submit"
+            className="bg-amazon-yellow hover:bg-[#f3a847] px-4 h-full flex items-center justify-center transition-colors text-gray-900 shrink-0"
+            aria-label="Search"
+          >
+            <Search className="w-5 h-5 font-bold" />
+          </button>
+        </form>
+
+        {/* Language & Flag */}
+        <div className="hidden xl:flex items-center gap-1 p-2 border border-transparent hover:border-white rounded cursor-pointer transition-colors text-xs font-bold shrink-0">
+          <span className="text-sm">🇮🇳</span>
+          <span>EN</span>
+          <ChevronDown className="w-3 h-3 text-gray-400" />
+        </div>
+
+        {/* Account & Lists */}
+        <div
+          className="relative p-1.5 border border-transparent hover:border-white rounded cursor-pointer transition-colors shrink-0"
+          onMouseEnter={() => setAccountDropdown(true)}
+          onMouseLeave={() => setAccountDropdown(false)}
+        >
+          <div className="text-xs leading-tight">
+            <span className="text-gray-300 text-[11px] block">
+              Hello, {user ? user.name.split(" ")[0] : "sign in"}
+            </span>
+            <span className="font-bold text-white text-xs flex items-center gap-0.5">
+              Account & Lists
+              <ChevronDown className="w-3 h-3 text-gray-400" />
+            </span>
+          </div>
+
+          {/* Amazon Dropdown Flyout */}
+          {accountDropdown && (
+            <div className="absolute right-0 top-full pt-1 z-50 w-64">
+              <div className="bg-white text-gray-900 rounded-md shadow-2xl border border-gray-200 p-4 text-xs">
+                {!user ? (
+                  <div className="text-center pb-3 border-b border-gray-200">
+                    <Link
+                      to="/login"
+                      className="block w-full py-2 px-4 rounded-lg bg-gradient-to-b from-amazon-btnYellow to-[#f0c14b] border border-[#a88734] hover:from-[#f5d78e] hover:to-[#eeb933] font-semibold text-center text-xs shadow-sm text-gray-900"
+                    >
+                      Sign in
+                    </Link>
+                    <p className="text-[11px] text-gray-600 mt-2">
+                      New customer?{" "}
+                      <Link to="/register" className="text-amazon-blue hover:text-amazon-linkHover hover:underline font-semibold">
+                        Start here.
+                      </Link>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="pb-3 border-b border-gray-200 mb-2">
+                    <p className="font-bold text-sm text-gray-900">{user.name}</p>
+                    <p className="text-[11px] text-gray-500">{user.email}</p>
+                    <span className="inline-block mt-1 px-1.5 py-0.5 text-[10px] font-semibold bg-gray-100 text-gray-700 rounded border border-gray-200">
+                      {user.role}
+                    </span>
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-1 font-medium">
+                  <h4 className="font-bold text-gray-900 text-xs uppercase tracking-wider mb-1 text-[11px]">
+                    Your Account
+                  </h4>
+                  <Link to="/profile" className="block hover:text-amazon-linkHover hover:underline">
+                    Your Account
+                  </Link>
+                  <Link to="/orders" className="block hover:text-amazon-linkHover hover:underline">
+                    Your Orders
+                  </Link>
+                  <Link to="/addresses" className="block hover:text-amazon-linkHover hover:underline">
+                    Your Addresses
+                  </Link>
+                  {user?.role === "ADMIN" && (
+                    <Link to="/admin" className="block text-amazon-blue font-bold hover:underline">
+                      Admin Management Console
+                    </Link>
+                  )}
+                  {user && (
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left pt-2 border-t border-gray-200 text-red-600 hover:underline font-semibold"
+                    >
+                      Sign Out
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Returns & Orders */}
+        <Link
+          to={user ? "/orders" : "/login"}
+          className="hidden md:flex flex-col p-1.5 border border-transparent hover:border-white rounded transition-colors text-xs leading-tight shrink-0"
+        >
+          <span className="text-gray-300 text-[11px]">Returns</span>
+          <span className="font-bold text-white text-xs">& Orders</span>
+        </Link>
+
+        {/* Cart */}
+        <Link
+          to="/cart"
+          className="flex items-center gap-1 p-1.5 border border-transparent hover:border-white rounded transition-colors shrink-0"
+        >
+          <div className="relative flex items-center">
+            <ShoppingCart className="w-8 h-8 text-white" />
+            <span className="absolute top-0 left-4 font-bold text-amazon-orange text-sm leading-none">
+              {totalCount}
+            </span>
+          </div>
+          <span className="hidden sm:inline font-bold text-white text-xs mt-3">Cart</span>
+        </Link>
+      </div>
+
+      {/* 2. Subnav Bar (Amazon Light Navy #232f3e) */}
+      <div className="bg-amazon-subnav px-4 py-1.5 flex items-center justify-between text-xs text-white overflow-x-auto scrollbar-none h-[39px]">
+        <div className="flex items-center gap-4 shrink-0 font-medium">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex items-center gap-1 font-bold p-1 border border-transparent hover:border-white rounded"
+          >
+            <Menu className="w-4 h-4" />
+            <span>All</span>
+          </button>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Amazon MiniTV
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Best Sellers
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Today's Deals
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Mobiles & Laptops
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Electronics
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Prime
+          </Link>
+          <Link to="/" className="p-1 border border-transparent hover:border-white rounded whitespace-nowrap">
+            Customer Service
+          </Link>
+        </div>
+
+        {/* Admin Portal Shortcut on right */}
+        {user?.role === "ADMIN" && (
+          <Link
+            to="/admin"
+            className="flex items-center gap-1 px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500/30 whitespace-nowrap shrink-0 ml-4"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> Admin Panel
+          </Link>
+        )}
       </div>
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-800 bg-slate-950/95 px-4 pt-2 pb-4 space-y-2">
+        <div className="md:hidden bg-amazon-dark border-b border-gray-700 px-4 py-3 space-y-2 text-xs">
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-900 text-sm font-medium"
+            className="block py-1 text-white hover:text-amazon-yellow"
           >
-            Explore Products
+            Explore All Products
           </Link>
-          {user && (
+          <Link
+            to="/cart"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-1 text-white hover:text-amazon-yellow"
+          >
+            Shopping Cart ({totalCount})
+          </Link>
+          {user ? (
+            <>
+              <Link
+                to="/orders"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-1 text-white hover:text-amazon-yellow"
+              >
+                Your Orders
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-1 text-white hover:text-amazon-yellow"
+              >
+                Your Account
+              </Link>
+              {user.role === "ADMIN" && (
+                <Link
+                  to="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-1 text-amazon-yellow font-bold"
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left py-1 text-red-400 font-semibold"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
             <Link
-              to="/orders"
+              to="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-900 text-sm font-medium"
+              className="block py-1.5 text-center font-bold text-gray-900 bg-amazon-btnYellow rounded"
             >
-              My Orders
-            </Link>
-          )}
-          {user?.role === "ADMIN" && (
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block px-3 py-2 rounded-lg text-indigo-400 hover:bg-indigo-500/10 text-sm font-medium"
-            >
-              Admin Dashboard
+              Sign In
             </Link>
           )}
         </div>

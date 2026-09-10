@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
 import GoogleLoginButton from "../../components/common/GoogleLoginButton";
-import { Sparkles, AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -31,98 +31,93 @@ export default function Register() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4 space-y-6">
-      <div className="text-center space-y-2">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center mx-auto shadow-lg shadow-indigo-600/20">
-          <Sparkles className="w-6 h-6 text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Create an Account</h1>
-        <p className="text-xs text-slate-400">Join Lumina for edge-fast shopping and instant order tracking.</p>
+    <div className="max-w-sm mx-auto py-8 px-4 space-y-4">
+      {/* Amazon Logo */}
+      <div className="text-center">
+        <Link to="/" className="inline-flex flex-col items-center">
+          <span className="text-3xl font-black text-gray-900 tracking-tight">
+            amazon<span className="text-amazon-orange text-lg font-bold ml-0.5">.in</span>
+          </span>
+        </Link>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-3 bg-red-50 border border-red-300 rounded text-red-700 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Google OAuth One-Click Registration */}
-      <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">
-          Single Sign-On
+      {/* Main Register Box */}
+      <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm space-y-4">
+        <h1 className="text-2xl font-medium text-[#0f1111]">Create Account</h1>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-bold text-[#0f1111] mb-1">Your name</label>
+            <input
+              type="text"
+              required
+              placeholder="First and last name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-400 rounded text-xs text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0f1111] mb-1">Mobile number or email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-400 rounded text-xs text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[#0f1111] mb-1">Password</label>
+            <input
+              type="password"
+              required
+              minLength={6}
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-400 rounded text-xs text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+            <p className="text-[11px] text-gray-500 mt-1">Passwords must be at least 6 characters.</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-1.5 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+          >
+            {loading ? "Creating account..." : "Continue"}
+          </button>
+        </form>
+
+        <p className="text-[11px] text-gray-600 leading-normal">
+          By creating an account or logging in, you agree to Amazon's{" "}
+          <a href="#" className="text-amazon-blue hover:underline">Conditions of Use</a> and{" "}
+          <a href="#" className="text-amazon-blue hover:underline">Privacy Notice</a>.
         </p>
-        <GoogleLoginButton
-          onSuccess={() => navigate("/")}
-          onError={(msg) => setError(msg)}
-        />
-      </div>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-800" />
-        <span className="text-[11px] font-semibold text-slate-500 uppercase">Or register with email</span>
-        <div className="h-px flex-1 bg-slate-800" />
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
-          <input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
+        {/* Google OAuth Button */}
+        <div className="pt-2 border-t border-gray-200 space-y-2">
+          <p className="text-[11px] font-medium text-gray-500 text-center">Or continue with</p>
+          <GoogleLoginButton onSuccess={() => navigate("/")} onError={(msg) => setError(msg)} />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="john@example.com"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02] disabled:opacity-50"
-        >
-          {loading ? (
-            <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-          ) : (
-            <>
-              Register Account <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-
-        <p className="text-center text-xs text-slate-400 pt-2">
+        <div className="pt-2 border-t border-gray-200 text-xs text-gray-700">
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-400 hover:underline font-semibold">
+          <Link to="/login" className="text-amazon-blue hover:text-amazon-linkHover hover:underline font-bold">
             Sign in
           </Link>
-        </p>
-      </form>
+        </div>
+      </div>
     </div>
   );
 }

@@ -3,8 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { productService } from "../../services/product.service";
 import { categoryService } from "../../services/category.service";
 import type { Product, Category } from "../../types/product.types";
-import ProductGrid from "../../components/product/ProductGrid";
-import { ArrowLeft } from "lucide-react";
+import ProductCard from "../../components/product/ProductCard";
+import { ChevronRight } from "lucide-react";
 
 export default function CategoryPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,24 +34,45 @@ export default function CategoryPage() {
   }, [id]);
 
   return (
-    <div className="space-y-6 pb-16">
-      <Link
-        to="/"
-        className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Back to all categories
-      </Link>
+    <div className="bg-white border border-gray-200 p-6 shadow-sm space-y-4 pb-12">
+      <nav className="text-xs text-gray-500 flex items-center gap-1.5">
+        <Link to="/" className="hover:text-amazon-linkHover hover:underline">
+          Amazon.in
+        </Link>
+        <ChevronRight className="w-3 h-3" />
+        <span className="text-gray-800 font-semibold">{category ? category.name : "Department"}</span>
+      </nav>
 
-      <div className="border-b border-slate-800 pb-4">
-        <h1 className="text-3xl font-extrabold text-white">
-          {category ? category.name : "Category Products"}
+      <div className="border-b border-gray-200 pb-3">
+        <h1 className="text-2xl font-bold text-[#0f1111]">
+          {category ? category.name : "Department Products"}
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Showing {products.length} product{products.length === 1 ? "" : "s"} in this collection
+        <p className="text-xs text-gray-500 mt-1">
+          1-{products.length} of {products.length} results for "{category ? category.name : "Electronics"}"
         </p>
       </div>
 
-      <ProductGrid products={products} loading={loading} />
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="border border-gray-200 p-4 space-y-3 animate-pulse">
+              <div className="aspect-square bg-gray-200" />
+              <div className="h-4 bg-gray-200 w-3/4" />
+              <div className="h-8 bg-gray-200 rounded-full" />
+            </div>
+          ))}
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-16 text-gray-600 text-sm">
+          No products currently available in this department.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

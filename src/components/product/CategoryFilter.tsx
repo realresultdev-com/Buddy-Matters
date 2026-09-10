@@ -15,23 +15,23 @@ export default function CategoryFilter({
     <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
       <button
         onClick={() => onSelectCategory("")}
-        className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+        className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shadow-2xs ${
           selectedCategory === ""
-            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-            : "bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+            ? "bg-amazon-btnYellow text-gray-900 border border-amazon-borderDark font-semibold shadow-xs"
+            : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
         }`}
       >
-        All Products
+        All Departments
       </button>
 
       {categories.map((cat) => (
         <button
           key={cat.id}
           onClick={() => onSelectCategory(cat.id)}
-          className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shadow-2xs ${
             selectedCategory === cat.id
-              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/25"
-              : "bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+              ? "bg-amazon-btnYellow text-gray-900 border border-amazon-borderDark font-semibold shadow-xs"
+              : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400"
           }`}
         >
           {cat.name}

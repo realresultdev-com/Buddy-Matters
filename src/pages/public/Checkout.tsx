@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { orderService } from "../../services/order.service";
 import { paymentService } from "../../services/payment.service";
-import { ShieldCheck, Lock, CreditCard, ArrowLeft, AlertCircle, CheckCircle } from "lucide-react";
+import { Lock, ShieldCheck, AlertCircle } from "lucide-react";
 
 declare global {
   interface Window {
@@ -32,17 +32,14 @@ export default function Checkout() {
 
   if (!user) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
-          <Lock className="w-6 h-6" />
-        </div>
-        <h2 className="text-xl font-bold text-white">Authentication Required</h2>
-        <p className="text-xs text-slate-400">Please sign in to proceed with checkout and order tracking.</p>
+      <div className="max-w-md mx-auto py-16 text-center space-y-4 bg-white border border-gray-200 p-8 shadow-sm">
+        <h2 className="text-xl font-bold text-gray-900">Sign in to Checkout</h2>
+        <p className="text-xs text-gray-600">Please sign in to proceed with your address and payment.</p>
         <Link
           to="/login?redirect=/checkout"
-          className="inline-block px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30"
+          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-semibold text-xs text-gray-900"
         >
-          Sign In to Checkout
+          Sign in to your account
         </Link>
       </div>
     );
@@ -50,13 +47,13 @@ export default function Checkout() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-md mx-auto py-16 text-center space-y-4">
-        <p className="text-slate-400 text-sm">Your cart is empty. Add items before checking out.</p>
+      <div className="max-w-md mx-auto py-16 text-center space-y-4 bg-white border border-gray-200 p-8 shadow-sm">
+        <p className="text-gray-800 text-sm">Your cart is empty.</p>
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white"
+          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-semibold text-xs text-gray-900"
         >
-          <ArrowLeft className="w-4 h-4" /> Browse Catalog
+          Continue Shopping
         </Link>
       </div>
     );
@@ -81,13 +78,12 @@ export default function Checkout() {
       const razorpayKeyId =
         import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_mockkey123";
 
-      // 3. Check if Razorpay SDK is available in window
       if (typeof window.Razorpay !== "undefined" && !razorpayKeyId.includes("mock")) {
         const options = {
           key: razorpayKeyId,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency || "INR",
-          name: "Lumina Store",
+          name: "Amazon.in (Lumina)",
           description: `Order #${order.id.slice(0, 8)}`,
           order_id: razorpayOrder.id,
           handler: async function (response: any) {
@@ -111,19 +107,14 @@ export default function Checkout() {
             contact: shippingAddress.phone,
           },
           theme: {
-            color: "#4f46e5",
+            color: "#febd69",
           },
         };
 
         const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", function (resp: any) {
-          setError(`Payment Failed: ${resp.error.description}`);
-          setProcessing(false);
-        });
         rzp.open();
       } else {
-        // Mock payment flow for local dev or demo when test keys aren't provisioned yet
-        console.log("Mock Payment Triggered for Order:", order.id);
+        // Mock payment flow
         setTimeout(async () => {
           try {
             await paymentService.verify({
@@ -138,7 +129,7 @@ export default function Checkout() {
             setError(err.response?.data?.message || "Verification failed");
             setProcessing(false);
           }
-        }, 1200);
+        }, 1000);
       }
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || "Failed to initiate payment");
@@ -147,165 +138,149 @@ export default function Checkout() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16">
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-        <Link to="/cart" className="text-slate-400 hover:text-white transition-colors">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="max-w-5xl mx-auto space-y-6 pb-16">
+      {/* Amazon Minimalist Checkout Header */}
+      <div className="flex items-center justify-between border-b border-gray-300 pb-3">
+        <Link to="/" className="flex flex-col items-start leading-none">
+          <span className="text-2xl font-black text-gray-900 tracking-tight">
+            amazon<span className="text-amazon-orange text-sm font-bold ml-0.5">.in</span>
+          </span>
         </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-white">Express Checkout</h1>
-          <p className="text-xs text-slate-400">Order verification & Razorpay edge gateway</p>
+        <div className="flex items-center gap-1.5 text-gray-600 text-sm font-semibold">
+          <Lock className="w-4 h-4 text-gray-500" />
+          <span>Checkout</span>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
+        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handlePayment} className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Shipping Form */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">
-                1
-              </span>
-              Shipping Destination
+      <form onSubmit={handlePayment} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left: 3 Accordion Steps (8 cols) */}
+        <div className="lg:col-span-8 space-y-4">
+          {/* Step 1: Address */}
+          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-4">
+            <h2 className="text-base font-bold text-[#0f1111] flex items-center justify-between">
+              <span>1. Delivery Address</span>
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Full Name</label>
+                <label className="block font-bold text-gray-700 mb-1">Full name</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.fullName}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Contact Email</label>
+                <label className="block font-bold text-gray-700 mb-1">Mobile number</label>
                 <input
-                  type="email"
+                  type="text"
                   required
-                  value={shippingAddress.email}
-                  onChange={(e) => setShippingAddress({ ...shippingAddress, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  value={shippingAddress.phone}
+                  onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block text-slate-400 mb-1">Street Address</label>
+                <label className="block font-bold text-gray-700 mb-1">Flat, House no., Building, Street</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.street}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">City</label>
+                <label className="block font-bold text-gray-700 mb-1">Town / City</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.city}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Postal Code (PIN)</label>
+                <label className="block font-bold text-gray-700 mb-1">Pincode</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.pincode}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
                 />
               </div>
             </div>
           </div>
 
-          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-3">
-            <h2 className="text-sm font-bold text-white flex items-center gap-2">
-              <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">
-                2
-              </span>
-              Payment Method
-            </h2>
-            <div className="p-4 rounded-xl border border-indigo-500/30 bg-indigo-500/5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <CreditCard className="w-5 h-5 text-indigo-400" />
-                <div>
-                  <p className="text-xs font-semibold text-white">Razorpay Checkout</p>
-                  <p className="text-[11px] text-slate-400">UPI, Cards, NetBanking, Wallets</p>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 text-[10px] rounded font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Active
-              </span>
+          {/* Step 2: Payment */}
+          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-3">
+            <h2 className="text-base font-bold text-[#0f1111]">2. Payment Method</h2>
+            <div className="border border-amazon-orange bg-[#fcf5ee] p-3 rounded text-xs space-y-1">
+              <span className="font-bold text-gray-900 block">Razorpay Gateway (All payment options)</span>
+              <p className="text-gray-600">Supports UPI (GPay, PhonePe), Credit/Debit Cards, NetBanking, and Wallets.</p>
             </div>
           </div>
-        </div>
 
-        {/* Order Review Sidebar */}
-        <div className="space-y-4">
-          <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-4">
-            <h3 className="text-sm font-bold text-white">Order Review</h3>
-
-            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+          {/* Step 3: Items review */}
+          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-3">
+            <h2 className="text-base font-bold text-[#0f1111]">3. Review Items and Delivery</h2>
+            <div className="divide-y divide-gray-200">
               {items.map((item) => (
-                <div key={item.productId} className="flex justify-between text-xs py-1 border-b border-slate-800/60">
-                  <span className="text-slate-300 truncate max-w-[150px]">
+                <div key={item.productId} className="py-2 flex justify-between items-center text-xs">
+                  <span className="text-gray-900 font-medium">
                     {item.name} × {item.quantity}
                   </span>
-                  <span className="text-white font-medium">
+                  <span className="font-bold text-gray-900">
                     ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </span>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
 
-            <div className="space-y-2 pt-2 border-t border-slate-800 text-xs">
-              <div className="flex justify-between text-slate-400">
-                <span>Subtotal</span>
-                <span>₹{totalAmount.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Shipping</span>
-                <span className="text-emerald-400">FREE</span>
-              </div>
-              <div className="pt-2 border-t border-slate-800 flex justify-between text-sm font-bold text-white">
-                <span>Total Amount</span>
-                <span>₹{totalAmount.toLocaleString("en-IN")}</span>
-              </div>
+        {/* Right: Order Summary Sticky (4 cols) */}
+        <div className="lg:col-span-4 bg-white border border-gray-300 p-5 rounded-md shadow-sm space-y-4">
+          <button
+            type="submit"
+            disabled={processing}
+            className="w-full py-2.5 px-4 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+          >
+            {processing ? "Processing Order..." : "Place Your Order and Pay"}
+          </button>
+
+          <p className="text-[11px] text-gray-500 text-center leading-tight">
+            By placing your order, you agree to Amazon's privacy notice and conditions of use.
+          </p>
+
+          <div className="border-t border-gray-200 pt-3 space-y-2 text-xs">
+            <h3 className="font-bold text-sm text-gray-900 mb-2">Order Summary</h3>
+            <div className="flex justify-between text-gray-600">
+              <span>Items:</span>
+              <span>₹{totalAmount.toLocaleString("en-IN")}</span>
             </div>
-
-            <button
-              type="submit"
-              disabled={processing}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02]"
-            >
-              {processing ? (
-                <>
-                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-                  Securing Payment...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-4 h-4" />
-                  Pay ₹{totalAmount.toLocaleString("en-IN")}
-                </>
-              )}
-            </button>
+            <div className="flex justify-between text-gray-600">
+              <span>Delivery:</span>
+              <span className="text-[#007600] font-semibold">₹0.00</span>
+            </div>
+            <div className="border-t border-gray-200 pt-2 flex justify-between text-base font-bold text-[#b12704]">
+              <span>Order Total:</span>
+              <span>₹{totalAmount.toLocaleString("en-IN")}</span>
+            </div>
           </div>
         </div>
       </form>

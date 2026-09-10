@@ -10,7 +10,6 @@ import {
   PlusCircle,
   FolderPlus,
   ShieldCheck,
-  Server,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -31,114 +30,106 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  if (loading) return <Loader text="Loading dashboard metrics..." />;
+  if (loading) return <Loader text="Loading seller metrics..." />;
 
   const statCards = [
     {
-      title: "Gross Revenue",
+      title: "Total Sales",
       value: `₹${(stats?.totalRevenue || 0).toLocaleString("en-IN")}`,
       icon: DollarSign,
-      color: "from-emerald-500/20 to-teal-500/20 border-emerald-500/30 text-emerald-400",
-      subtext: "Settled payments in D1",
+      subtext: "Settled orders in D1",
     },
     {
       title: "Total Orders",
       value: (stats?.orderCount || 0).toString(),
       icon: ShoppingBag,
-      color: "from-indigo-500/20 to-blue-500/20 border-indigo-500/30 text-indigo-400",
       subtext: "Customer transactions",
     },
     {
-      title: "Active Products",
+      title: "Active Listings",
       value: (stats?.productCount || 0).toString(),
       icon: Package,
-      color: "from-purple-500/20 to-pink-500/20 border-purple-500/30 text-purple-400",
-      subtext: "Catalog inventory",
+      subtext: "Catalog products",
     },
     {
-      title: "Registered Users",
+      title: "Customers",
       value: (stats?.userCount || 0).toString(),
       icon: Users,
-      color: "from-cyan-500/20 to-sky-500/20 border-cyan-500/30 text-cyan-400",
-      subtext: "Customers & administrators",
+      subtext: "Registered accounts",
     },
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Administration Dashboard</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Real-time metrics queried directly from Cloudflare D1 serverless database
+    <div className="space-y-6">
+      <div className="border-b border-gray-200 pb-3">
+        <h1 className="text-2xl font-bold text-[#0f1111]">Seller Central Dashboard</h1>
+        <p className="text-xs text-gray-500 mt-0.5">
+          Real-time metrics queried from Cloudflare D1 distributed database
         </p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* KPI Cards (White Amazon Cards with gray borders) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
-              className={`p-5 rounded-2xl border bg-gradient-to-br ${card.color} space-y-3`}
+              className="p-5 rounded-lg border border-gray-300 bg-white space-y-2 shadow-sm"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-300">{card.title}</span>
-                <Icon className="w-5 h-5" />
+              <div className="flex items-center justify-between text-gray-500">
+                <span className="text-xs font-bold uppercase tracking-wider">{card.title}</span>
+                <Icon className="w-5 h-5 text-gray-700" />
               </div>
-              <div className="text-2xl font-extrabold text-white">{card.value}</div>
-              <p className="text-[11px] text-slate-400">{card.subtext}</p>
+              <div className="text-2xl font-bold text-[#0f1111]">{card.value}</div>
+              <p className="text-[11px] text-gray-500">{card.subtext}</p>
             </div>
           );
         })}
       </div>
 
-      {/* Quick Operations Strip */}
-      <div className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
-        <h3 className="text-sm font-bold text-white">Management Quick Actions</h3>
+      {/* Quick Actions */}
+      <div className="p-5 rounded-lg border border-gray-300 bg-[#fbfbfb] space-y-3">
+        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Quick Actions</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link
             to="/admin/products/new"
-            className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500/50 hover:bg-slate-900 transition-all text-xs font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
           >
-            <PlusCircle className="w-4 h-4 text-indigo-400" />
-            Create New Product
+            <PlusCircle className="w-4 h-4 text-amazon-orange" />
+            Add a Product
           </Link>
           <Link
             to="/admin/categories"
-            className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500/50 hover:bg-slate-900 transition-all text-xs font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
           >
-            <FolderPlus className="w-4 h-4 text-cyan-400" />
-            Manage Categories
+            <FolderPlus className="w-4 h-4 text-amazon-blue" />
+            Manage Taxonomy
           </Link>
           <Link
             to="/admin/orders"
-            className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-950 hover:border-indigo-500/50 hover:bg-slate-900 transition-all text-xs font-semibold text-slate-200"
+            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
           >
-            <ShoppingBag className="w-4 h-4 text-purple-400" />
-            Process Pending Orders
+            <ShoppingBag className="w-4 h-4 text-[#007600]" />
+            Manage Orders
           </Link>
         </div>
       </div>
 
-      {/* Cloudflare Edge Infrastructure Banner */}
-      <div className="p-5 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Cloudflare Edge Status */}
+      <div className="p-4 rounded-lg border border-gray-300 bg-white flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
-            <Server className="w-5 h-5" />
-          </div>
+          <ShieldCheck className="w-5 h-5 text-[#007600]" />
           <div>
-            <h4 className="text-sm font-bold text-white">Zero-Server Cloudflare Architecture</h4>
-            <p className="text-xs text-slate-400">
-              Operating within the Cloudflare Pages & Cloudflare D1 100% Free Tier limit.
+            <h4 className="text-xs font-bold text-gray-900">Cloudflare D1 High-Availability Cluster</h4>
+            <p className="text-[11px] text-gray-500">
+              Running globally on Cloudflare free tier with sub-10ms query execution.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" /> D1 Database Connected
-          </span>
-        </div>
+        <span className="text-[11px] font-bold text-[#007600] bg-green-50 border border-green-200 px-2.5 py-1 rounded">
+          Operational
+        </span>
       </div>
     </div>
   );

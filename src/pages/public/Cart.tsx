@@ -1,151 +1,167 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
-import { Trash2, ShoppingBag, ArrowRight, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowLeft } from "lucide-react";
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart, totalAmount, totalCount } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="py-20 text-center space-y-5">
-        <div className="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500">
-          <ShoppingBag className="w-8 h-8" />
-        </div>
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold text-white">Your cart is empty</h2>
-          <p className="text-xs text-slate-400">Discover premium hardware curated on our edge storefront.</p>
-        </div>
+      <div className="bg-white border border-gray-200 p-8 text-center space-y-4 shadow-sm max-w-3xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-900">Your Amazon Cart is empty.</h2>
+        <p className="text-xs text-gray-600">
+          Your shopping cart is waiting. Give it purpose – fill it with groceries, electronics, and more.
+        </p>
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all"
+          className="inline-block py-2 px-6 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-gray-900 shadow-sm"
         >
-          Explore Catalog <ArrowRight className="w-4 h-4" />
+          Continue Shopping
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 pb-16">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Shopping Cart</h1>
-          <p className="text-xs text-slate-400 mt-1">
-            {totalCount} item{totalCount === 1 ? "" : "s"} selected
-          </p>
-        </div>
-        <button
-          onClick={clearCart}
-          className="text-xs text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1.5"
-        >
-          <Trash2 className="w-3.5 h-3.5" /> Clear All
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart items */}
-        <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
-            <div
-              key={item.productId}
-              className="flex items-center gap-4 p-4 rounded-2xl border border-slate-800/80 bg-slate-900/40 hover:border-slate-700 transition-all"
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-12">
+      {/* Left Column: Items in Cart (8 cols) */}
+      <div className="lg:col-span-8 bg-white border border-gray-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+          <div>
+            <h1 className="text-2xl font-normal text-[#0f1111]">Shopping Cart</h1>
+            <button
+              onClick={clearCart}
+              className="text-xs text-amazon-blue hover:text-amazon-linkHover hover:underline pt-1"
             >
-              <img
-                src={item.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
-                alt={item.name}
-                className="w-20 h-20 rounded-xl object-cover bg-slate-800 shrink-0"
-              />
+              Deselect all items / Clear Cart
+            </button>
+          </div>
+          <span className="text-xs text-gray-500 font-medium self-end">Price</span>
+        </div>
 
-              <div className="flex-1 min-w-0">
-                <Link
-                  to={`/product/${item.productId}`}
-                  className="text-sm font-semibold text-white hover:text-indigo-400 transition-colors line-clamp-1"
-                >
-                  {item.name}
-                </Link>
-                <div className="mt-1 text-xs text-slate-400">
-                  ₹{item.price.toLocaleString("en-IN")} each
+        {/* Items list */}
+        <div className="divide-y divide-gray-200">
+          {items.map((item) => (
+            <div key={item.productId} className="py-4 flex gap-4">
+              {/* Product Thumbnail */}
+              <Link to={`/product/${item.productId}`} className="w-24 h-24 sm:w-32 sm:h-32 bg-white shrink-0 p-1">
+                <img
+                  src={item.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
+                  alt={item.name}
+                  className="w-full h-full object-contain"
+                />
+              </Link>
+
+              {/* Item Info */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                <div>
+                  <Link
+                    to={`/product/${item.productId}`}
+                    className="text-sm sm:text-base font-medium text-[#0f1111] hover:text-amazon-linkHover hover:underline line-clamp-2"
+                  >
+                    {item.name}
+                  </Link>
+
+                  <p className="text-xs font-semibold text-[#007600] mt-1">In stock</p>
+                  <p className="text-[11px] text-gray-500">Eligible for FREE Shipping</p>
+                  <span className="inline-block text-[#00a8e1] font-bold italic text-xs">✓prime</span>
                 </div>
 
-                <div className="mt-3 flex items-center gap-3">
-                  <div className="flex items-center rounded-lg border border-slate-800 bg-slate-900">
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                      className="px-2.5 py-1 text-xs text-slate-400 hover:text-white"
+                {/* Actions row: Qty select, Delete, Save for later */}
+                <div className="flex flex-wrap items-center gap-3 pt-3 text-xs text-gray-600">
+                  <div className="flex items-center gap-1 border border-gray-300 rounded bg-gray-100 px-2 py-0.5">
+                    <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-gray-500">
+                      Qty:
+                    </label>
+                    <select
+                      id={`qty-${item.productId}`}
+                      value={item.quantity}
+                      onChange={(e) => updateQuantity(item.productId, Number(e.target.value))}
+                      className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer"
                     >
-                      -
-                    </button>
-                    <span className="px-2.5 py-1 text-xs font-semibold text-white">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="px-2.5 py-1 text-xs text-slate-400 hover:text-white"
-                    >
-                      +
-                    </button>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  <span className="text-gray-300">|</span>
 
                   <button
                     onClick={() => removeItem(item.productId)}
-                    className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
-                    aria-label="Remove item"
+                    className="text-amazon-blue hover:text-amazon-linkHover hover:underline cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+
+                  <span className="text-gray-300">|</span>
+
+                  <button
+                    onClick={() => removeItem(item.productId)}
+                    className="text-amazon-blue hover:text-amazon-linkHover hover:underline cursor-pointer"
+                  >
+                    Save for later
                   </button>
                 </div>
               </div>
 
+              {/* Price */}
               <div className="text-right shrink-0">
-                <div className="text-sm font-bold text-white">
+                <span className="text-base sm:text-lg font-bold text-[#0f1111]">
                   ₹{(item.price * item.quantity).toLocaleString("en-IN")}
-                </div>
+                </span>
               </div>
             </div>
           ))}
-
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-white pt-2 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> Continue Shopping
-          </Link>
         </div>
 
-        {/* Order Summary */}
-        <div className="h-fit p-6 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-6">
-          <h3 className="text-base font-bold text-white">Order Summary</h3>
+        {/* Subtotal bottom bar */}
+        <div className="border-t border-gray-200 pt-4 text-right">
+          <span className="text-base text-gray-800">
+            Subtotal ({totalCount} item{totalCount === 1 ? "" : "s"}):{" "}
+            <span className="font-bold text-lg text-[#0f1111]">
+              ₹{totalAmount.toLocaleString("en-IN")}
+            </span>
+          </span>
+        </div>
+      </div>
 
-          <div className="space-y-3 text-xs">
-            <div className="flex justify-between text-slate-400">
-              <span>Subtotal ({totalCount} items)</span>
-              <span className="text-white font-medium">₹{totalAmount.toLocaleString("en-IN")}</span>
-            </div>
-            <div className="flex justify-between text-slate-400">
-              <span>Standard Edge Shipping</span>
-              <span className="text-emerald-400 font-medium">FREE</span>
-            </div>
-            <div className="flex justify-between text-slate-400">
-              <span>Platform / Edge Fee</span>
-              <span className="text-emerald-400 font-medium">₹0</span>
-            </div>
-            <div className="pt-3 border-t border-slate-800 flex justify-between text-sm">
-              <span className="font-semibold text-white">Estimated Total</span>
-              <span className="font-extrabold text-white text-base">
-                ₹{totalAmount.toLocaleString("en-IN")}
-              </span>
-            </div>
-          </div>
+      {/* Right Column: Checkout Summary Box (4 cols) */}
+      <div className="lg:col-span-4 bg-white border border-gray-200 p-5 shadow-sm space-y-4">
+        {/* Free Delivery alert */}
+        <div className="flex items-center gap-2 text-xs text-[#007600] font-medium">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <span>Part of your order qualifies for FREE Delivery.</span>
+        </div>
 
-          <Link
-            to="/checkout"
-            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02]"
-          >
-            Proceed to Checkout <ArrowRight className="w-4 h-4" />
-          </Link>
+        {/* Subtotal */}
+        <div className="text-base text-gray-800">
+          Subtotal ({totalCount} item{totalCount === 1 ? "" : "s"}):{" "}
+          <span className="font-bold text-lg text-[#0f1111]">
+            ₹{totalAmount.toLocaleString("en-IN")}
+          </span>
+        </div>
 
-          <p className="text-[11px] text-slate-500 text-center">
-            Encrypted checkout secured by Cloudflare SSL and Razorpay.
+        <div className="flex items-center gap-2 text-xs text-gray-700">
+          <input type="checkbox" id="gift" className="rounded text-amazon-orange focus:ring-0" />
+          <label htmlFor="gift">This order contains a gift</label>
+        </div>
+
+        {/* Proceed to Buy Yellow Button */}
+        <Link
+          to="/checkout"
+          className="block w-full py-2.5 px-4 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#fcd200] text-center font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+        >
+          Proceed to Buy
+        </Link>
+
+        {/* EMI info */}
+        <div className="border border-gray-200 rounded p-3 text-[11px] text-gray-600 bg-gray-50">
+          <span className="font-bold text-gray-900">EMI Available</span>
+          <p className="mt-0.5">
+            Your order qualifies for EMI with select bank debit and credit cards.
           </p>
         </div>
       </div>

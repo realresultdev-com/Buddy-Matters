@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
 import GoogleLoginButton from "../../components/common/GoogleLoginButton";
-import { Sparkles, AlertCircle, ArrowRight, UserCheck, ShieldAlert } from "lucide-react";
+import { AlertCircle, ShieldAlert, UserCheck } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -38,108 +38,120 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-md mx-auto py-12 px-4 space-y-6">
-      <div className="text-center space-y-2">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center mx-auto shadow-lg shadow-indigo-600/20">
-          <Sparkles className="w-6 h-6 text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Sign in to Lumina</h1>
-        <p className="text-xs text-slate-400">Manage orders and access the edge storefront.</p>
+    <div className="max-w-sm mx-auto py-8 px-4 space-y-4">
+      {/* Amazon Logo */}
+      <div className="text-center">
+        <Link to="/" className="inline-flex flex-col items-center">
+          <span className="text-3xl font-black text-gray-900 tracking-tight">
+            amazon<span className="text-amazon-orange text-lg font-bold ml-0.5">.in</span>
+          </span>
+        </Link>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-3 bg-red-50 border border-red-300 rounded text-red-700 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Google OAuth One-Click Login */}
-      <div className="p-4 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-3">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider text-center">
-          Single Sign-On
-        </p>
-        <GoogleLoginButton
-          onSuccess={() => navigate(redirectPath)}
-          onError={(msg) => setError(msg)}
-        />
-      </div>
+      {/* Main Login Card */}
+      <div className="bg-white border border-gray-300 rounded-lg p-6 shadow-sm space-y-4">
+        <h1 className="text-2xl font-medium text-[#0f1111]">Sign in</h1>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-800" />
-        <span className="text-[11px] font-semibold text-slate-500 uppercase">Or continue with email</span>
-        <div className="h-px flex-1 bg-slate-800" />
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs font-bold text-[#0f1111] mb-1">
+              Email or mobile phone number
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-400 rounded text-xs text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+          </div>
+
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-xs font-bold text-[#0f1111]">Password</label>
+              <a href="#" className="text-xs text-amazon-blue hover:text-amazon-linkHover hover:underline">
+                Forgot Password
+              </a>
+            </div>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-2.5 py-1.5 border border-gray-400 rounded text-xs text-[#0f1111] focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-1.5 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-[#0f1111] shadow-sm transition-colors"
+          >
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
+
+        <p className="text-[11px] text-gray-600 leading-normal">
+          By continuing, you agree to Amazon's{" "}
+          <a href="#" className="text-amazon-blue hover:underline">Conditions of Use</a> and{" "}
+          <a href="#" className="text-amazon-blue hover:underline">Privacy Notice</a>.
+        </p>
+
+        {/* Google One-Click Login */}
+        <div className="pt-2 border-t border-gray-200 space-y-2">
+          <p className="text-[11px] font-medium text-gray-500 text-center">Or sign in with</p>
+          <GoogleLoginButton
+            onSuccess={() => navigate(redirectPath)}
+            onError={(msg) => setError(msg)}
+          />
+        </div>
       </div>
 
       {/* Quick Demo Fill Pills */}
-      <div className="p-3 rounded-2xl border border-slate-800 bg-slate-900/60 space-y-2">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-          Quick Demo Autofill:
+      <div className="bg-white border border-gray-200 rounded-lg p-3 text-xs space-y-2">
+        <p className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+          Quick Demo Credentials:
         </p>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => handleQuickFill("admin@example.com", "admin123")}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-medium transition-colors"
+            className="flex-1 py-1 px-2 rounded border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-800 text-xs font-medium flex items-center justify-center gap-1"
           >
-            <ShieldAlert className="w-3.5 h-3.5" /> Admin
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-600" /> Admin
           </button>
           <button
             type="button"
             onClick={() => handleQuickFill("user@example.com", "user123")}
-            className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-medium transition-colors"
+            className="flex-1 py-1 px-2 rounded border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-800 text-xs font-medium flex items-center justify-center gap-1"
           >
-            <UserCheck className="w-3.5 h-3.5" /> Customer
+            <UserCheck className="w-3.5 h-3.5 text-blue-600" /> Customer
           </button>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
+      {/* Create Account Divider */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center gap-2">
+          <div className="h-px flex-1 bg-gray-300" />
+          <span className="text-xs text-gray-500">New to Amazon?</span>
+          <div className="h-px flex-1 bg-gray-300" />
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/25 transition-all hover:scale-[1.02] disabled:opacity-50"
+        <Link
+          to="/register"
+          className="block w-full py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 bg-white font-medium text-xs text-center text-gray-900 shadow-sm transition-colors"
         >
-          {loading ? (
-            <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
-          ) : (
-            <>
-              Sign In <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
-
-        <p className="text-center text-xs text-slate-400 pt-2">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-indigo-400 hover:underline font-semibold">
-            Create an account
-          </Link>
-        </p>
-      </form>
+          Create your Amazon account
+        </Link>
+      </div>
     </div>
   );
 }

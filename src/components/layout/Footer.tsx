@@ -1,63 +1,93 @@
-import { Sparkles, Shield, Zap, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Globe } from "lucide-react";
 
 export default function Footer() {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <footer className="border-t border-slate-800/80 bg-slate-950 text-slate-400 text-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-bold text-white tracking-tight">Lumina Store</span>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Full-stack edge e-commerce application powered 100% by Cloudflare Pages & Cloudflare D1 SQL database on the free tier.
-            </p>
-          </div>
+    <footer className="w-full select-none text-white text-xs">
+      {/* 1. Back to top */}
+      <div
+        onClick={scrollToTop}
+        className="bg-[#37475a] hover:bg-[#485769] text-white py-3.5 text-center text-xs font-semibold cursor-pointer transition-colors"
+      >
+        Back to top
+      </div>
 
+      {/* 2. Directory Columns (#232f3e) */}
+      <div className="bg-amazon-subnav border-b border-gray-700 py-12 px-4 sm:px-8">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           <div>
-            <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-3">Edge Tech Stack</h4>
-            <ul className="space-y-2 text-xs">
-              <li className="flex items-center gap-1.5"><Globe className="w-3.5 h-3.5 text-indigo-400" /> Cloudflare Pages (Frontend)</li>
-              <li className="flex items-center gap-1.5"><Zap className="w-3.5 h-3.5 text-amber-400" /> Cloudflare Pages Functions (Hono)</li>
-              <li className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-emerald-400" /> Cloudflare D1 (Serverless SQL)</li>
+            <h4 className="font-bold text-white text-sm mb-3">Get to Know Us</h4>
+            <ul className="space-y-2 text-gray-300 text-xs">
+              <li><Link to="/" className="hover:underline">About Lumina</Link></li>
+              <li><Link to="/" className="hover:underline">Careers</Link></li>
+              <li><Link to="/" className="hover:underline">Press Releases</Link></li>
+              <li><Link to="/" className="hover:underline">Lumina Science</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-3">Customer Service</h4>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li>Instant 0-RTT Checkout</li>
-              <li>Razorpay Payment Gateway</li>
-              <li>Global CDN Edge Delivery</li>
-              <li>Role-Based Access Control</li>
+            <h4 className="font-bold text-white text-sm mb-3">Connect with Us</h4>
+            <ul className="space-y-2 text-gray-300 text-xs">
+              <li><a href="#" className="hover:underline">Facebook</a></li>
+              <li><a href="#" className="hover:underline">Twitter / X</a></li>
+              <li><a href="#" className="hover:underline">Instagram</a></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold text-xs tracking-wider uppercase mb-3">Demo Accounts</h4>
-            <div className="space-y-2 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-              <div>
-                <span className="text-indigo-400 font-medium">Admin:</span> admin@example.com / admin123
-              </div>
-              <div>
-                <span className="text-cyan-400 font-medium">User:</span> user@example.com / user123
-              </div>
-            </div>
+            <h4 className="font-bold text-white text-sm mb-3">Make Money with Us</h4>
+            <ul className="space-y-2 text-gray-300 text-xs">
+              <li><Link to="/" className="hover:underline">Sell on Lumina</Link></li>
+              <li><Link to="/" className="hover:underline">Sell under Lumina Accelerator</Link></li>
+              <li><Link to="/" className="hover:underline">Protect and Build Your Brand</Link></li>
+              <li><Link to="/" className="hover:underline">Lumina Global Selling</Link></li>
+              <li><Link to="/" className="hover:underline">Become an Affiliate</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-white text-sm mb-3">Let Us Help You</h4>
+            <ul className="space-y-2 text-gray-300 text-xs">
+              <li><Link to="/profile" className="hover:underline">COVID-19 and Lumina</Link></li>
+              <li><Link to="/profile" className="hover:underline">Your Account</Link></li>
+              <li><Link to="/orders" className="hover:underline">Returns Centre</Link></li>
+              <li><Link to="/" className="hover:underline">100% Purchase Protection</Link></li>
+              <li><Link to="/" className="hover:underline">Help & Customer Care</Link></li>
+            </ul>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Lumina. All rights reserved. Zero external servers required.</p>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              Cloudflare Edge Operational
+        {/* Brand divider */}
+        <div className="max-w-6xl mx-auto mt-10 pt-8 border-t border-gray-700 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-300">
+          <div className="flex flex-col items-start leading-none">
+            <span className="text-xl font-black text-white">
+              amazon<span className="text-amazon-orange text-xs font-bold">.in</span>
             </span>
           </div>
+
+          <div className="flex items-center gap-2 border border-gray-600 rounded px-3 py-1 cursor-pointer hover:border-gray-400">
+            <Globe className="w-3.5 h-3.5" />
+            <span>English</span>
+          </div>
+
+          <div className="flex items-center gap-2 border border-gray-600 rounded px-3 py-1 cursor-pointer hover:border-gray-400">
+            <span>🇮🇳 India</span>
+          </div>
         </div>
+      </div>
+
+      {/* 3. Bottom Legal Sub-Footer (#131921) */}
+      <div className="bg-amazon-dark py-8 px-4 text-center text-[11px] text-gray-400 space-y-2">
+        <div className="flex flex-wrap justify-center gap-4 text-gray-300">
+          <a href="#" className="hover:underline">Conditions of Use & Sale</a>
+          <a href="#" className="hover:underline">Privacy Notice</a>
+          <a href="#" className="hover:underline">Interest-Based Ads</a>
+        </div>
+        <p>© 1996-{new Date().getFullYear()}, Amazon.com, Inc. or its affiliates. Cloudflare Edge Serverless Architecture.</p>
       </div>
     </footer>
   );

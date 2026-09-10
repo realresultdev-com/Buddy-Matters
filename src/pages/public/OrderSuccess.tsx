@@ -1,46 +1,51 @@
 import { useSearchParams, Link } from "react-router-dom";
-import { CheckCircle2, Package, ArrowRight, Home } from "lucide-react";
+import { CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function OrderSuccess() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
 
   return (
-    <div className="max-w-lg mx-auto py-16 px-4 text-center space-y-6">
-      <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto animate-bounce">
-        <CheckCircle2 className="w-8 h-8" />
-      </div>
-
-      <div className="space-y-2">
-        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          Payment Verified & Confirmed
-        </span>
-        <h1 className="text-3xl font-extrabold text-white">Thank You for Your Order!</h1>
-        <p className="text-xs text-slate-400 max-w-sm mx-auto">
-          Your payment was processed and verified securely on Cloudflare Edge.
-        </p>
-      </div>
-
-      {orderId && (
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-          <span className="text-slate-400">Order Reference ID:</span>
-          <p className="font-mono text-indigo-400 font-semibold text-sm break-all">{orderId}</p>
+    <div className="max-w-2xl mx-auto py-8 space-y-6">
+      <div className="bg-white border border-gray-300 rounded-lg p-6 sm:p-8 shadow-sm space-y-5">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="w-8 h-8 text-[#007600] shrink-0 mt-0.5" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#007600]">
+              Order placed, thank you!
+            </h1>
+            <p className="text-xs text-gray-600 mt-1">
+              Confirmation will be sent to your registered email address.
+            </p>
+          </div>
         </div>
-      )}
 
-      <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-        <Link
-          to="/orders"
-          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all"
-        >
-          <Package className="w-4 h-4" /> View My Orders
-        </Link>
-        <Link
-          to="/"
-          className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-sm font-semibold transition-colors"
-        >
-          <Home className="w-4 h-4" /> Back to Store
-        </Link>
+        {orderId && (
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded text-xs">
+            <span className="text-gray-500 font-medium">Order Reference: </span>
+            <span className="font-mono font-bold text-gray-900">{orderId}</span>
+          </div>
+        )}
+
+        <div className="space-y-1 text-xs text-gray-700">
+          <p className="font-bold">Guaranteed Delivery by Tomorrow, 11 AM</p>
+          <p className="text-gray-500">Shipped with Amazon Prime Free Delivery</p>
+        </div>
+
+        <div className="pt-2 flex flex-wrap gap-3">
+          <Link
+            to="/orders"
+            className="py-2 px-5 rounded-full bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-medium text-xs text-gray-900 shadow-sm"
+          >
+            Review or edit your order
+          </Link>
+          <Link
+            to="/"
+            className="py-2 px-5 rounded-full border border-gray-300 hover:bg-gray-50 font-medium text-xs text-gray-900 shadow-sm"
+          >
+            Continue Shopping
+          </Link>
+        </div>
       </div>
     </div>
   );

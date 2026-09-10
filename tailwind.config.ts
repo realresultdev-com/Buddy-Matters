@@ -5,21 +5,25 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', "Inter", "sans-serif"],
+        sans: ['"Open Sans"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
       },
       colors: {
-        brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          200: "#c7d2fe",
-          300: "#a5b4fc",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-          800: "#3730a3",
-          900: "#312e81",
-          950: "#1e1b4b",
+        amazon: {
+          dark: "#131921",
+          light: "#232f3e",
+          subnav: "#232f3e",
+          bg: "#eaeded",
+          yellow: "#febd69",
+          orange: "#f08804",
+          btnYellow: "#ffd814",
+          btnYellowHover: "#f7ca00",
+          btnOrange: "#ffa41c",
+          btnOrangeHover: "#fa8900",
+          blue: "#007185",
+          linkHover: "#c7511f",
+          price: "#b12704",
+          green: "#007600",
+          border: "#d5d9d9",
         },
       },
     },
