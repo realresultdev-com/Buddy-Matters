@@ -63,11 +63,13 @@ export default function Footer() {
 
         {/* Brand divider */}
         <div className="max-w-6xl mx-auto mt-10 pt-8 border-t border-gray-700 flex flex-wrap items-center justify-center gap-6 text-xs text-gray-300">
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-xl font-black text-white">
-              amazon<span className="text-amazon-orange text-xs font-bold">.in</span>
-            </span>
-          </div>
+          <Link to="/" className="flex items-center">
+            <img
+              src="/logo-white.png"
+              alt="Buddy Mattress"
+              className="h-8 w-auto object-contain drop-shadow-xs"
+            />
+          </Link>
 
           <div className="flex items-center gap-2 border border-gray-600 rounded px-3 py-1 cursor-pointer hover:border-gray-400">
             <Globe className="w-3.5 h-3.5" />
@@ -87,7 +89,7 @@ export default function Footer() {
           <a href="#" className="hover:underline">Privacy Notice</a>
           <a href="#" className="hover:underline">Interest-Based Ads</a>
         </div>
-        <p>© 1996-{new Date().getFullYear()}, Amazon.com, Inc. or its affiliates. Cloudflare Edge Serverless Architecture.</p>
+        <p>© {new Date().getFullYear()}, Buddy Mattress Co. or its affiliates. Cloudflare Edge Serverless Architecture.</p>
       </div>
     </footer>
   );

@@ -56,13 +56,13 @@ export default function Home() {
           />
           <div className="absolute inset-0 flex flex-col justify-center px-6 sm:px-16 max-w-2xl text-white">
             <span className="inline-block bg-[#cc0c39] text-white text-xs font-bold px-2 py-0.5 rounded w-fit mb-3">
-              GREAT INDIAN FESTIVAL
+              BUDDY MATTRESS SLEEP FESTIVAL
             </span>
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
-              Up to 60% off | Top tech, audio & smart devices
+              Up to 60% off | Luxury Mattresses, Pillows & Comfort Living
             </h1>
             <p className="text-xs sm:text-sm text-gray-200 mt-2 font-medium">
-              Free 1-Day delivery on Prime items. Shop the biggest deals today.
+              100-Night Free Trial & Free Delivery on All Premium Mattresses.
             </p>
           </div>
         </div>

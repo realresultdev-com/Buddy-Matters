@@ -47,14 +47,13 @@ export default function Navbar() {
         {/* Brand Logo */}
         <Link
           to="/"
-          className="flex items-center p-1.5 border border-transparent hover:border-white rounded transition-colors shrink-0"
+          className="flex items-center px-2 py-1 border border-transparent hover:border-white rounded transition-colors shrink-0"
         >
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center">
-              amazon<span className="text-amazon-orange text-sm font-bold ml-0.5">.in</span>
-            </span>
-            <div className="w-16 sm:w-20 h-1.5 bg-gradient-to-r from-transparent via-amazon-orange to-transparent rounded-full -mt-0.5 opacity-90" />
-          </div>
+          <img
+            src="/logo-white.png"
+            alt="Buddy Mattress"
+            className="h-8 sm:h-9 w-auto object-contain drop-shadow-xs"
+          />
         </Link>
 
         {/* Deliver to Location Pin */}
@@ -88,7 +87,7 @@ export default function Navbar() {
           {/* Input text */}
           <input
             type="text"
-            placeholder="Search Amazon.in"
+            placeholder="Search Buddy Mattress"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="flex-1 px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none h-full"

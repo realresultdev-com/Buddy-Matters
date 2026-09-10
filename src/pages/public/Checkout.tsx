@@ -83,8 +83,8 @@ export default function Checkout() {
           key: razorpayKeyId,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency || "INR",
-          name: "Amazon.in (Lumina)",
-          description: `Order #${order.id.slice(0, 8)}`,
+          name: "Buddy Mattress",
+          description: `Sleep Comfort & Mattress Order #${order.id.slice(0, 8)}`,
           order_id: razorpayOrder.id,
           handler: async function (response: any) {
             try {
@@ -141,10 +141,12 @@ export default function Checkout() {
     <div className="max-w-5xl mx-auto space-y-6 pb-16">
       {/* Amazon Minimalist Checkout Header */}
       <div className="flex items-center justify-between border-b border-gray-300 pb-3">
-        <Link to="/" className="flex flex-col items-start leading-none">
-          <span className="text-2xl font-black text-gray-900 tracking-tight">
-            amazon<span className="text-amazon-orange text-sm font-bold ml-0.5">.in</span>
-          </span>
+        <Link to="/" className="flex items-center">
+          <img
+            src="/logo-transparent.png"
+            alt="Buddy Mattress"
+            className="h-8 sm:h-9 w-auto object-contain"
+          />
         </Link>
         <div className="flex items-center gap-1.5 text-gray-600 text-sm font-semibold">
           <Lock className="w-4 h-4 text-gray-500" />
@@ -264,7 +266,7 @@ export default function Checkout() {
           </button>
 
           <p className="text-[11px] text-gray-500 text-center leading-tight">
-            By placing your order, you agree to Amazon's privacy notice and conditions of use.
+            By placing your order, you agree to Buddy Mattress's privacy notice and conditions of use.
           </p>
 
           <div className="border-t border-gray-200 pt-3 space-y-2 text-xs">

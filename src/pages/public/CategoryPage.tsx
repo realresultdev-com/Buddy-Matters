@@ -36,8 +36,8 @@ export default function CategoryPage() {
   return (
     <div className="bg-white border border-gray-200 p-6 shadow-sm space-y-4 pb-12">
       <nav className="text-xs text-gray-500 flex items-center gap-1.5">
-        <Link to="/" className="hover:text-amazon-linkHover hover:underline">
-          Amazon.in
+        <Link to="/" className="hover:text-amazon-linkHover hover:underline font-medium">
+          Buddy Mattress
         </Link>
         <ChevronRight className="w-3 h-3" />
         <span className="text-gray-800 font-semibold">{category ? category.name : "Department"}</span>

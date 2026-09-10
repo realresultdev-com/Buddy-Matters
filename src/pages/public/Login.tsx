@@ -39,12 +39,14 @@ export default function Login() {
 
   return (
     <div className="max-w-sm mx-auto py-8 px-4 space-y-4">
-      {/* Amazon Logo */}
+      {/* Buddy Mattress Logo */}
       <div className="text-center">
         <Link to="/" className="inline-flex flex-col items-center">
-          <span className="text-3xl font-black text-gray-900 tracking-tight">
-            amazon<span className="text-amazon-orange text-lg font-bold ml-0.5">.in</span>
-          </span>
+          <img
+            src="/logo-transparent.png"
+            alt="Buddy Mattress"
+            className="h-12 w-auto object-contain"
+          />
         </Link>
       </div>
 
@@ -99,7 +101,7 @@ export default function Login() {
         </form>
 
         <p className="text-[11px] text-gray-600 leading-normal">
-          By continuing, you agree to Amazon's{" "}
+          By continuing, you agree to Buddy Mattress's{" "}
           <a href="#" className="text-amazon-blue hover:underline">Conditions of Use</a> and{" "}
           <a href="#" className="text-amazon-blue hover:underline">Privacy Notice</a>.
         </p>
@@ -141,7 +143,7 @@ export default function Login() {
       <div className="space-y-3 pt-2">
         <div className="flex items-center gap-2">
           <div className="h-px flex-1 bg-gray-300" />
-          <span className="text-xs text-gray-500">New to Amazon?</span>
+          <span className="text-xs text-gray-500">New to Buddy Mattress?</span>
           <div className="h-px flex-1 bg-gray-300" />
         </div>
 
@@ -149,7 +151,7 @@ export default function Login() {
           to="/register"
           className="block w-full py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 bg-white font-medium text-xs text-center text-gray-900 shadow-sm transition-colors"
         >
-          Create your Amazon account
+          Create your Buddy Mattress account
         </Link>
       </div>
     </div>

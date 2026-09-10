@@ -32,12 +32,14 @@ export default function Register() {
 
   return (
     <div className="max-w-sm mx-auto py-8 px-4 space-y-4">
-      {/* Amazon Logo */}
+      {/* Buddy Mattress Logo */}
       <div className="text-center">
         <Link to="/" className="inline-flex flex-col items-center">
-          <span className="text-3xl font-black text-gray-900 tracking-tight">
-            amazon<span className="text-amazon-orange text-lg font-bold ml-0.5">.in</span>
-          </span>
+          <img
+            src="/logo-transparent.png"
+            alt="Buddy Mattress"
+            className="h-12 w-auto object-contain"
+          />
         </Link>
       </div>
 
@@ -100,7 +102,7 @@ export default function Register() {
         </form>
 
         <p className="text-[11px] text-gray-600 leading-normal">
-          By creating an account or logging in, you agree to Amazon's{" "}
+          By creating an account or logging in, you agree to Buddy Mattress's{" "}
           <a href="#" className="text-amazon-blue hover:underline">Conditions of Use</a> and{" "}
           <a href="#" className="text-amazon-blue hover:underline">Privacy Notice</a>.
         </p>
