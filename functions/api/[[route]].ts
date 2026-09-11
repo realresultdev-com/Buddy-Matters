@@ -256,13 +256,35 @@ app.get("/categories", async (c) => {
 });
 
 app.post("/categories", authMiddleware, adminMiddleware, async (c) => {
-  const { name } = await c.req.json();
+  const { name, offer_badge_prefix, offer_badge_value } = await c.req.json();
   if (!name) return c.json({ message: "Name is required" }, 400);
 
   const id = `cat-${crypto.randomUUID()}`;
-  await c.env.DB.prepare("INSERT INTO categories (id, name) VALUES (?, ?)").bind(id, name).run();
+  const prefix = offer_badge_prefix !== undefined ? offer_badge_prefix : "Starting";
+  const value = offer_badge_value !== undefined ? offer_badge_value : "";
+  await c.env.DB.prepare(
+    "INSERT INTO categories (id, name, offer_badge_prefix, offer_badge_value) VALUES (?, ?, ?, ?)"
+  ).bind(id, name, prefix, value).run();
 
-  return c.json({ id, name }, 201);
+  return c.json({ id, name, offer_badge_prefix: prefix, offer_badge_value: value }, 201);
+});
+
+app.put("/categories/:id", authMiddleware, adminMiddleware, async (c) => {
+  const id = c.req.param("id");
+  const { name, offer_badge_prefix, offer_badge_value } = await c.req.json();
+
+  const existing: any = await c.env.DB.prepare("SELECT * FROM categories WHERE id = ?").bind(id).first();
+  if (!existing) return c.json({ message: "Category not found" }, 404);
+
+  const updatedName = name !== undefined ? name : existing.name;
+  const updatedPrefix = offer_badge_prefix !== undefined ? offer_badge_prefix : (existing.offer_badge_prefix ?? "Starting");
+  const updatedValue = offer_badge_value !== undefined ? offer_badge_value : (existing.offer_badge_value ?? "");
+
+  await c.env.DB.prepare(
+    "UPDATE categories SET name = ?, offer_badge_prefix = ?, offer_badge_value = ? WHERE id = ?"
+  ).bind(updatedName, updatedPrefix, updatedValue, id).run();
+
+  return c.json({ id, name: updatedName, offer_badge_prefix: updatedPrefix, offer_badge_value: updatedValue });
 });
 
 app.delete("/categories/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -280,7 +302,9 @@ app.get("/products", async (c) => {
   const trending = c.req.query("trending");
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           p.offer_badge_prefix, p.offer_badge_value,
+           c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
+           p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
@@ -327,7 +351,11 @@ app.get("/products", async (c) => {
       category: {
         id: row.cat_id,
         name: row.cat_name,
+        offer_badge_prefix: row.cat_offer_badge_prefix || null,
+        offer_badge_value: row.cat_offer_badge_value || null,
       },
+      offer_badge_prefix: row.offer_badge_prefix || null,
+      offer_badge_value: row.offer_badge_value || null,
       is_trending: Boolean(row.is_trending),
       rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
       review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
@@ -345,7 +373,9 @@ app.get("/products/:id", async (c) => {
   const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           p.offer_badge_prefix, p.offer_badge_value,
+           c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
+           p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
@@ -383,7 +413,11 @@ app.get("/products/:id", async (c) => {
     category: {
       id: row.cat_id,
       name: row.cat_name,
+      offer_badge_prefix: row.cat_offer_badge_prefix || null,
+      offer_badge_value: row.cat_offer_badge_value || null,
     },
+    offer_badge_prefix: row.offer_badge_prefix || null,
+    offer_badge_value: row.offer_badge_value || null,
     is_trending: Boolean(row.is_trending),
     rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
     review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
@@ -585,7 +619,9 @@ const handleProductDetailsQuery = async (c: any) => {
 
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           p.offer_badge_prefix, p.offer_badge_value,
+           c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
+           p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
@@ -614,47 +650,38 @@ const handleProductDetailsQuery = async (c: any) => {
   }
 
   // 4. Keyword Search in name or description
-  if (search && typeof search === "string" && search.trim()) {
+  if (search) {
     query += ` AND (p.name LIKE ? OR p.description LIKE ?)`;
-    binds.push(`%${search.trim()}%`, `%${search.trim()}%`);
+    binds.push(`%${search}%`, `%${search}%`);
   }
 
-  // 5. Price Range
-  if (minPrice !== undefined && !isNaN(minPrice)) {
+  // 5. Filter by Min Price
+  if (minPrice !== undefined) {
     query += ` AND p.price >= ?`;
     binds.push(minPrice);
   }
-  if (maxPrice !== undefined && !isNaN(maxPrice)) {
+
+  // 6. Filter by Max Price
+  if (maxPrice !== undefined) {
     query += ` AND p.price <= ?`;
     binds.push(maxPrice);
   }
 
-  // 6. Stock filter
+  // 7. Filter In Stock
   if (inStockOnly) {
     query += ` AND p.stock > 0`;
   }
 
-  // 7. Trending Filter (optional)
-  if (payload.trending !== undefined) {
-    query += ` AND p.is_trending = ?`;
-    binds.push(payload.trending ? 1 : 0);
-  }
-
   // 8. Sorting
-  switch (sort) {
-    case "price_asc":
-      query += ` ORDER BY p.price ASC`;
-      break;
-    case "price_desc":
-      query += ` ORDER BY p.price DESC`;
-      break;
-    case "name_asc":
-      query += ` ORDER BY p.name ASC`;
-      break;
-    case "newest":
-    default:
-      query += ` ORDER BY p.created_at DESC`;
-      break;
+  if (sort === "price-low") {
+    query += ` ORDER BY p.price ASC`;
+  } else if (sort === "price-high") {
+    query += ` ORDER BY p.price DESC`;
+  } else if (sort === "rating") {
+    query += ` ORDER BY avg_rating DESC NULLS LAST`;
+  } else {
+    // Default newest
+    query += ` ORDER BY p.created_at DESC`;
   }
 
   // 9. Pagination
@@ -699,7 +726,11 @@ const handleProductDetailsQuery = async (c: any) => {
       category: {
         id: row.cat_id,
         name: row.cat_name,
+        offer_badge_prefix: row.cat_offer_badge_prefix || null,
+        offer_badge_value: row.cat_offer_badge_value || null,
       },
+      offer_badge_prefix: row.offer_badge_prefix || null,
+      offer_badge_value: row.offer_badge_value || null,
       rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
       reviewsCount: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
       review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
@@ -720,7 +751,9 @@ const handleProductDetailsQuery = async (c: any) => {
     // Fetch related products in the same category
     const { results: related } = await c.env.DB.prepare(`
       SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
-             c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+             p.offer_badge_prefix, p.offer_badge_value,
+             c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
+             p.created_at as createdAt
       FROM products p
       JOIN categories c ON p.category_id = c.id
       WHERE p.category_id = ? AND p.id != ?
@@ -760,6 +793,8 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
       is_trending: String(formData.is_trending) === "true" || String(formData.is_trending) === "1",
+      offer_badge_prefix: formData.offer_badge_prefix || "",
+      offer_badge_value: formData.offer_badge_value || "",
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : [],
     };
   } else {
@@ -770,12 +805,22 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   const imagesJson = JSON.stringify(Array.isArray(body.images) ? body.images : [body.images || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"]);
   const isTrending = body.is_trending ? 1 : 0;
   const aboutJson = JSON.stringify(Array.isArray(body.about) ? body.about : []);
+  const offerBadgePrefix = body.offer_badge_prefix || "";
+  const offerBadgeValue = body.offer_badge_value || "";
 
   await c.env.DB.prepare(
-    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson).run();
+    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue).run();
 
-  return c.json({ id, ...body, is_trending: Boolean(isTrending), images: JSON.parse(imagesJson), about: JSON.parse(aboutJson) }, 201);
+  return c.json({
+    id,
+    ...body,
+    is_trending: Boolean(isTrending),
+    offer_badge_prefix: offerBadgePrefix,
+    offer_badge_value: offerBadgeValue,
+    images: JSON.parse(imagesJson),
+    about: JSON.parse(aboutJson),
+  }, 201);
 });
 
 app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -792,6 +837,8 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
       is_trending: formData.is_trending !== undefined ? (String(formData.is_trending) === "true" || String(formData.is_trending) === "1") : undefined,
+      offer_badge_prefix: formData.offer_badge_prefix,
+      offer_badge_value: formData.offer_badge_value,
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : undefined,
     };
   } else {
@@ -809,10 +856,12 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const images = body.images ? JSON.stringify(body.images) : existing.images;
   const isTrending = body.is_trending !== undefined ? (body.is_trending ? 1 : 0) : (existing.is_trending || 0);
   const about = body.about !== undefined ? (typeof body.about === "string" ? body.about : JSON.stringify(body.about)) : (existing.about || "[]");
+  const offerBadgePrefix = body.offer_badge_prefix !== undefined ? body.offer_badge_prefix : (existing.offer_badge_prefix || "");
+  const offerBadgeValue = body.offer_badge_value !== undefined ? body.offer_badge_value : (existing.offer_badge_value || "");
 
   await c.env.DB.prepare(
-    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ? WHERE id = ?"
-  ).bind(name, description, price, stock, categoryId, images, isTrending, about, id).run();
+    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ? WHERE id = ?"
+  ).bind(name, description, price, stock, categoryId, images, isTrending, about, offerBadgePrefix, offerBadgeValue, id).run();
 
   let parsedAbout: any[] = [];
   try {
@@ -821,7 +870,19 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     parsedAbout = [];
   }
 
-  return c.json({ id, name, description, price, stock, categoryId, is_trending: Boolean(isTrending), images: JSON.parse(images), about: parsedAbout });
+  return c.json({
+    id,
+    name,
+    description,
+    price,
+    stock,
+    categoryId,
+    is_trending: Boolean(isTrending),
+    offer_badge_prefix: offerBadgePrefix,
+    offer_badge_value: offerBadgeValue,
+    images: JSON.parse(images),
+    about: parsedAbout,
+  });
 });
 
 app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {

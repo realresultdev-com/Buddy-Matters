@@ -7,6 +7,7 @@ import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
+import OfferBadge from "../common/OfferBadge";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -34,11 +35,22 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 flex flex-col justify-between hover:border-[#0ea9df] hover:shadow-md transition-all relative group h-full">
+      {/* Optional Deal Offer Sticker Badge */}
+      {Boolean(product.offer_badge_value) && (
+        <div className="absolute top-2 right-2 z-10 pointer-events-none drop-shadow-md">
+          <OfferBadge
+            prefix={product.offer_badge_prefix || "Offer"}
+            value={product.offer_badge_value!}
+            size="sm"
+          />
+        </div>
+      )}
+
       <div>
         {/* Product Image */}
         <Link
           to={getProductUrl(product.id)}
-          className="block aspect-square w-full overflow-hidden bg-white p-1 sm:p-2 mb-2 sm:mb-3 flex items-center justify-center rounded-lg"
+          className="block aspect-square w-full overflow-hidden bg-white p-1 sm:p-2 mb-2 sm:mb-3 flex items-center justify-center rounded-lg relative"
         >
           <img
             src={mainImage}

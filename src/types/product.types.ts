@@ -1,6 +1,8 @@
 export interface Category {
   id: string;
   name: string;
+  offer_badge_prefix?: string;
+  offer_badge_value?: string;
 }
 
 export interface ProductAboutItem {
@@ -22,6 +24,8 @@ export interface Product {
   review_count?: number;
   reviewsCount?: number;
   about?: ProductAboutItem[];
+  offer_badge_prefix?: string;
+  offer_badge_value?: string;
 }
 
 export interface Review {

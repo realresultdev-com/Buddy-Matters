@@ -35,9 +35,15 @@ export const categoryService = {
     return inflightPromise;
   },
 
-  create: async (name: string) => {
+  create: async (data: string | { name: string; offer_badge_prefix?: string; offer_badge_value?: string }) => {
     cachedCategories = null; // Bust cache on mutation
-    return api.post("/categories", { name });
+    const payload = typeof data === "string" ? { name: data } : data;
+    return api.post("/categories", payload);
+  },
+
+  update: async (id: string, data: { name?: string; offer_badge_prefix?: string; offer_badge_value?: string }) => {
+    cachedCategories = null; // Bust cache on mutation
+    return api.put(`/categories/${id}`, data);
   },
 
   remove: async (id: string) => {

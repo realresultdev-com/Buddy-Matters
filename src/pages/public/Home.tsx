@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import TrendingSlider from "../../components/product/TrendingSlider";
+import OfferBadge from "../../components/common/OfferBadge";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getCategoryUrl } from "../../utils/urlSecurity";
@@ -109,25 +110,44 @@ export default function Home() {
             sampleProduct?.images?.[0] ||
             "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&auto=format&fit=crop&q=80";
 
+          // Calculate dynamic fallback min price from products in this category
+          const categoryProducts = products.filter((p) => p.categoryId === cat.id);
+          const minPrice = categoryProducts.length > 0 ? Math.min(...categoryProducts.map((p) => p.price)) : null;
+          const badgePrefix = cat.offer_badge_prefix || "Starting";
+          const badgeValue = cat.offer_badge_value || (minPrice ? `₹${minPrice.toLocaleString("en-IN")}` : "");
+
           return (
             <div
               key={cat.id}
-              className="bg-white p-4.5 rounded-2xl shadow-xs border border-gray-200/90 flex flex-col justify-between hover:shadow-md transition-shadow"
+              className="bg-white p-4.5 rounded-2xl shadow-xs border border-gray-200/90 flex flex-col justify-between hover:shadow-md transition-shadow relative"
             >
               <div>
                 <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
                   {cat.name}
                 </h3>
-                <Link
-                  to={getCategoryUrl(cat.id)}
-                  className="block aspect-4/3 sm:aspect-square bg-gray-50 rounded-xl overflow-hidden mb-2"
-                >
-                  <img
-                    src={sampleImage}
-                    alt={cat.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </Link>
+                <div className="relative mb-2">
+                  <Link
+                    to={getCategoryUrl(cat.id)}
+                    className="block aspect-4/3 sm:aspect-square bg-gray-50 rounded-xl overflow-hidden relative"
+                  >
+                    <img
+                      src={sampleImage}
+                      alt={cat.name}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  </Link>
+
+                  {/* Scalloped Yellow Sticker Deal Badge */}
+                  {badgeValue && (
+                    <div className="absolute -bottom-2.5 -right-2 sm:-bottom-3 sm:-right-2.5 z-10 pointer-events-none drop-shadow-md">
+                      <OfferBadge
+                        prefix={badgePrefix}
+                        value={badgeValue}
+                        size="md"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <Link
                 to={getCategoryUrl(cat.id)}
