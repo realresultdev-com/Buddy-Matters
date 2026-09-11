@@ -64,6 +64,31 @@ export default function ProductInfo({ product, className = "" }: ProductInfoProp
           </p>
         </div>
       )}
+
+      {/* Key & Value Specifications / About this item */}
+      {product.about && Array.isArray(product.about) && product.about.length > 0 && (
+        <div className="space-y-2 pt-2">
+          <h3 className="font-bold text-sm text-[#191142]">
+            {language === "ta" ? "பொருளின் விவரக்குறிப்புகள்" : "Product Specifications"}
+          </h3>
+          <div className="border border-gray-200/90 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <table className="w-full text-xs text-left">
+              <tbody className="divide-y divide-gray-100">
+                {product.about.map((item, idx) => (
+                  <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                    <td className="py-2.5 px-3.5 font-bold text-gray-700 w-2/5 sm:w-1/3 border-r border-gray-100">
+                      {item.key}
+                    </td>
+                    <td className="py-2.5 px-3.5 text-gray-900 font-medium">
+                      {item.value}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

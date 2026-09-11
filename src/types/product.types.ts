@@ -3,6 +3,11 @@ export interface Category {
   name: string;
 }
 
+export interface ProductAboutItem {
+  key: string;
+  value: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -16,6 +21,7 @@ export interface Product {
   rating?: number;
   review_count?: number;
   reviewsCount?: number;
+  about?: ProductAboutItem[];
 }
 
 export interface Review {

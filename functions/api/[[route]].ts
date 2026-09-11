@@ -279,7 +279,7 @@ app.get("/products", async (c) => {
   const categoryId = c.req.query("categoryId");
   const trending = c.req.query("trending");
   let query = `
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
            c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
@@ -310,6 +310,12 @@ app.get("/products", async (c) => {
     } catch {
       images = row.images ? [row.images] : [];
     }
+    let about: any[] = [];
+    try {
+      about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
+    } catch {
+      about = [];
+    }
     return {
       id: row.id,
       name: row.name,
@@ -325,6 +331,7 @@ app.get("/products", async (c) => {
       is_trending: Boolean(row.is_trending),
       rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
       review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
+      about: Array.isArray(about) ? about : [],
       createdAt: row.createdAt,
     };
   });
@@ -337,7 +344,7 @@ app.get("/products/:id", async (c) => {
   const rawId = c.req.param("id");
   const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
            c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
@@ -357,6 +364,13 @@ app.get("/products/:id", async (c) => {
     images = row.images ? [row.images] : [];
   }
 
+  let about: any[] = [];
+  try {
+    about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
+  } catch {
+    about = [];
+  }
+
   c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
     id: row.id,
@@ -373,6 +387,7 @@ app.get("/products/:id", async (c) => {
     is_trending: Boolean(row.is_trending),
     rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
     review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
+    about: Array.isArray(about) ? about : [],
     createdAt: row.createdAt,
   });
 });
@@ -569,7 +584,7 @@ const handleProductDetailsQuery = async (c: any) => {
   const offset = payload.page && limit ? (Number(payload.page) - 1) * limit : undefined;
 
   let query = `
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
            c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
            (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
@@ -662,7 +677,12 @@ const handleProductDetailsQuery = async (c: any) => {
       images = row.images ? [row.images] : [];
     }
     const originalMRP = Math.round(row.price * 1.28);
-    const discountPercent = Math.round(((originalMRP - row.price) / originalMRP) * 100);
+    let about: any[] = [];
+    try {
+      about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
+    } catch {
+      about = [];
+    }
 
     return {
       id: row.id,
@@ -683,6 +703,7 @@ const handleProductDetailsQuery = async (c: any) => {
       rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
       reviewsCount: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
       review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
+      about: Array.isArray(about) ? about : [],
       createdAt: row.createdAt,
     };
   };
@@ -748,12 +769,13 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   const id = `prod-${crypto.randomUUID()}`;
   const imagesJson = JSON.stringify(Array.isArray(body.images) ? body.images : [body.images || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"]);
   const isTrending = body.is_trending ? 1 : 0;
+  const aboutJson = JSON.stringify(Array.isArray(body.about) ? body.about : []);
 
   await c.env.DB.prepare(
-    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending).run();
+    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson).run();
 
-  return c.json({ id, ...body, is_trending: Boolean(isTrending), images: JSON.parse(imagesJson) }, 201);
+  return c.json({ id, ...body, is_trending: Boolean(isTrending), images: JSON.parse(imagesJson), about: JSON.parse(aboutJson) }, 201);
 });
 
 app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -786,12 +808,20 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const categoryId = body.categoryId ?? existing.category_id;
   const images = body.images ? JSON.stringify(body.images) : existing.images;
   const isTrending = body.is_trending !== undefined ? (body.is_trending ? 1 : 0) : (existing.is_trending || 0);
+  const about = body.about !== undefined ? (typeof body.about === "string" ? body.about : JSON.stringify(body.about)) : (existing.about || "[]");
 
   await c.env.DB.prepare(
-    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ? WHERE id = ?"
-  ).bind(name, description, price, stock, categoryId, images, isTrending, id).run();
+    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ? WHERE id = ?"
+  ).bind(name, description, price, stock, categoryId, images, isTrending, about, id).run();
 
-  return c.json({ id, name, description, price, stock, categoryId, is_trending: Boolean(isTrending), images: JSON.parse(images) });
+  let parsedAbout: any[] = [];
+  try {
+    parsedAbout = JSON.parse(about);
+  } catch {
+    parsedAbout = [];
+  }
+
+  return c.json({ id, name, description, price, stock, categoryId, is_trending: Boolean(isTrending), images: JSON.parse(images), about: parsedAbout });
 });
 
 app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {

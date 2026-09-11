@@ -6,7 +6,7 @@ import { api } from "../../services/api";
 import type { Category } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import R2ImageUploader from "../../components/admin/R2ImageUploader";
-import { ArrowLeft, AlertCircle, CheckCircle2, Flame } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, Flame, Plus, Trash2 } from "lucide-react";
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +26,7 @@ export default function ProductForm() {
     categoryId: "",
     is_trending: false,
     images: [] as string[],
+    about: [] as { key: string; value: string }[],
   });
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export default function ProductForm() {
             categoryId: p.categoryId,
             is_trending: Boolean(p.is_trending),
             images: p.images && p.images.length > 0 ? p.images : [],
+            about: Array.isArray(p.about) ? p.about : [],
           });
         } else if (catRes.data.length > 0) {
           setFormData((prev) => ({ ...prev, categoryId: catRes.data[0].id }));
@@ -57,6 +59,28 @@ export default function ProductForm() {
     };
     init();
   }, [id, isEditing]);
+
+  const handleAddAboutRow = (suggestedKey?: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      about: [...prev.about, { key: suggestedKey || "", value: "" }],
+    }));
+  };
+
+  const handleAboutChange = (index: number, field: "key" | "value", val: string) => {
+    setFormData((prev) => {
+      const updated = [...prev.about];
+      updated[index] = { ...updated[index], [field]: val };
+      return { ...prev, about: updated };
+    });
+  };
+
+  const handleRemoveAboutRow = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      about: prev.about.filter((_, i) => i !== index),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +98,7 @@ export default function ProductForm() {
         formData.images.length > 0
           ? formData.images
           : ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"],
+      about: formData.about.filter((item) => item.key.trim() || item.value.trim()),
     };
 
     try {
@@ -247,6 +272,82 @@ export default function ProductForm() {
               className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none leading-relaxed transition-all"
             />
           </div>
+        </div>
+
+        {/* 4. About This Item / Specifications (Key & Value) */}
+        <div className="space-y-3 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
+            <div>
+              <h2 className="text-sm font-bold text-[#191142]">
+                4. About This Item / Key & Value Specifications
+              </h2>
+              <p className="text-[11px] text-gray-500">
+                Add custom key-value details (e.g. Firmness: Medium Firm, Dimensions: 78x72 in, Material: Memory Foam)
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleAddAboutRow()}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0ea9df]/10 hover:bg-[#0ea9df]/20 text-[#0ea9df] text-xs font-bold transition-colors self-start sm:self-auto cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Key & Value</span>
+            </button>
+          </div>
+
+          {/* Quick-add suggestions */}
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+            <span className="text-[11px] font-semibold text-gray-400">Quick add:</span>
+            {["Firmness", "Dimensions", "Material", "Warranty", "Cover Fabric", "Care Instructions"].map((sug) => (
+              <button
+                key={sug}
+                type="button"
+                onClick={() => handleAddAboutRow(sug)}
+                className="px-2 py-0.5 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] font-medium transition-colors cursor-pointer"
+              >
+                + {sug}
+              </button>
+            ))}
+          </div>
+
+          {formData.about.length === 0 ? (
+            <div className="p-5 border border-dashed border-gray-200 rounded-xl text-center text-xs text-gray-400 bg-gray-50/50">
+              No specifications added yet. Click &quot;Add Key &amp; Value&quot; or select a quick tag above.
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {formData.about.map((row, idx) => (
+                <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50/70 border border-gray-200/80 rounded-xl">
+                  <div className="w-2/5 sm:w-1/3">
+                    <input
+                      type="text"
+                      placeholder="Key (e.g. Firmness)"
+                      value={row.key}
+                      onChange={(e) => handleAboutChange(idx, "key", e.target.value)}
+                      className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none font-semibold"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="Value (e.g. Medium Soft / 78 x 72 x 8 in)"
+                      value={row.value}
+                      onChange={(e) => handleAboutChange(idx, "value", e.target.value)}
+                      className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs bg-white text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveAboutRow(idx)}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                    title="Remove item"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Actions Footer */}
