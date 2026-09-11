@@ -70,10 +70,13 @@ export default function Home() {
   });
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* 1. Brand Hero Banner with Bottom Gradient Fade */}
-      <div className="relative -mx-2 sm:-mx-4 -mt-4 overflow-hidden select-none">
-        <div className="min-h-[300px] sm:h-[400px] md:h-[480px] w-full relative bg-gradient-to-r from-[#191142] via-[#201850] to-[#123860] py-8 sm:py-0">
+    <div className="space-y-6 pb-12 w-full max-w-full overflow-hidden">
+      {/* 1. Trending Deals (Top first section directly below header) */}
+      <TrendingSlider products={products} />
+
+      {/* 2. Brand Hero Banner */}
+      <div className="relative overflow-hidden select-none rounded-2xl sm:rounded-3xl shadow-xs">
+        <div className="min-h-[260px] sm:h-[340px] md:h-[400px] w-full relative bg-gradient-to-r from-[#191142] via-[#201850] to-[#123860] py-8 sm:py-0">
           <img
             src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600&auto=format&fit=crop&q=80"
             alt="Buddy Mattress Luxury Bedroom Comfort"
@@ -99,13 +102,10 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-        {/* Gradient Mask fading banner seamlessly into the clean background */}
-        <div className="hidden sm:block absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#f8fafc] to-transparent pointer-events-none" />
       </div>
 
-      {/* 2. Brand Dynamic Promo Grid */}
-      <div className="relative mt-2 sm:-mt-24 md:-mt-44 z-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-0.5">
+      {/* 3. Brand Dynamic Promo Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-0.5">
         {categories.slice(0, 3).map((cat) => {
           const sampleProduct = products.find((p) => p.categoryId === cat.id);
           const sampleImage =
@@ -171,9 +171,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      {/* 2.5. Trending Products Banner Slider */}
-      <TrendingSlider products={products} />
 
       {/* 3. Category Filter Navigation (Clean White Bar with Cyan Active Pills) */}
       <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-xs flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">

@@ -79,7 +79,7 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
   return (
     <div
-      className="w-full relative select-none my-6"
+      className="w-full relative select-none mb-6 mt-1"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
