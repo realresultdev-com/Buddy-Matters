@@ -1,11 +1,130 @@
-import { Outlet } from "react-router-dom";
-import AdminSidebar from "./AdminSidebar";
+import { useState, useRef, useEffect } from "react";
+import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
+import AdminSidebar, { ADMIN_NAV_ITEMS } from "./AdminSidebar";
+import { Menu, X, ArrowLeft, Store, ShieldCheck } from "lucide-react";
 
 export default function AdminLayout() {
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const location = useLocation();
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll active tab pill into view on mobile
+  useEffect(() => {
+    if (tabsRef.current) {
+      const activeEl = tabsRef.current.querySelector<HTMLElement>("[data-active='true']");
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    }
+  }, [location.pathname]);
+
+  // Find active item title for mobile header
+  const currentItem =
+    ADMIN_NAV_ITEMS.find((item) =>
+      item.path === "/admin"
+        ? location.pathname === "/admin"
+        : location.pathname.startsWith(item.path)
+    ) || ADMIN_NAV_ITEMS[0];
+
   return (
-    <div className="flex bg-[#eaeded] min-h-[calc(100vh-6rem)] border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-      <AdminSidebar />
-      <main className="flex-1 p-6 bg-white overflow-y-auto">
+    <div className="min-h-[calc(100vh-4rem)] bg-[#eaeded] flex flex-col lg:flex-row border-t border-gray-200">
+      {/* 1. Desktop Sidebar (hidden on mobile/tablet) */}
+      <AdminSidebar className="hidden lg:flex min-h-[calc(100vh-4rem)]" />
+
+      {/* 2. Mobile & Tablet Native App Bar & Scrollable Tabs (hidden on desktop) */}
+      <div className="lg:hidden w-full bg-white shrink-0 sticky top-0 z-30 shadow-xs">
+        {/* Native Top App Bar */}
+        <div className="bg-[#191142] text-white px-3.5 py-2.5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2 min-w-0">
+            <img
+              src="/logo-white.png"
+              alt="Buddy Mattress"
+              className="h-5 w-auto object-contain shrink-0"
+            />
+            <span className="text-[10px] font-bold tracking-wider uppercase bg-white/15 px-2 py-0.5 rounded-md border border-white/20 shrink-0">
+              Seller Central
+            </span>
+            <span className="text-xs text-gray-300 truncate font-semibold border-l border-white/20 pl-2 hidden sm:inline">
+              {currentItem.label}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Link
+              to="/"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+              title="Return to Storefront"
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Storefront</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMobileDrawerOpen(true)}
+              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              aria-label="Open seller navigation menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Native Horizontal Pill Navigation Bar */}
+        <div
+          ref={tabsRef}
+          className="overflow-x-auto no-scrollbar py-2 px-3 bg-white border-b border-gray-200/90 flex items-center gap-1.5 shadow-2xs"
+          role="tablist"
+          aria-label="Seller Central Sections"
+        >
+          {ADMIN_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive =
+              item.path === "/admin"
+                ? location.pathname === "/admin"
+                : location.pathname.startsWith(item.path);
+
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === "/admin"}
+                data-active={isActive ? "true" : "false"}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? "bg-[#0ea9df] text-white shadow-xs scale-[1.02]"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200/80"
+                }`}
+              >
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-gray-500"}`} />
+                <span className="whitespace-nowrap">{item.shortLabel}</span>
+              </NavLink>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. Mobile Slide-out Drawer Sheet */}
+      {mobileDrawerOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setMobileDrawerOpen(false)}
+          />
+
+          {/* Drawer Container */}
+          <div className="relative z-10 w-72 max-w-[85vw] h-full bg-white shadow-2xl flex flex-col animate-in slide-in-from-left duration-200">
+            <AdminSidebar
+              onClose={() => setMobileDrawerOpen(false)}
+              className="w-full h-full border-r-0"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 4. Main Responsive Content Area (100% width on mobile, full responsiveness) */}
+      <main className="flex-1 w-full min-w-0 bg-white overflow-y-auto p-3 sm:p-4 md:p-6 pb-28 lg:pb-8">
         <Outlet />
       </main>
     </div>

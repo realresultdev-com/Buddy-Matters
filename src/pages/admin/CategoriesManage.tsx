@@ -195,21 +195,21 @@ export default function CategoriesManage() {
       <div className="border border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm divide-y divide-gray-200">
         <div className="bg-gray-50 px-4 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
           <span>Department Details</span>
-          <span>Offer Sticker Badge & Actions</span>
+          <span className="hidden sm:inline">Offer Sticker Badge & Actions</span>
         </div>
 
         {categories.map((cat) => (
           <div
             key={cat.id}
-            className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+            className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 sm:p-4 gap-3 hover:bg-gray-50 transition-colors"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
                 <FolderTree className="w-4 h-4 text-amber-700" />
               </div>
-              <div>
-                <p className="text-sm font-bold text-gray-900">{cat.name}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">{cat.name}</p>
+                <div className="flex flex-wrap items-center gap-1.5 mt-1">
                   <span className="text-[10px] font-mono text-gray-400">ID: {cat.id}</span>
                   <span className="text-[10px] px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full font-medium">
                     Prefix: <strong className="text-gray-900">{cat.offer_badge_prefix || "Starting"}</strong>
@@ -221,9 +221,9 @@ export default function CategoriesManage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
               {/* Badge Preview */}
-              <div className="scale-90">
+              <div className="scale-90 origin-left sm:origin-center">
                 <OfferBadge
                   prefix={cat.offer_badge_prefix || "Starting"}
                   value={cat.offer_badge_value || "₹99"}
@@ -233,15 +233,17 @@ export default function CategoriesManage() {
 
               <div className="flex items-center gap-1">
                 <button
+                  type="button"
                   onClick={() => startEdit(cat)}
-                  className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                   title="Edit Department & Offer Badge"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(cat.id, cat.name)}
-                  className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                   title="Delete Department"
                 >
                   <Trash2 className="w-4 h-4" />

@@ -49,9 +49,81 @@ export default function UsersManage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-gray-300 bg-white overflow-hidden shadow-xs">
+      {/* Mobile Card Layout (Visible on phone/tablet screens) */}
+      <div className="block md:hidden space-y-3">
+        {users.map((u) => (
+          <div
+            key={u.id}
+            className="p-3.5 bg-white border border-gray-200 rounded-xl shadow-xs space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center font-bold text-xs text-gray-700 shrink-0 overflow-hidden">
+                  {u.avatar_url ? (
+                    <img
+                      src={u.avatar_url}
+                      alt={u.name}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    u.name?.charAt(0).toUpperCase() || "U"
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-xs text-gray-900 truncate">{u.name || "Customer"}</p>
+                  <p className="text-[11px] text-gray-500 truncate">{u.email}</p>
+                </div>
+              </div>
+
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                  u.role === "ADMIN"
+                    ? "bg-amber-100 text-amber-900 border border-amber-300"
+                    : "bg-gray-100 text-gray-700 border border-gray-200"
+                }`}
+              >
+                {u.role === "ADMIN" ? (
+                  <Shield className="w-3 h-3 text-amber-700" />
+                ) : (
+                  <User className="w-3 h-3 text-gray-500" />
+                )}
+                {u.role}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+              <span className="text-[10px] text-gray-400">
+                {u.createdAt
+                  ? new Date(u.createdAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Seed account"}
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] text-gray-500 font-medium">Role:</span>
+                <select
+                  value={u.role}
+                  disabled={updatingId === u.id}
+                  onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                  className="text-xs font-semibold border border-gray-300 rounded-lg px-2.5 py-1 bg-gray-50 text-gray-800 cursor-pointer focus:outline-none focus:ring-1 focus:ring-[#0ea9df]"
+                >
+                  <option value="USER">USER</option>
+                  <option value="ADMIN">ADMIN</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View (Visible on md and larger screens) */}
+      <div className="hidden md:block rounded-xl border border-gray-200 bg-white overflow-hidden shadow-xs">
         <table className="w-full text-left text-xs">
-          <thead className="border-b border-gray-200 bg-gray-100 text-gray-700 uppercase tracking-wider font-bold">
+          <thead className="border-b border-gray-200 bg-gray-50 text-gray-700 uppercase tracking-wider font-bold">
             <tr>
               <th className="p-3.5">User</th>
               <th className="p-3.5">Email</th>

@@ -142,8 +142,40 @@ export default function MediaManager() {
                 <div className="text-[10px] text-gray-500 truncate" title={item.key}>
                   {item.key.replace("products/", "")}
                 </div>
-                <div className="text-[9px] text-gray-400 flex justify-between">
+                <div className="text-[9px] text-gray-400 flex justify-between items-center">
                   <span>{(item.size / 1024).toFixed(1)} KB</span>
+                  <span className="hidden sm:inline text-gray-300">•</span>
+                  <span className="hidden sm:inline text-[#0ea9df] group-hover:underline cursor-pointer" onClick={() => handleCopy(item.url)}>
+                    {copiedUrl === item.url ? "Copied!" : "Copy"}
+                  </span>
+                </div>
+
+                {/* Mobile touch action buttons (visible on mobile where hover is not available) */}
+                <div className="flex sm:hidden items-center justify-between gap-1 pt-1.5 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(item.url)}
+                    className="flex-1 py-1 px-1.5 bg-gray-50 hover:bg-gray-100 text-[#191142] text-[10px] font-bold rounded-md flex items-center justify-center gap-1 border border-gray-200 transition-colors"
+                  >
+                    {copiedUrl === item.url ? (
+                      <>
+                        <Check className="w-3 h-3 text-emerald-600" /> Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3 h-3 text-gray-500" /> Copy
+                      </>
+                    )}
+                  </button>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-1 text-gray-500 hover:text-gray-800 rounded-md bg-gray-50 border border-gray-200"
+                    title="Open image"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
             ))}

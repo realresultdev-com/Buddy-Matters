@@ -61,74 +61,118 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-3">
-        <h1 className="text-2xl font-bold text-[#0f1111]">Seller Central Dashboard</h1>
-        <p className="text-xs text-gray-500 mt-0.5">
-          Real-time metrics queried from Cloudflare D1 distributed database
-        </p>
+      <div className="border-b border-gray-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-[#191142]">Seller Central Dashboard</h1>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Real-time analytics and inventory queried from Cloudflare D1
+          </p>
+        </div>
       </div>
 
-      {/* KPI Cards (White Amazon Cards with gray borders) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards (2 cols on mobile, 4 cols on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
             <div
               key={idx}
-              className="p-5 rounded-lg border border-gray-300 bg-white space-y-2 shadow-sm"
+              className="p-3.5 sm:p-5 rounded-xl border border-gray-200/90 bg-white space-y-1.5 shadow-2xs hover:shadow-xs transition-shadow"
             >
               <div className="flex items-center justify-between text-gray-500">
-                <span className="text-xs font-bold uppercase tracking-wider">{card.title}</span>
-                <Icon className="w-5 h-5 text-gray-700" />
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate mr-1">
+                  {card.title}
+                </span>
+                <span className="p-1 sm:p-1.5 rounded-lg bg-gray-50 text-gray-700 shrink-0">
+                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </span>
               </div>
-              <div className="text-2xl font-bold text-[#0f1111]">{card.value}</div>
-              <p className="text-[11px] text-gray-500">{card.subtext}</p>
+              <div className="text-lg sm:text-2xl font-black text-[#191142] truncate tracking-tight">
+                {card.value}
+              </div>
+              <p className="text-[10px] sm:text-[11px] text-gray-400 truncate font-medium">
+                {card.subtext}
+              </p>
             </div>
           );
         })}
       </div>
 
       {/* Quick Actions */}
-      <div className="p-5 rounded-lg border border-gray-300 bg-[#fbfbfb] space-y-3">
-        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Quick Actions</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="p-4 sm:p-5 rounded-2xl border border-gray-200/90 bg-gray-50/60 space-y-3 shadow-2xs">
+        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+          <span>Quick Store Actions</span>
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           <Link
             to="/admin/products/new"
-            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
+            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
           >
-            <PlusCircle className="w-4 h-4 text-amazon-orange" />
-            Add a Product
+            <span className="p-2 rounded-lg bg-amber-50 text-amber-600 shrink-0">
+              <PlusCircle className="w-4 h-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold text-xs truncate">Add Product</p>
+              <p className="text-[10px] text-gray-400 truncate">Create catalog listing</p>
+            </div>
           </Link>
+
           <Link
-            to="/admin/categories"
-            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
+            to="/admin/products"
+            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
           >
-            <FolderPlus className="w-4 h-4 text-amazon-blue" />
-            Manage Taxonomy
+            <span className="p-2 rounded-lg bg-cyan-50 text-[#0ea9df] shrink-0">
+              <Package className="w-4 h-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold text-xs truncate">Manage Inventory</p>
+              <p className="text-[10px] text-gray-400 truncate">Stock &amp; pricing</p>
+            </div>
           </Link>
+
           <Link
             to="/admin/orders"
-            className="flex items-center gap-2 p-3 rounded-lg border border-gray-300 bg-white hover:border-gray-400 text-xs font-semibold text-gray-800 shadow-sm transition-colors"
+            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
           >
-            <ShoppingBag className="w-4 h-4 text-[#007600]" />
-            Manage Orders
+            <span className="p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+              <ShoppingBag className="w-4 h-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold text-xs truncate">Live Orders</p>
+              <p className="text-[10px] text-gray-400 truncate">Fulfillment &amp; dispatch</p>
+            </div>
+          </Link>
+
+          <Link
+            to="/admin/media"
+            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+          >
+            <span className="p-2 rounded-lg bg-purple-50 text-purple-600 shrink-0">
+              <FolderPlus className="w-4 h-4" />
+            </span>
+            <div className="min-w-0">
+              <p className="font-bold text-xs truncate">R2 Media Storage</p>
+              <p className="text-[10px] text-gray-400 truncate">Uploads &amp; photos</p>
+            </div>
           </Link>
         </div>
       </div>
 
       {/* Cloudflare Edge Status */}
-      <div className="p-4 rounded-lg border border-gray-300 bg-white flex items-center justify-between">
+      <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-200/90 bg-emerald-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-5 h-5 text-[#007600]" />
-          <div>
-            <h4 className="text-xs font-bold text-gray-900">Cloudflare D1 High-Availability Cluster</h4>
-            <p className="text-[11px] text-gray-500">
-              Running globally on Cloudflare free tier with sub-10ms query execution.
+          <span className="p-2 rounded-lg bg-emerald-100/80 text-emerald-700 shrink-0">
+            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+          </span>
+          <div className="min-w-0">
+            <h4 className="text-xs font-bold text-gray-900 truncate">Cloudflare D1 Distributed Database</h4>
+            <p className="text-[11px] text-gray-600 leading-snug">
+              Running globally with sub-10ms queries, full foreign keys, and R2 media synchronization.
             </p>
           </div>
         </div>
-        <span className="text-[11px] font-bold text-[#007600] bg-green-50 border border-green-200 px-2.5 py-1 rounded">
-          Operational
+        <span className="text-[10px] sm:text-[11px] font-black text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 rounded-full self-start sm:self-auto shrink-0 uppercase tracking-wider">
+          Healthy &amp; Operational
         </span>
       </div>
     </div>

@@ -250,12 +250,12 @@ export default function OrdersManage() {
         </div>
       )}
 
-      {/* Status Filter Cards / Tabs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+      {/* Status Filter Cards / Tabs (Smooth horizontal touch swipe on mobile, grid on desktop) */}
+      <div className="flex sm:grid sm:grid-cols-4 lg:grid-cols-8 gap-2 overflow-x-auto scrollbar-none pb-1.5 sm:pb-0 -mx-1 px-1">
         <button
           type="button"
           onClick={() => setStatusFilter("ALL")}
-          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+          className={`shrink-0 w-28 sm:w-auto p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
             statusFilter === "ALL"
               ? "border-[#191142] bg-[#191142] text-white shadow-sm"
               : "border-gray-200 bg-white hover:bg-gray-50 text-gray-700"
@@ -275,7 +275,7 @@ export default function OrdersManage() {
               key={step.id}
               type="button"
               onClick={() => setStatusFilter(step.id)}
-              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+              className={`shrink-0 w-28 sm:w-auto p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                 isSelected
                   ? "border-[#0ea9df] bg-[#0ea9df] text-white shadow-sm"
                   : "border-gray-200 bg-white hover:bg-gray-50 text-gray-700"
@@ -295,7 +295,7 @@ export default function OrdersManage() {
         <button
           type="button"
           onClick={() => setStatusFilter("CANCELLED")}
-          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+          className={`shrink-0 w-28 sm:w-auto p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
             statusFilter === "CANCELLED"
               ? "border-red-600 bg-red-600 text-white shadow-sm"
               : "border-gray-200 bg-white hover:bg-gray-50 text-gray-700"
@@ -424,17 +424,18 @@ export default function OrdersManage() {
                       </span>
                     </div>
 
-                    {/* Stepper Bar */}
-                    <div className="relative flex items-center justify-between w-full">
-                      {/* Connecting Line */}
-                      <div className="absolute top-4 left-4 right-4 h-1 bg-gray-200 -z-0">
-                        <div
-                          className="h-full bg-[#0ea9df] transition-all duration-300"
-                          style={{
-                            width: `${(currentStepIdx / (FULFILLMENT_STEPS.length - 1)) * 100}%`,
-                          }}
-                        />
-                      </div>
+                    {/* Stepper Bar (Horizontally scrollable on small mobile screens to prevent squishing) */}
+                    <div className="overflow-x-auto scrollbar-none py-2 -mx-1 px-1">
+                      <div className="relative flex items-center justify-between min-w-[500px] sm:min-w-0 sm:w-full">
+                        {/* Connecting Line */}
+                        <div className="absolute top-4 left-4 right-4 h-1 bg-gray-200 -z-0">
+                          <div
+                            className="h-full bg-[#0ea9df] transition-all duration-300"
+                            style={{
+                              width: `${(currentStepIdx / (FULFILLMENT_STEPS.length - 1)) * 100}%`,
+                            }}
+                          />
+                        </div>
 
                       {/* Steps */}
                       {FULFILLMENT_STEPS.map((step, idx) => {
@@ -484,6 +485,7 @@ export default function OrdersManage() {
                           </button>
                         );
                       })}
+                      </div>
                     </div>
                   </div>
                 ) : (
