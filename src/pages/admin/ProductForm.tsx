@@ -7,7 +7,7 @@ import type { Category } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import R2ImageUploader from "../../components/admin/R2ImageUploader";
 import OfferBadge from "../../components/common/OfferBadge";
-import { ArrowLeft, AlertCircle, CheckCircle2, Flame, Plus, Trash2, Tag } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, Flame, Plus, Trash2, Tag, Percent, Calculator, Sparkles } from "lucide-react";
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -23,6 +23,8 @@ export default function ProductForm() {
     name: "",
     description: "",
     price: 0,
+    original_price: 0,
+    discount_percent: 0,
     stock: 10,
     categoryId: "",
     is_trending: false,
@@ -41,15 +43,20 @@ export default function ProductForm() {
         if (isEditing && id) {
           const prodRes = await productService.getById(id);
           const p = prodRes.data;
+          const origPrice = p.original_price ?? p.originalMRP ?? Math.round(p.price * 1.35);
+          const discPercent = p.discount_percent ?? p.discountPercent ?? (origPrice > p.price ? Math.round(((origPrice - p.price) / origPrice) * 100) : 0);
+
           setFormData({
             name: p.name,
             description: p.description,
             price: p.price,
+            original_price: origPrice,
+            discount_percent: discPercent,
             stock: p.stock,
             categoryId: p.categoryId,
             is_trending: Boolean(p.is_trending),
             offer_badge_prefix: p.offer_badge_prefix || "",
-            offer_badge_value: p.offer_badge_value || "",
+            offer_badge_value: p.offer_badge_value || (discPercent > 0 ? `${discPercent}% Off` : ""),
             images: p.images && p.images.length > 0 ? p.images : [],
             about: Array.isArray(p.about) ? p.about : [],
           });
@@ -64,6 +71,60 @@ export default function ProductForm() {
     };
     init();
   }, [id, isEditing]);
+
+  // Live Bidirectional Pricing & Discount Calculations
+  const handlePriceChange = (newPrice: number) => {
+    const orig = formData.original_price;
+    let disc = formData.discount_percent;
+    if (orig > 0 && orig > newPrice) {
+      disc = Math.round(((orig - newPrice) / orig) * 100);
+    }
+    setFormData((prev) => ({
+      ...prev,
+      price: newPrice,
+      discount_percent: disc,
+      offer_badge_value: prev.offer_badge_value || (disc > 0 ? `${disc}% Off` : ""),
+    }));
+  };
+
+  const handleOriginalPriceChange = (newMRP: number) => {
+    const price = formData.price;
+    let disc = formData.discount_percent;
+    if (newMRP > 0 && price > 0 && newMRP > price) {
+      disc = Math.round(((newMRP - price) / newMRP) * 100);
+    }
+    setFormData((prev) => ({
+      ...prev,
+      original_price: newMRP,
+      discount_percent: disc,
+      offer_badge_value: prev.offer_badge_value || (disc > 0 ? `${disc}% Off` : ""),
+    }));
+  };
+
+  const handleDiscountPercentChange = (newDiscount: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      discount_percent: newDiscount,
+    }));
+  };
+
+  const handleApplyDiscountToPrice = (discountToApply?: number) => {
+    const disc = discountToApply !== undefined ? discountToApply : formData.discount_percent;
+    let orig = formData.original_price;
+    if (orig <= 0 && formData.price > 0) {
+      orig = Math.round(formData.price * 1.35);
+    }
+    if (orig > 0 && disc >= 0 && disc < 100) {
+      const calculatedPrice = Math.round(orig * (1 - disc / 100));
+      setFormData((prev) => ({
+        ...prev,
+        original_price: orig,
+        price: calculatedPrice,
+        discount_percent: disc,
+        offer_badge_value: `${disc}% Off`,
+      }));
+    }
+  };
 
   const handleAddAboutRow = (suggestedKey?: string) => {
     setFormData((prev) => ({
@@ -96,9 +157,13 @@ export default function ProductForm() {
       name: formData.name,
       description: formData.description,
       price: Number(formData.price),
+      original_price: formData.original_price ? Number(formData.original_price) : null,
+      discount_percent: formData.discount_percent ? Number(formData.discount_percent) : null,
       stock: Number(formData.stock),
       categoryId: formData.categoryId,
       is_trending: formData.is_trending,
+      offer_badge_prefix: formData.offer_badge_prefix,
+      offer_badge_value: formData.offer_badge_value,
       images:
         formData.images.length > 0
           ? formData.images
@@ -201,20 +266,6 @@ export default function ProductForm() {
 
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">
-                Selling Price (INR ₹) *
-              </label>
-              <input
-                type="number"
-                required
-                min={1}
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">
                 Stock Quantity *
               </label>
               <input
@@ -225,6 +276,192 @@ export default function ProductForm() {
                 onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                 className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
               />
+            </div>
+
+            {/* Pricing, Old Price (M.R.P.) & Live Offer Percentage (Key & Value) Section */}
+            <div className="md:col-span-2 bg-blue-50/50 border border-blue-200/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-100 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-[#191142] flex items-center gap-2">
+                    <Calculator className="w-4 h-4 text-[#0ea9df]" />
+                    Product Pricing & Live Offer Calculator (Key & Value)
+                  </h3>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Live calculates discount percentage and customer savings based on Current Price and Old Price (M.R.P.). You can also change the percentage directly.
+                  </p>
+                </div>
+                {formData.discount_percent > 0 && (
+                  <span className="self-start sm:self-auto px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-300 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-green-600" />
+                    {formData.discount_percent}% Discount Active
+                  </span>
+                )}
+              </div>
+
+              {/* 3-Column Inputs: Current Price, Old Price, Offer Percentage */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {/* 1. Current Selling Price */}
+                <div>
+                  <label className="block text-xs font-bold text-[#191142] mb-1">
+                    Current Price (Selling ₹) *
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-gray-400 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      value={formData.price || ""}
+                      onChange={(e) => handlePriceChange(Number(e.target.value))}
+                      placeholder="e.g. 12999"
+                      className="w-full pl-7 pr-3 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 font-bold focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">Final amount customer pays</p>
+                </div>
+
+                {/* 2. Old Price (M.R.P.) */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Old Price (Original M.R.P. ₹)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-gray-400 font-bold text-xs">₹</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={formData.original_price || ""}
+                      onChange={(e) => handleOriginalPriceChange(Number(e.target.value))}
+                      placeholder="e.g. 18999"
+                      className="w-full pl-7 pr-3 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 font-medium focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">Strikethrough list price</p>
+                </div>
+
+                {/* 3. Offer / Discount % */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 mb-1 flex items-center justify-between">
+                    <span>Offer / Discount %</span>
+                    {formData.original_price > 0 && formData.price > 0 && (
+                      <span className="text-[10px] font-semibold text-gray-400">(Editable)</span>
+                    )}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min={0}
+                      max={99}
+                      value={formData.discount_percent || ""}
+                      onChange={(e) => handleDiscountPercentChange(Number(e.target.value))}
+                      placeholder="e.g. 63"
+                      className="w-full pl-3 pr-7 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 font-bold focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+                    />
+                    <span className="absolute right-3 top-2 text-gray-400 font-bold text-xs">%</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1">Live calculated or manual</p>
+                </div>
+              </div>
+
+              {/* Quick Preset Discount Buttons & Recalculate Tool */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-blue-100/80 text-xs">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-gray-500 mr-1">Quick Discount:</span>
+                  {[10, 20, 30, 40, 50, 60, 70].map((pct) => (
+                    <button
+                      key={pct}
+                      type="button"
+                      onClick={() => handleApplyDiscountToPrice(pct)}
+                      className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                        formData.discount_percent === pct
+                          ? "bg-[#191142] text-white shadow-2xs"
+                          : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 hover:border-gray-300"
+                      }`}
+                    >
+                      {pct}% Off
+                    </button>
+                  ))}
+                </div>
+
+                {formData.original_price > 0 && formData.discount_percent > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleApplyDiscountToPrice()}
+                    className="px-2.5 py-1 rounded-lg bg-white border border-blue-300 hover:bg-blue-100/70 text-[#191142] text-[11px] font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                    title="Recalculate Current Price using the Discount Percentage"
+                  >
+                    <Calculator className="w-3 h-3 text-[#0ea9df]" />
+                    <span>Recalculate Price from {formData.discount_percent}%</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Live Storefront Preview (Amazon Style matching requested screenshot) */}
+              <div className="bg-white p-3.5 rounded-xl border border-blue-200/90 shadow-2xs space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  {/* Left: Live Visual Display */}
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+                      Storefront Live Display Preview
+                    </span>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      {/* Current Selling Price */}
+                      <div className="flex items-start text-[#191142]">
+                        <span className="text-xs font-bold mr-0.5 leading-none">₹</span>
+                        <span className="text-2xl font-black tracking-tight leading-none">
+                          {(formData.price || 0).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+
+                      {/* Old Price (M.R.P.) Strikethrough */}
+                      {formData.original_price > formData.price && (
+                        <div className="text-xs text-gray-500 font-normal">
+                          M.R.P.:{" "}
+                          <span className="line-through">
+                            ₹{formData.original_price.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Offer Percentage */}
+                      {formData.discount_percent > 0 && (
+                        <span className="text-xs sm:text-sm font-semibold text-[#388e3c]">
+                          ({formData.discount_percent}% off)
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-gray-500 font-medium mt-1">Inclusive of all taxes</p>
+                  </div>
+
+                  {/* Right: Key & Value Table for Admin */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs bg-gray-50/90 p-3 rounded-lg border border-gray-200 min-w-[240px]">
+                    <div>
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Key: Current Price</span>
+                      <span className="font-bold text-[#191142] text-sm">
+                        ₹{(formData.price || 0).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Key: Old Price (M.R.P.)</span>
+                      <span className="font-semibold text-gray-700 text-sm">
+                        ₹{(formData.original_price || Math.round((formData.price || 0) * 1.35)).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Key: Offer Percentage</span>
+                      <span className="font-bold text-green-700">
+                        {formData.discount_percent || 0}% OFF
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-gray-400 font-bold block uppercase">Key: Buyer Savings</span>
+                      <span className="font-bold text-amber-700">
+                        ₹{Math.max(0, (formData.original_price || Math.round((formData.price || 0) * 1.35)) - (formData.price || 0)).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Trending / Featured Toggle */}

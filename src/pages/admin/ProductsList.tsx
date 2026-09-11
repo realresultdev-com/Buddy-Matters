@@ -112,8 +112,18 @@ export default function ProductsList() {
                         {product.category?.name || "General"}
                       </span>
                     </td>
-                    <td className="p-3 font-bold text-gray-900">
-                      ₹{product.price.toLocaleString("en-IN")}
+                    <td className="p-3">
+                      <div className="font-bold text-gray-900">
+                        ₹{product.price.toLocaleString("en-IN")}
+                      </div>
+                      {(product.original_price || product.originalMRP) && (product.original_price || product.originalMRP)! > product.price ? (
+                        <div className="text-[11px] text-gray-400">
+                          <span className="line-through">₹{(product.original_price || product.originalMRP)!.toLocaleString("en-IN")}</span>{" "}
+                          <span className="text-green-700 font-semibold">
+                            ({product.discount_percent || product.discountPercent || Math.round((((product.original_price || product.originalMRP)! - product.price) / (product.original_price || product.originalMRP)!) * 100)}% off)
+                          </span>
+                        </div>
+                      ) : null}
                     </td>
                     <td className="p-3">
                       {product.stock > 0 ? (

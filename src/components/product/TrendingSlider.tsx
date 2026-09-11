@@ -162,12 +162,24 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
                         ₹{product.price.toLocaleString("en-IN")}
                       </div>
-                      <div className="text-base sm:text-lg text-gray-300/80 line-through font-medium">
-                        ₹{Math.round(product.price * 1.3).toLocaleString("en-IN")}
-                      </div>
-                      <span className="text-xs font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded-md">
-                        Save 23%
-                      </span>
+                      {(() => {
+                        const mrp = product.original_price || product.originalMRP || Math.round(product.price * 1.35);
+                        const discount = product.discount_percent || product.discountPercent || (mrp > product.price ? Math.round(((mrp - product.price) / mrp) * 100) : 0);
+                        return (
+                          <>
+                            {mrp > product.price && (
+                              <div className="text-base sm:text-lg text-gray-300/80 line-through font-medium">
+                                M.R.P.: ₹{mrp.toLocaleString("en-IN")}
+                              </div>
+                            )}
+                            {discount > 0 && (
+                              <span className="text-xs font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded-md">
+                                Save {discount}%
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
 
                     {/* Action Buttons */}

@@ -53,7 +53,12 @@ export default function ProductInfo({ product, className = "" }: ProductInfoProp
       )}
 
       {/* Price block */}
-      <PriceTag price={product.price} size="lg" />
+      <PriceTag
+        price={product.price}
+        originalMRP={product.original_price ?? product.originalMRP}
+        discountPercent={product.discount_percent ?? product.discountPercent}
+        size="lg"
+      />
 
       {/* Product Description */}
       {product.description && (

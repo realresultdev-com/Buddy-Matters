@@ -26,6 +26,10 @@ export interface Product {
   about?: ProductAboutItem[];
   offer_badge_prefix?: string;
   offer_badge_value?: string;
+  original_price?: number | null;
+  originalMRP?: number | null;
+  discount_percent?: number | null;
+  discountPercent?: number | null;
 }
 
 export interface Review {

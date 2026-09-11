@@ -80,7 +80,12 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {/* Price Block */}
         <div className="mt-1.5 sm:mt-2.5">
-          <PriceTag price={product.price} size="sm" />
+          <PriceTag
+            price={product.price}
+            originalMRP={product.original_price ?? product.originalMRP}
+            discountPercent={product.discount_percent ?? product.discountPercent}
+            size="sm"
+          />
         </div>
       </div>
 

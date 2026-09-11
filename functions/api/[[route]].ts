@@ -354,7 +354,7 @@ app.get("/products", async (c) => {
   const trending = c.req.query("trending");
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -392,11 +392,18 @@ app.get("/products", async (c) => {
     } catch {
       about = [];
     }
+    const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
+    const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
+
     return {
       id: row.id,
       name: row.name,
       description: row.description,
       price: row.price,
+      original_price: origPrice,
+      originalMRP: origPrice,
+      discount_percent: discPercent,
+      discountPercent: discPercent,
       stock: row.stock,
       images,
       categoryId: row.categoryId,
@@ -425,7 +432,7 @@ app.get("/products/:id", async (c) => {
   const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -453,12 +460,19 @@ app.get("/products/:id", async (c) => {
     about = [];
   }
 
+  const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
+  const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
+
   c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
     id: row.id,
     name: row.name,
     description: row.description,
     price: row.price,
+    original_price: origPrice,
+    originalMRP: origPrice,
+    discount_percent: discPercent,
+    discountPercent: discPercent,
     stock: row.stock,
     images,
     categoryId: row.categoryId,
@@ -671,7 +685,7 @@ const handleProductDetailsQuery = async (c: any) => {
 
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -755,7 +769,8 @@ const handleProductDetailsQuery = async (c: any) => {
     } catch {
       images = row.images ? [row.images] : [];
     }
-    const originalMRP = Math.round(row.price * 1.28);
+    const originalMRP = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
+    const discountPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (originalMRP > row.price ? Math.round(((originalMRP - row.price) / originalMRP) * 100) : 0);
     let about: any[] = [];
     try {
       about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
@@ -768,7 +783,9 @@ const handleProductDetailsQuery = async (c: any) => {
       name: row.name,
       description: row.description,
       price: row.price,
+      original_price: originalMRP,
       originalMRP,
+      discount_percent: discountPercent,
       discountPercent,
       stock: row.stock,
       inStock: row.stock > 0,
@@ -842,6 +859,8 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
       name: formData.name,
       description: formData.description,
       price: Number(formData.price),
+      original_price: formData.original_price !== undefined && formData.original_price !== "" ? Number(formData.original_price) : null,
+      discount_percent: formData.discount_percent !== undefined && formData.discount_percent !== "" ? Number(formData.discount_percent) : null,
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
       is_trending: String(formData.is_trending) === "true" || String(formData.is_trending) === "1",
@@ -859,14 +878,20 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   const aboutJson = JSON.stringify(Array.isArray(body.about) ? body.about : []);
   const offerBadgePrefix = body.offer_badge_prefix || "";
   const offerBadgeValue = body.offer_badge_value || "";
+  const originalPrice = body.original_price !== undefined && body.original_price !== null && body.original_price !== "" ? Number(body.original_price) : Math.round(Number(body.price) * 1.35);
+  const discountPercent = body.discount_percent !== undefined && body.discount_percent !== null && body.discount_percent !== "" ? Number(body.discount_percent) : (originalPrice > Number(body.price) ? Math.round(((originalPrice - Number(body.price)) / originalPrice) * 100) : 0);
 
   await c.env.DB.prepare(
-    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue).run();
+    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value, original_price, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent).run();
 
   return c.json({
     id,
     ...body,
+    original_price: originalPrice,
+    originalMRP: originalPrice,
+    discount_percent: discountPercent,
+    discountPercent: discountPercent,
     is_trending: Boolean(isTrending),
     offer_badge_prefix: offerBadgePrefix,
     offer_badge_value: offerBadgeValue,
@@ -885,8 +910,10 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     body = {
       name: formData.name,
       description: formData.description,
-      price: Number(formData.price),
-      stock: Number(formData.stock || 0),
+      price: formData.price !== undefined ? Number(formData.price) : undefined,
+      original_price: formData.original_price !== undefined && formData.original_price !== "" ? Number(formData.original_price) : undefined,
+      discount_percent: formData.discount_percent !== undefined && formData.discount_percent !== "" ? Number(formData.discount_percent) : undefined,
+      stock: formData.stock !== undefined ? Number(formData.stock) : undefined,
       categoryId: formData.categoryId,
       is_trending: formData.is_trending !== undefined ? (String(formData.is_trending) === "true" || String(formData.is_trending) === "1") : undefined,
       offer_badge_prefix: formData.offer_badge_prefix,
@@ -911,9 +938,23 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const offerBadgePrefix = body.offer_badge_prefix !== undefined ? body.offer_badge_prefix : (existing.offer_badge_prefix || "");
   const offerBadgeValue = body.offer_badge_value !== undefined ? body.offer_badge_value : (existing.offer_badge_value || "");
 
+  let originalPrice = existing.original_price;
+  if (body.original_price !== undefined) {
+    originalPrice = body.original_price === null || body.original_price === "" ? null : Number(body.original_price);
+  } else if (!originalPrice && price) {
+    originalPrice = Math.round(price * 1.35);
+  }
+
+  let discountPercent = existing.discount_percent;
+  if (body.discount_percent !== undefined) {
+    discountPercent = body.discount_percent === null || body.discount_percent === "" ? null : Number(body.discount_percent);
+  } else if (originalPrice && price && originalPrice > price) {
+    discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
+  }
+
   await c.env.DB.prepare(
-    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ? WHERE id = ?"
-  ).bind(name, description, price, stock, categoryId, images, isTrending, about, offerBadgePrefix, offerBadgeValue, id).run();
+    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ?, original_price = ?, discount_percent = ? WHERE id = ?"
+  ).bind(name, description, price, stock, categoryId, images, isTrending, about, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent, id).run();
 
   let parsedAbout: any[] = [];
   try {
@@ -927,6 +968,10 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     name,
     description,
     price,
+    original_price: originalPrice,
+    originalMRP: originalPrice,
+    discount_percent: discountPercent,
+    discountPercent: discountPercent,
     stock,
     categoryId,
     is_trending: Boolean(isTrending),
