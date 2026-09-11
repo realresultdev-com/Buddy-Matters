@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 
 export type Env = {
   DB: D1Database;
+  BUCKET?: R2Bucket;
+  R2_PUBLIC_URL?: string;
   JWT_SECRET?: string;
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
@@ -30,6 +32,45 @@ app.onError((err, c) => {
 
 // Helper for JWT Secret
 const getJwtSecret = (env: Env) => env.JWT_SECRET || "supersecret_jwt_key_cf_ecommerce_2024";
+
+// URL Security & ID Decryption Helper
+const SECRET_KEY = "Buddy_Mattress_Secure_Salt_Key_2024";
+const decryptId = (cipherText: string | undefined): string => {
+  if (!cipherText || typeof cipherText !== "string") return "";
+  if (!cipherText.startsWith("enc_")) {
+    return cipherText;
+  }
+
+  const hex = cipherText.slice(4);
+  if (hex.length < 4 || hex.length % 2 !== 0) {
+    return cipherText;
+  }
+
+  const bytes: number[] = [];
+  for (let i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.substr(i, 2), 16));
+  }
+
+  const checksum = bytes.pop();
+  const keyChars = SECRET_KEY.split("").map((c) => c.charCodeAt(0));
+  let decrypted = "";
+
+  for (let i = 0; i < bytes.length; i++) {
+    const keyByte = keyChars[i % keyChars.length];
+    decrypted += String.fromCharCode(bytes[i] ^ keyByte);
+  }
+
+  let expectedChecksum = 0;
+  for (let i = 0; i < decrypted.length; i++) {
+    expectedChecksum = (expectedChecksum + decrypted.charCodeAt(i) * (i + 1)) % 256;
+  }
+
+  if (checksum !== expectedChecksum) {
+    return cipherText;
+  }
+
+  return decrypted;
+};
 
 // Middleware: Authentication
 const authMiddleware = async (c: any, next: any) => {
@@ -259,7 +300,8 @@ app.get("/products", async (c) => {
 });
 
 app.get("/products/:id", async (c) => {
-  const id = c.req.param("id");
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
            c.id as cat_id, c.name as cat_name, p.created_at as createdAt
@@ -294,6 +336,193 @@ app.get("/products/:id", async (c) => {
     createdAt: row.createdAt,
   });
 });
+
+/* ==========================================================================
+   UNIFIED PRODUCT DETAILS API (PAYLOAD BASED)
+   Future-ready: Supports JSON body payload for single product, batch IDs,
+   category, search, pricing, and stock filtering. In the future, this payload
+   can be encrypted/hidden over the network and decrypted seamlessly.
+   ========================================================================== */
+const handleProductDetailsQuery = async (c: any) => {
+  let payload: any = {};
+  try {
+    payload = await c.req.json();
+  } catch {
+    payload = {};
+  }
+
+  // [FUTURE ENCRYPTION / DECRYPTION HOOK]
+  // When payload encryption is activated in the future, decrypt payload here:
+  // if (payload.data && typeof payload.data === "string") {
+  //   payload = decryptPayload(payload.data, c.env.PAYLOAD_SECRET);
+  // }
+
+  const rawTargetId = payload.id || payload.productId;
+  const targetId = rawTargetId ? decryptId(rawTargetId) : undefined;
+
+  const rawTargetIds = payload.ids || payload.productIds;
+  const targetIds = Array.isArray(rawTargetIds)
+    ? rawTargetIds.map((item: string) => decryptId(item))
+    : undefined;
+
+  const rawCategoryId = payload.categoryId;
+  const categoryId = rawCategoryId ? decryptId(rawCategoryId) : undefined;
+  const search = payload.search || payload.query;
+  const minPrice = payload.minPrice !== undefined ? Number(payload.minPrice) : undefined;
+  const maxPrice = payload.maxPrice !== undefined ? Number(payload.maxPrice) : undefined;
+  const inStockOnly = Boolean(payload.inStockOnly);
+  const sort = payload.sort || "newest";
+  const limit = payload.limit ? Number(payload.limit) : undefined;
+  const offset = payload.page && limit ? (Number(payload.page) - 1) * limit : undefined;
+
+  let query = `
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
+           c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+    FROM products p
+    JOIN categories c ON p.category_id = c.id
+    WHERE 1=1
+  `;
+  const binds: any[] = [];
+
+  // 1. Filter by Single ID
+  if (targetId) {
+    query += ` AND p.id = ?`;
+    binds.push(targetId);
+  }
+
+  // 2. Filter by Multiple IDs (Batch)
+  if (Array.isArray(targetIds) && targetIds.length > 0) {
+    const placeholders = targetIds.map(() => "?").join(",");
+    query += ` AND p.id IN (${placeholders})`;
+    binds.push(...targetIds);
+  }
+
+  // 3. Filter by Category (ID or Name)
+  if (categoryId && categoryId !== "All") {
+    query += ` AND (p.category_id = ? OR c.name = ?)`;
+    binds.push(categoryId, categoryId);
+  }
+
+  // 4. Keyword Search in name or description
+  if (search && typeof search === "string" && search.trim()) {
+    query += ` AND (p.name LIKE ? OR p.description LIKE ?)`;
+    binds.push(`%${search.trim()}%`, `%${search.trim()}%`);
+  }
+
+  // 5. Price Range
+  if (minPrice !== undefined && !isNaN(minPrice)) {
+    query += ` AND p.price >= ?`;
+    binds.push(minPrice);
+  }
+  if (maxPrice !== undefined && !isNaN(maxPrice)) {
+    query += ` AND p.price <= ?`;
+    binds.push(maxPrice);
+  }
+
+  // 6. Stock filter
+  if (inStockOnly) {
+    query += ` AND p.stock > 0`;
+  }
+
+  // 7. Sorting
+  switch (sort) {
+    case "price_asc":
+      query += ` ORDER BY p.price ASC`;
+      break;
+    case "price_desc":
+      query += ` ORDER BY p.price DESC`;
+      break;
+    case "name_asc":
+      query += ` ORDER BY p.name ASC`;
+      break;
+    case "newest":
+    default:
+      query += ` ORDER BY p.created_at DESC`;
+      break;
+  }
+
+  // 8. Pagination
+  if (limit) {
+    query += ` LIMIT ?`;
+    binds.push(limit);
+    if (offset !== undefined) {
+      query += ` OFFSET ?`;
+      binds.push(offset);
+    }
+  }
+
+  const { results } = await c.env.DB.prepare(query).bind(...binds).all();
+
+  const formatProduct = (row: any) => {
+    let images: string[] = [];
+    try {
+      images = typeof row.images === "string" ? JSON.parse(row.images) : row.images || [];
+    } catch {
+      images = row.images ? [row.images] : [];
+    }
+    const originalMRP = Math.round(row.price * 1.28);
+    const discountPercent = Math.round(((originalMRP - row.price) / originalMRP) * 100);
+
+    return {
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      price: row.price,
+      originalMRP,
+      discountPercent,
+      stock: row.stock,
+      inStock: row.stock > 0,
+      images,
+      thumbnail: images[0] || "/logo-transparent.png",
+      categoryId: row.categoryId,
+      category: {
+        id: row.cat_id,
+        name: row.cat_name,
+      },
+      rating: 4.8,
+      reviewsCount: 142,
+      createdAt: row.createdAt,
+    };
+  };
+
+  const formatted = results.map(formatProduct);
+
+  // If a single product was requested by ID
+  if (targetId) {
+    if (formatted.length === 0) {
+      return c.json({ success: false, message: "Product not found", data: null }, 404);
+    }
+    const product = formatted[0];
+
+    // Fetch related products in the same category
+    const { results: related } = await c.env.DB.prepare(`
+      SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
+             c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+      FROM products p
+      JOIN categories c ON p.category_id = c.id
+      WHERE p.category_id = ? AND p.id != ?
+      ORDER BY p.created_at DESC
+      LIMIT 4
+    `).bind(product.categoryId, product.id).all();
+
+    return c.json({
+      success: true,
+      data: product,
+      product: product,
+      relatedProducts: related.map(formatProduct),
+    });
+  }
+
+  return c.json({
+    success: true,
+    total: formatted.length,
+    data: formatted,
+    products: formatted,
+  });
+};
+
+app.post("/products/details", handleProductDetailsQuery);
+app.post("/products/query", handleProductDetailsQuery);
 
 app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   let body: any = {};
@@ -364,6 +593,112 @@ app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   await c.env.DB.prepare("DELETE FROM products WHERE id = ?").bind(id).run();
   return c.json({ success: true });
 });
+
+/* ==========================================================================
+   R2 IMAGE STORAGE & UPLOAD
+   ========================================================================== */
+
+// Serve image directly from R2 (works even when R2 public development URL is disabled)
+app.get("/images/:key{.+}", async (c) => {
+  const key = c.req.param("key");
+  if (!c.env.BUCKET) {
+    return c.text("R2 Storage bucket is not bound", 503);
+  }
+
+  const object = await c.env.BUCKET.get(key);
+  if (!object) {
+    return c.text("Image not found in R2 storage", 404);
+  }
+
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set("etag", object.httpEtag);
+  headers.set("cache-control", "public, max-age=31536000, immutable");
+  return new Response(object.body, { headers });
+});
+
+// Admin upload endpoint: accepts multipart/form-data with 'file' or 'files'
+app.post("/upload", authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const formData = await c.req.parseBody({ all: true });
+    let files: any = formData["file"] || formData["files"] || formData["image"] || formData["images"];
+    if (!files) {
+      return c.json({ error: "No image file provided" }, 400);
+    }
+
+    if (!Array.isArray(files)) {
+      files = [files];
+    }
+
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      if (!(file instanceof File)) {
+        continue;
+      }
+
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
+      const uniqueKey = `products/${Date.now()}-${cleanName}.${ext}`;
+
+      if (c.env.BUCKET) {
+        await c.env.BUCKET.put(uniqueKey, file.stream(), {
+          httpMetadata: {
+            contentType: file.type || `image/${ext}`,
+          },
+        });
+
+        const r2PublicUrl = c.env.R2_PUBLIC_URL || "https://pub-e9f02df81ad34d8da252578b86423390.r2.dev";
+        const baseUrl = r2PublicUrl.replace(/\/$/, "");
+        uploadedUrls.push(`${baseUrl}/${uniqueKey}`);
+      } else {
+        // Fallback for mock environments
+        uploadedUrls.push(`https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800`);
+      }
+    }
+
+    if (uploadedUrls.length === 0) {
+      return c.json({ error: "No valid image files processed" }, 400);
+    }
+
+    return c.json({
+      success: true,
+      url: uploadedUrls[0],
+      urls: uploadedUrls,
+      count: uploadedUrls.length,
+    });
+  } catch (err: any) {
+    console.error("R2 Upload Error:", err);
+    return c.json({ error: err.message || "Failed to upload file to R2" }, 500);
+  }
+});
+
+// Admin media list from R2 bucket
+app.get("/admin/media", authMiddleware, adminMiddleware, async (c) => {
+  if (!c.env.BUCKET) {
+    return c.json({ success: true, items: [] });
+  }
+
+  try {
+    const listed = await c.env.BUCKET.list({ prefix: "products/", limit: 100 });
+    const r2PublicUrl = c.env.R2_PUBLIC_URL || "https://pub-e9f02df81ad34d8da252578b86423390.r2.dev";
+    const baseUrl = r2PublicUrl.replace(/\/$/, "");
+    const items = listed.objects.map((obj) => {
+      const url = `${baseUrl}/${obj.key}`;
+      return {
+        key: obj.key,
+        size: obj.size,
+        uploaded: obj.uploaded,
+        url,
+      };
+    });
+
+    return c.json({ success: true, items });
+  } catch (err: any) {
+    return c.json({ error: err.message || "Failed to list R2 media" }, 500);
+  }
+});
+
 
 /* ==========================================================================
    4. ORDERS

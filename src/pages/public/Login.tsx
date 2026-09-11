@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import GoogleLoginButton from "../../components/common/GoogleLoginButton";
-import { AlertCircle, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 
 export default function Login() {
   const [error, setError] = useState<string | null>(null);
@@ -11,101 +11,87 @@ export default function Login() {
   const redirectPath = new URLSearchParams(location.search).get("redirect") || "/";
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-between select-none">
-      {/* 1. Minimalist Top Bar with centered Brand Logo */}
-      <div className="pt-8 pb-4 text-center">
-        <Link to="/" className="inline-flex items-center hover:opacity-90 transition-opacity">
-          <img
-            src="/logo-transparent.png"
-            alt="Buddy Mattress"
-            className="h-14 sm:h-16 w-auto object-contain"
-          />
-        </Link>
-      </div>
-
-      {/* 2. Central Sign In Card (Google OAuth Only) */}
-      <div className="w-full max-w-[420px] mx-auto px-4 py-2">
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6 text-center">
-          <div>
-            <span className="inline-flex items-center gap-1.5 bg-cyan-50 border border-cyan-200 text-[#0ea9df] text-[11px] font-bold px-3 py-1 rounded-full mb-3">
-              <Sparkles className="w-3.5 h-3.5" /> 1-Click Secure Login
-            </span>
-            <h1 className="text-2xl font-black text-[#191142] tracking-tight">
-              Sign In to Buddy Mattress
-            </h1>
-            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-              Continue with your Google account to access your orders, track shipments, and manage your 100-night trial benefits.
-            </p>
+    <div className="min-h-screen bg-[#f5f5f7] flex flex-col justify-between items-center px-4 py-8 select-none font-sans">
+      <div className="w-full flex-1 flex flex-col items-center justify-center">
+        {/* iOS-Style Floating Card */}
+        <div className="w-full max-w-[360px] bg-white rounded-[28px] p-8 shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-black/[0.05] text-center space-y-6">
+          {/* Product Logo & Header */}
+          <div className="space-y-3">
+            <Link to="/" className="inline-block hover:opacity-80 transition-opacity">
+              <img
+                src="/logo-transparent.png"
+                alt="Buddy Mattress"
+                className="h-10 w-auto mx-auto object-contain"
+              />
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-[#1d1d1f] tracking-tight">Sign In</h1>
+              <p className="text-xs text-[#86868b] mt-1">to continue to Buddy Mattress</p>
+            </div>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2 text-left animate-in fade-in">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <div className="p-3 bg-red-50/80 border border-red-200/80 rounded-2xl text-red-700 text-xs flex items-center gap-2 text-left">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Google OAuth Button Only */}
-          <div className="py-3 flex flex-col items-center justify-center">
+          {/* Simple Google OAuth Button */}
+          <div className="pt-2 pb-1 flex justify-center">
             <GoogleLoginButton
               onSuccess={() => navigate(redirectPath)}
               onError={(msg) => setError(msg)}
+              theme="outline"
+              shape="pill"
+              width={280}
             />
           </div>
 
-          {/* Security & Verification Badges */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-center gap-4 text-[11px] text-gray-500 font-medium">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#0ea9df]" /> 256-Bit Encrypted
-            </span>
-            <span>•</span>
-            <span>Zero Password Required</span>
-            <span>•</span>
-            <span>Instant Access</span>
-          </div>
-
-          {/* Terms Agreement */}
-          <p className="text-[11px] text-gray-500 leading-normal pt-1">
-            By signing in, you agree to Buddy Mattress's{" "}
-            <a href="#" className="text-[#0ea9df] hover:underline font-semibold">
-              Conditions of Use
+          {/* Subtle Terms */}
+          <p className="text-[11px] text-[#86868b] leading-relaxed pt-2">
+            By continuing, you agree to our{" "}
+            <a href="#" className="text-[#0071e3] hover:underline">
+              Terms
             </a>{" "}
             and{" "}
-            <a href="#" className="text-[#0ea9df] hover:underline font-semibold">
-              Privacy Notice
+            <a href="#" className="text-[#0071e3] hover:underline">
+              Privacy Policy
             </a>
             .
           </p>
         </div>
 
-        {/* Back to Storefront Link */}
-        <div className="text-center mt-6">
+        {/* Back Link */}
+        <div className="mt-6 text-center">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#191142] hover:text-[#0ea9df] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#86868b] hover:text-[#1d1d1f] transition-colors font-medium"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Buddy Mattress Store
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Store
           </Link>
         </div>
       </div>
 
-      {/* 3. Minimalist Clean Auth Footer */}
-      <div className="py-8 text-center text-xs text-gray-500 border-t border-gray-200 mt-8 space-y-2 bg-white">
-        <div className="flex justify-center gap-6 text-[11px]">
-          <a href="#" className="hover:text-[#0ea9df] hover:underline">
+      {/* Minimal Footer */}
+      <footer className="text-center text-[11px] text-[#86868b] space-y-1 pt-6">
+        <div className="flex justify-center gap-4 text-[#86868b]">
+          <a href="#" className="hover:underline">
             Conditions of Use
           </a>
-          <a href="#" className="hover:text-[#0ea9df] hover:underline">
+          <span>•</span>
+          <a href="#" className="hover:underline">
             Privacy Notice
           </a>
-          <a href="#" className="hover:text-[#0ea9df] hover:underline">
+          <span>•</span>
+          <a href="#" className="hover:underline">
             Help & Support
           </a>
         </div>
-        <p className="text-[11px] text-gray-400">
-          © {new Date().getFullYear()}, Buddy Mattress Co. or its affiliates. All rights reserved.
+        <p className="text-[#a1a1a6]">
+          © {new Date().getFullYear()} Buddy Mattress. All rights reserved.
         </p>
-      </div>
+      </footer>
     </div>
   );
 }

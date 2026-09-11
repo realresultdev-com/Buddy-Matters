@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run build && wrangler pages dev dist --d1 DB --compatibility-date=2024-09-01",
+    "dev": "wrangler pages dev --d1 DB --r2 BUCKET=buddymatters --compatibility-date=2024-09-01 -- npm run dev:vite",
+    "dev:dist": "npm run build && wrangler pages dev dist --d1 DB --r2 BUCKET=buddymatters --compatibility-date=2024-09-01",
     "dev:vite": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",

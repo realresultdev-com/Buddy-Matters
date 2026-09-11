@@ -16,9 +16,18 @@ export const GOOGLE_CLIENT_ID =
 interface GoogleLoginButtonProps {
   onSuccess?: () => void;
   onError?: (msg: string) => void;
+  theme?: "outline" | "filled_black" | "filled_blue";
+  shape?: "pill" | "rectangular";
+  width?: number;
 }
 
-export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps) {
+export default function GoogleLoginButton({
+  onSuccess,
+  onError,
+  theme = "outline",
+  shape = "pill",
+  width = 300,
+}: GoogleLoginButtonProps) {
   const btnRef = useRef<HTMLDivElement>(null);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -49,22 +58,22 @@ export default function GoogleLoginButton({ onSuccess, onError }: GoogleLoginBut
           callback: handleCredentialResponse,
         });
         window.google.accounts.id.renderButton(btnRef.current, {
-          theme: "filled_black",
+          theme,
           size: "large",
-          shape: "rectangular",
-          width: 360,
+          shape,
+          width,
           text: "continue_with",
         });
       }
       if (checkCount > 25) clearInterval(interval);
-    }, 200);
+    }, 150);
 
     return () => clearInterval(interval);
-  }, [login, navigate, onSuccess, onError]);
+  }, [login, navigate, onSuccess, onError, theme, shape, width]);
 
   return (
     <div className="w-full flex justify-center py-1">
-      <div ref={btnRef} className="min-h-[44px]" />
+      <div ref={btnRef} className="min-h-[44px] flex items-center justify-center" />
     </div>
   );
 }

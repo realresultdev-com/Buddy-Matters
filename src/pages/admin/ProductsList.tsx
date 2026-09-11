@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../../services/product.service";
+import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import { Plus, Edit, Trash2, Search, ExternalLink } from "lucide-react";
@@ -117,7 +118,7 @@ export default function ProductsList() {
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2 text-xs">
                         <Link
-                          to={`/product/${product.id}`}
+                          to={getProductUrl(product.id)}
                           target="_blank"
                           className="p-1 rounded text-gray-500 hover:text-black hover:bg-gray-100"
                           title="View on Storefront"

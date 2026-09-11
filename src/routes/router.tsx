@@ -26,6 +26,7 @@ import ProductForm from "../pages/admin/ProductForm";
 import CategoriesManage from "../pages/admin/CategoriesManage";
 import OrdersManage from "../pages/admin/OrdersManage";
 import UsersManage from "../pages/admin/UsersManage";
+import MediaManager from "../pages/admin/MediaManager";
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +75,7 @@ export const router = createBrowserRouter([
               { path: "products", element: <ProductsList /> },
               { path: "products/new", element: <ProductForm /> },
               { path: "products/:id/edit", element: <ProductForm /> },
+              { path: "media", element: <MediaManager /> },
               { path: "categories", element: <CategoriesManage /> },
               { path: "orders", element: <OrdersManage /> },
               { path: "users", element: <UsersManage /> },

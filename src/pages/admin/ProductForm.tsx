@@ -5,7 +5,8 @@ import { categoryService } from "../../services/category.service";
 import { api } from "../../services/api";
 import type { Category } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import R2ImageUploader from "../../components/admin/R2ImageUploader";
+import { ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +24,7 @@ export default function ProductForm() {
     price: 0,
     stock: 10,
     categoryId: "",
-    imageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
+    images: [] as string[],
   });
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function ProductForm() {
             price: p.price,
             stock: p.stock,
             categoryId: p.categoryId,
-            imageUrl: p.images?.[0] || "",
+            images: p.images && p.images.length > 0 ? p.images : [],
           });
         } else if (catRes.data.length > 0) {
           setFormData((prev) => ({ ...prev, categoryId: catRes.data[0].id }));
@@ -66,7 +67,10 @@ export default function ProductForm() {
       price: Number(formData.price),
       stock: Number(formData.stock),
       categoryId: formData.categoryId,
-      images: [formData.imageUrl],
+      images:
+        formData.images.length > 0
+          ? formData.images
+          : ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"],
     };
 
     try {
@@ -77,125 +81,173 @@ export default function ProductForm() {
       }
       navigate("/admin/products");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to save product");
+      setError(err.response?.data?.message || err.response?.data?.error || "Failed to save product");
       setSubmitting(false);
     }
   };
 
-  if (loading) return <Loader text="Loading product form..." />;
+  if (loading) return <Loader text="Loading product editor..." />;
 
   return (
-    <div className="max-w-3xl space-y-6">
-      <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
-        <Link to="/admin/products" className="text-gray-500 hover:text-black transition-colors">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex items-center gap-3 border-b border-gray-200 pb-4">
+        <Link
+          to="/admin/products"
+          className="p-2 rounded-lg text-gray-500 hover:text-[#191142] hover:bg-gray-100 transition-colors"
+        >
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-[#0f1111]">
-            {isEditing ? "Edit Product Details" : "Add a New Product"}
+          <h1 className="text-2xl font-black text-[#191142]">
+            {isEditing ? "Edit Mattress / Sleep Product" : "Add New Sleep Product"}
           </h1>
-          <p className="text-xs text-gray-500">Provide product identity, pricing, and fulfillment details</p>
+          <p className="text-xs text-gray-500">
+            Upload high-resolution photography directly to Cloudflare R2 bucket and configure store listing
+          </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-xs flex items-center gap-2">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="border border-gray-300 rounded-lg p-6 bg-white shadow-sm space-y-4">
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">Item Name / Title</label>
-          <input
-            type="text"
-            required
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="e.g. Buddy Orthopedic Dual-Comfort Memory Foam Mattress"
-            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-bold text-gray-800 mb-1">Department / Category</label>
-            <select
-              value={formData.categoryId}
-              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs bg-white text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
-            >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+      <form onSubmit={handleSubmit} className="border border-gray-200 rounded-2xl p-6 bg-white shadow-xs space-y-6">
+        {/* Product Identity */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-bold text-[#191142] border-b border-gray-100 pb-2">
+            1. General Information
+          </h2>
 
           <div>
-            <label className="block text-xs font-bold text-gray-800 mb-1">Your Price (INR ₹)</label>
+            <label className="block text-xs font-bold text-gray-800 mb-1">
+              Product Title / Mattress Name *
+            </label>
             <input
-              type="number"
+              type="text"
               required
-              min={1}
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Buddy Orthopedic Dual-Comfort Memory Foam Mattress (King / Queen)"
+              className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
             />
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-gray-800">
+                  Department / Category *
+                </label>
+                <Link
+                  to="/admin/categories"
+                  className="text-[10px] text-[#0ea9df] hover:underline font-bold"
+                >
+                  + Add Category
+                </Link>
+              </div>
+              <select
+                value={formData.categoryId}
+                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
+                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs bg-white text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all cursor-pointer"
+                required
+              >
+                {categories.length === 0 && (
+                  <option value="">No categories yet - create one first</option>
+                )}
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1">
+                Selling Price (INR ₹) *
+              </label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-800 mb-1">
+                Stock Quantity *
+              </label>
+              <input
+                type="number"
+                required
+                min={0}
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Cloudflare R2 Image Upload Section */}
+        <div className="space-y-3 pt-2">
+          <h2 className="text-sm font-bold text-[#191142] border-b border-gray-100 pb-2">
+            2. Product Photography & Media (Cloudflare R2)
+          </h2>
+
+          <R2ImageUploader
+            images={formData.images}
+            onChange={(imgs) => setFormData({ ...formData, images: imgs })}
+            maxImages={8}
+          />
+        </div>
+
+        {/* Description */}
+        <div className="space-y-2 pt-2">
+          <h2 className="text-sm font-bold text-[#191142] border-b border-gray-100 pb-2">
+            3. Detailed Description & Specifications
+          </h2>
           <div>
-            <label className="block text-xs font-bold text-gray-800 mb-1">Available Quantity</label>
-            <input
-              type="number"
+            <textarea
               required
-              min={0}
-              value={formData.stock}
-              onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-              className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
+              rows={4}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Describe firmness level, core layers, cooling airflow technology, dimensions, and warranty..."
+              className="w-full px-3.5 py-2.5 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none leading-relaxed transition-all"
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">Product Main Image URL</label>
-          <input
-            type="url"
-            required
-            value={formData.imageUrl}
-            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-            placeholder="https://images.unsplash.com/..."
-            className="w-full px-3 py-1.5 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-gray-800 mb-1">Product Description</label>
-          <textarea
-            required
-            rows={4}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder="Describe mattress layers, firmness rating, materials, dimensions, and warranty coverage..."
-            className="w-full px-3 py-2 border border-gray-400 rounded text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df] outline-none leading-relaxed"
-          />
-        </div>
-
-        <div className="pt-3 border-t border-gray-200 flex items-center justify-end gap-2">
+        {/* Actions Footer */}
+        <div className="pt-4 border-t border-gray-200 flex items-center justify-end gap-3">
           <Link
             to="/admin/products"
-            className="py-1.5 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 text-xs font-medium text-gray-800"
+            className="py-2 px-4 rounded-xl border border-gray-300 hover:bg-gray-100 text-xs font-semibold text-gray-700 transition-colors"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={submitting}
-            className="py-1.5 px-5 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] font-semibold text-xs text-gray-900 shadow-sm transition-colors"
+            className="py-2.5 px-6 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
-            {submitting ? "Saving..." : isEditing ? "Save and finish" : "Publish to Catalog"}
+            {submitting ? (
+              "Saving to Store..."
+            ) : isEditing ? (
+              "Update Product"
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" /> Publish Product to Catalog
+              </>
+            )}
           </button>
         </div>
       </form>

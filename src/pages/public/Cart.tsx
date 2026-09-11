@@ -1,83 +1,111 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
-import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { CheckCircle2, ArrowLeft, Trash2, ShieldCheck, Sparkles } from "lucide-react";
+import { getProductUrl } from "../../utils/urlSecurity";
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clearCart, totalAmount, totalCount } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 p-8 rounded-xl text-center space-y-4 shadow-sm max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-[#191142]">Your Buddy Mattress Cart is empty.</h2>
-        <p className="text-xs text-gray-600">
-          Your shopping cart is waiting. Treat yourself to deeper, restorative sleep with our orthopedic mattresses and ergonomic pillows.
+      <div className="bg-white border border-gray-200 p-8 sm:p-12 rounded-2xl text-center space-y-4 shadow-xs max-w-2xl mx-auto my-8">
+        <div className="w-16 h-16 rounded-full bg-cyan-50 text-[#0ea9df] flex items-center justify-center mx-auto">
+          <Sparkles className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-[#191142]">
+          Your Buddy Mattress Cart is empty
+        </h2>
+        <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
+          Your sleep sanctuary awaits. Explore our orthopedic memory foam mattresses, cooling gel pillows, and breathable protectors.
         </p>
         <Link
           to="/"
-          className="inline-block py-2.5 px-6 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-sm transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white font-bold text-xs shadow-xs transition-colors"
         >
-          Explore Mattresses & Pillows
+          <ArrowLeft className="w-4 h-4" /> Explore Sleep Products
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-12">
-      {/* Left Column: Items in Cart (8 cols) */}
-      <div className="lg:col-span-8 bg-white border border-gray-200 p-4 sm:p-6 shadow-sm space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pb-28 lg:pb-12">
+      {/* Left items column (8 cols) */}
+      <div className="lg:col-span-8 bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-gray-200 pb-3">
           <div>
-            <h1 className="text-2xl font-normal text-[#0f1111]">Shopping Cart</h1>
-            <button
-              onClick={clearCart}
-              className="text-xs text-amazon-blue hover:text-amazon-linkHover hover:underline pt-1"
-            >
-              Deselect all items / Clear Cart
-            </button>
+            <h1 className="text-lg sm:text-2xl font-bold text-[#191142]">Shopping Cart</h1>
+            <p className="text-xs text-gray-500 mt-0.5">
+              {totalCount} item{totalCount === 1 ? "" : "s"} selected
+            </p>
           </div>
-          <span className="text-xs text-gray-500 font-medium self-end">Price</span>
+          <span className="text-xs font-semibold text-gray-500 hidden sm:inline">Price</span>
         </div>
 
         {/* Items list */}
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-100">
           {items.map((item) => (
-            <div key={item.productId} className="py-4 flex gap-4">
-              {/* Product Thumbnail */}
-              <Link to={`/product/${item.productId}`} className="w-24 h-24 sm:w-32 sm:h-32 bg-white shrink-0 p-1">
-                <img
-                  src={item.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"}
-                  alt={item.name}
-                  className="w-full h-full object-contain"
-                />
-              </Link>
+            <div key={item.productId} className="py-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="flex gap-3 items-start flex-1 min-w-0">
+                {/* Product Thumbnail */}
+                <Link
+                  to={getProductUrl(item.productId)}
+                  className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 border border-gray-100 rounded-xl shrink-0 p-1.5 flex items-center justify-center overflow-hidden"
+                >
+                  <img
+                    src={item.image || "/logo-transparent.png"}
+                    alt={item.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </Link>
 
-              {/* Item Info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between">
-                <div>
+                {/* Item Info */}
+                <div className="flex-1 min-w-0">
                   <Link
-                    to={`/product/${item.productId}`}
-                    className="text-sm sm:text-base font-medium text-[#0f1111] hover:text-amazon-linkHover hover:underline line-clamp-2"
+                    to={getProductUrl(item.productId)}
+                    className="text-xs sm:text-sm font-bold text-[#191142] hover:text-[#0ea9df] line-clamp-2 transition-colors leading-snug"
                   >
                     {item.name}
                   </Link>
 
-                  <p className="text-xs font-semibold text-[#007600] mt-1">In stock</p>
-                  <p className="text-[11px] text-gray-500">Eligible for FREE Shipping</p>
-                  <span className="inline-block text-[#00a8e1] font-bold italic text-xs">✓prime</span>
+                  <p className="text-xs font-semibold text-emerald-700 mt-1">In stock</p>
+                  <p className="text-[11px] text-gray-500">
+                    100-Night Sleep Trial & Free Doorstep Delivery
+                  </p>
+
+                  {/* Price on mobile screen */}
+                  <div className="sm:hidden mt-2">
+                    <span className="text-sm font-bold text-[#191142]">
+                      ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                    </span>
+                    {item.quantity > 1 && (
+                      <span className="text-[10px] text-gray-400 ml-1.5">
+                        (₹{item.price.toLocaleString("en-IN")} each)
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions row: Qty select, Delete */}
+              <div className="flex sm:flex-col justify-between sm:justify-between items-center sm:items-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                {/* Price on desktop */}
+                <div className="hidden sm:block text-right">
+                  <span className="text-base sm:text-lg font-bold text-[#191142]">
+                    ₹{(item.price * item.quantity).toLocaleString("en-IN")}
+                  </span>
                 </div>
 
-                {/* Actions row: Qty select, Delete, Save for later */}
-                <div className="flex flex-wrap items-center gap-3 pt-3 text-xs text-gray-600">
-                  <div className="flex items-center gap-1 border border-gray-300 rounded bg-gray-100 px-2 py-0.5">
-                    <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-gray-500">
+                <div className="flex items-center gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 border border-gray-300 rounded-lg bg-gray-50 px-2 py-1">
+                    <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-gray-500 font-medium">
                       Qty:
                     </label>
                     <select
                       id={`qty-${item.productId}`}
                       value={item.quantity}
                       onChange={(e) => updateQuantity(item.productId, Number(e.target.value))}
-                      className="bg-transparent text-xs font-semibold focus:outline-none cursor-pointer"
+                      className="bg-transparent text-xs font-bold text-[#191142] focus:outline-none cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                         <option key={n} value={n}>
@@ -87,82 +115,93 @@ export default function Cart() {
                     </select>
                   </div>
 
-                  <span className="text-gray-300">|</span>
-
                   <button
                     onClick={() => removeItem(item.productId)}
-                    className="text-amazon-blue hover:text-amazon-linkHover hover:underline cursor-pointer"
+                    className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    title="Remove item"
+                    aria-label="Remove item"
                   >
-                    Delete
-                  </button>
-
-                  <span className="text-gray-300">|</span>
-
-                  <button
-                    onClick={() => removeItem(item.productId)}
-                    className="text-amazon-blue hover:text-amazon-linkHover hover:underline cursor-pointer"
-                  >
-                    Save for later
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-
-              {/* Price */}
-              <div className="text-right shrink-0">
-                <span className="text-base sm:text-lg font-bold text-[#0f1111]">
-                  ₹{(item.price * item.quantity).toLocaleString("en-IN")}
-                </span>
               </div>
             </div>
           ))}
         </div>
 
         {/* Subtotal bottom bar */}
-        <div className="border-t border-gray-200 pt-4 text-right">
-          <span className="text-base text-gray-800">
+        <div className="border-t border-gray-200 pt-4 flex items-center justify-between">
+          <button
+            onClick={clearCart}
+            className="text-xs text-gray-500 hover:text-red-600 hover:underline cursor-pointer"
+          >
+            Clear Cart
+          </button>
+          <span className="text-sm sm:text-base text-gray-700 font-medium">
             Subtotal ({totalCount} item{totalCount === 1 ? "" : "s"}):{" "}
-            <span className="font-bold text-lg text-[#0f1111]">
+            <span className="font-extrabold text-[#191142] text-base sm:text-lg">
               ₹{totalAmount.toLocaleString("en-IN")}
             </span>
           </span>
         </div>
       </div>
 
-      {/* Right Column: Checkout Summary Box (4 cols) */}
-      <div className="lg:col-span-4 bg-white border border-gray-200 p-5 shadow-sm space-y-4">
-        {/* Free Delivery alert */}
-        <div className="flex items-center gap-2 text-xs text-[#007600] font-medium">
+      {/* Right Column: Checkout Summary Box on Desktop (4 cols) */}
+      <div className="hidden lg:block lg:col-span-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-xs space-y-4 sticky top-24">
+        <div className="flex items-center gap-2 text-xs text-emerald-700 font-medium bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>Part of your order qualifies for FREE Delivery.</span>
+          <span>Your order qualifies for FREE Express Delivery & 100-Night Trial.</span>
         </div>
 
-        {/* Subtotal */}
-        <div className="text-base text-gray-800">
-          Subtotal ({totalCount} item{totalCount === 1 ? "" : "s"}):{" "}
-          <span className="font-bold text-lg text-[#0f1111]">
-            ₹{totalAmount.toLocaleString("en-IN")}
-          </span>
+        <div className="text-sm text-gray-700 space-y-1">
+          <div className="flex justify-between">
+            <span>Items Subtotal</span>
+            <span className="font-bold text-[#191142]">₹{totalAmount.toLocaleString("en-IN")}</span>
+          </div>
+          <div className="flex justify-between text-xs text-emerald-700">
+            <span>Doorstep Shipping</span>
+            <span className="font-bold">FREE</span>
+          </div>
+          <div className="flex justify-between text-base font-extrabold text-[#191142] border-t border-gray-100 pt-2 mt-2">
+            <span>Total Amount</span>
+            <span>₹{totalAmount.toLocaleString("en-IN")}</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-gray-700">
-          <input type="checkbox" id="gift" className="rounded text-amazon-orange focus:ring-0" />
-          <label htmlFor="gift">This order contains a gift</label>
-        </div>
-
-        {/* Proceed to Buy Cyan Button */}
         <Link
           to="/checkout"
-          className="block w-full py-3 px-4 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] text-center font-bold text-xs text-white shadow-xs hover:shadow-md transition-all"
+          className="block w-full py-3 px-4 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-center font-bold text-xs text-white shadow-xs hover:shadow-md transition-all cursor-pointer"
         >
           Proceed to Buy ({totalCount} {totalCount === 1 ? "item" : "items"})
         </Link>
 
-        {/* EMI info */}
-        <div className="border border-gray-200 rounded p-3 text-[11px] text-gray-600 bg-gray-50">
-          <span className="font-bold text-gray-900">EMI Available</span>
-          <p className="mt-0.5">
-            Your order qualifies for EMI with select bank debit and credit cards.
-          </p>
+        <div className="border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 bg-gray-50 flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>100% Secure Checkout with Razorpay & Bank Encryption.</span>
+        </div>
+      </div>
+
+      {/* Sticky Mobile Checkout Bar (Fixed above bottom nav on mobile) */}
+      <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+          <div>
+            <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">
+              Total ({totalCount} {totalCount === 1 ? "item" : "items"})
+            </span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-xs font-bold text-gray-600">₹</span>
+              <span className="text-lg font-black text-[#191142]">
+                {totalAmount.toLocaleString("en-IN")}
+              </span>
+            </div>
+          </div>
+
+          <Link
+            to="/checkout"
+            className="py-2.5 px-6 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold shadow-xs transition-all text-center shrink-0"
+          >
+            Proceed to Buy
+          </Link>
         </div>
       </div>
     </div>

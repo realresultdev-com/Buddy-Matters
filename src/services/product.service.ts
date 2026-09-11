@@ -1,6 +1,26 @@
 import { api } from "./api";
 
+export interface ProductDetailsPayload {
+  id?: string;
+  productId?: string;
+  ids?: string[];
+  productIds?: string[];
+  categoryId?: string;
+  search?: string;
+  query?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStockOnly?: boolean;
+  sort?: "newest" | "price_asc" | "price_desc" | "name_asc";
+  limit?: number;
+  page?: number;
+  [key: string]: any;
+}
+
 export const productService = {
+  // Single unified API to fetch product details via payload (future-ready for payload encryption/obfuscation)
+  getDetails: (payload: ProductDetailsPayload = {}) =>
+    api.post("/products/details", payload),
   getAll: (categoryId?: string) =>
     api.get("/products", { params: { categoryId } }),
   getById: (id: string) => api.get(`/products/${id}`),

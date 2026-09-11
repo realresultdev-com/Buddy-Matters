@@ -162,9 +162,9 @@ export default function Checkout() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-16">
-      {/* Amazon Minimalist Checkout Header */}
-      <div className="flex items-center justify-between border-b border-gray-300 pb-3">
+    <div className="max-w-5xl mx-auto space-y-6 pb-28 lg:pb-16 px-2 sm:px-4">
+      {/* Checkout Header */}
+      <div className="flex items-center justify-between border-b border-gray-200 pb-3">
         <Link to="/" className="flex items-center">
           <img
             src="/logo-transparent.png"
@@ -172,105 +172,113 @@ export default function Checkout() {
             className="h-8 sm:h-9 w-auto object-contain"
           />
         </Link>
-        <div className="flex items-center gap-1.5 text-gray-600 text-sm font-semibold">
-          <Lock className="w-4 h-4 text-gray-500" />
-          <span>Checkout</span>
+        <div className="flex items-center gap-1.5 text-[#191142] text-xs sm:text-sm font-bold bg-cyan-50 px-3 py-1 rounded-full border border-cyan-200">
+          <ShieldCheck className="w-4 h-4 text-[#0ea9df]" />
+          <span>256-Bit Encrypted Checkout</span>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-xs flex items-center gap-2">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      <form onSubmit={handlePayment} className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <form onSubmit={handlePayment} className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* Left: 3 Accordion Steps (8 cols) */}
         <div className="lg:col-span-8 space-y-4">
           {/* Step 1: Address */}
-          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-4">
-            <h2 className="text-base font-bold text-[#0f1111] flex items-center justify-between">
+          <div className="bg-white border border-gray-200 p-5 sm:p-6 rounded-2xl shadow-xs space-y-4">
+            <h2 className="text-base font-bold text-[#191142] flex items-center justify-between border-b border-gray-100 pb-3">
               <span>1. Delivery Address</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Full name</label>
+                <label className="block font-bold text-[#191142] mb-1.5">Full name</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.fullName}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] border border-gray-300 rounded-xl text-xs bg-white text-[#191142] focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Mobile number</label>
+                <label className="block font-bold text-[#191142] mb-1.5">Mobile number</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.phone}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] border border-gray-300 rounded-xl text-xs bg-white text-[#191142] focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none"
                 />
               </div>
 
               <div className="sm:col-span-2">
-                <label className="block font-bold text-gray-700 mb-1">Flat, House no., Building, Street</label>
+                <label className="block font-bold text-[#191142] mb-1.5">Flat, House no., Building, Street</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.street}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
-                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] border border-gray-300 rounded-xl text-xs bg-white text-[#191142] focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Town / City</label>
+                <label className="block font-bold text-[#191142] mb-1.5">Town / City</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.city}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] border border-gray-300 rounded-xl text-xs bg-white text-[#191142] focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-700 mb-1">Pincode</label>
+                <label className="block font-bold text-[#191142] mb-1.5">Pincode</label>
                 <input
                   type="text"
                   required
                   value={shippingAddress.pincode}
                   onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                  className="w-full px-3 py-1.5 border border-gray-400 rounded focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none"
+                  className="w-full px-3.5 py-2.5 min-h-[44px] border border-gray-300 rounded-xl text-xs bg-white text-[#191142] focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Step 2: Payment */}
-          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-3">
-            <h2 className="text-base font-bold text-[#0f1111]">2. Payment Method</h2>
-            <div className="border border-amazon-orange bg-[#fcf5ee] p-3 rounded text-xs space-y-1">
-              <span className="font-bold text-gray-900 block">Razorpay Gateway (All payment options)</span>
-              <p className="text-gray-600">Supports UPI (GPay, PhonePe), Credit/Debit Cards, NetBanking, and Wallets.</p>
+          <div className="bg-white border border-gray-200 p-5 sm:p-6 rounded-2xl shadow-xs space-y-3">
+            <h2 className="text-base font-bold text-[#191142] border-b border-gray-100 pb-3">
+              2. Payment Method
+            </h2>
+            <div className="border border-cyan-200 bg-cyan-50/50 p-4 rounded-xl text-xs space-y-1">
+              <span className="font-bold text-[#191142] block">
+                Razorpay Official Gateway (All Payment Options)
+              </span>
+              <p className="text-gray-600">
+                Supports UPI (Google Pay, PhonePe, Paytm), Credit & Debit Cards, NetBanking, and Wallets.
+              </p>
             </div>
           </div>
 
           {/* Step 3: Items review */}
-          <div className="bg-white border border-gray-300 p-5 rounded-md space-y-3">
-            <h2 className="text-base font-bold text-[#0f1111]">3. Review Items and Delivery</h2>
-            <div className="divide-y divide-gray-200">
+          <div className="bg-white border border-gray-200 p-5 sm:p-6 rounded-2xl shadow-xs space-y-3">
+            <h2 className="text-base font-bold text-[#191142] border-b border-gray-100 pb-3">
+              3. Review Items and Delivery
+            </h2>
+            <div className="divide-y divide-gray-100">
               {items.map((item) => (
-                <div key={item.productId} className="py-2 flex justify-between items-center text-xs">
-                  <span className="text-gray-900 font-medium">
+                <div key={item.productId} className="py-2.5 flex justify-between items-center text-xs">
+                  <span className="text-[#191142] font-medium truncate max-w-[200px] sm:max-w-md">
                     {item.name} × {item.quantity}
                   </span>
-                  <span className="font-bold text-gray-900">
+                  <span className="font-bold text-[#191142] shrink-0">
                     ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -279,34 +287,59 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* Right: Order Summary Sticky (4 cols) */}
-        <div className="lg:col-span-4 bg-white border border-gray-300 p-5 rounded-md shadow-sm space-y-4">
+        {/* Right: Order Summary Sticky on Desktop (4 cols) */}
+        <div className="lg:col-span-4 bg-white border border-gray-200 p-5 sm:p-6 rounded-2xl shadow-xs space-y-4 lg:sticky lg:top-24">
           <button
             type="submit"
             disabled={processing}
-            className="w-full py-3 px-4 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-xs hover:shadow-md transition-all"
+            className="w-full py-3 px-4 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-xs hover:shadow-md transition-all cursor-pointer"
           >
-            {processing ? "Processing Order..." : "Place Your Order and Pay"}
+            {processing ? "Processing Order..." : `Place Order & Pay ₹${totalAmount.toLocaleString("en-IN")}`}
           </button>
 
           <p className="text-[11px] text-gray-500 text-center leading-tight">
-            By placing your order, you agree to Buddy Mattress's privacy notice and conditions of use.
+            100-Night Free Trial & Comprehensive 10-Year Warranty apply to this order.
           </p>
 
-          <div className="border-t border-gray-200 pt-3 space-y-2 text-xs">
-            <h3 className="font-bold text-sm text-gray-900 mb-2">Order Summary</h3>
+          <div className="border-t border-gray-100 pt-3 space-y-2 text-xs">
+            <h3 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-2">Order Summary</h3>
             <div className="flex justify-between text-gray-600">
-              <span>Items:</span>
+              <span>Items Total:</span>
               <span>₹{totalAmount.toLocaleString("en-IN")}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
-              <span>Delivery:</span>
-              <span className="text-[#007600] font-semibold">₹0.00</span>
+            <div className="flex justify-between text-xs text-emerald-700">
+              <span>Express Delivery:</span>
+              <span className="font-bold">FREE</span>
             </div>
-            <div className="border-t border-gray-200 pt-2 flex justify-between text-base font-bold text-[#b12704]">
+            <div className="border-t border-gray-100 pt-2 flex justify-between text-base font-black text-[#191142]">
               <span>Order Total:</span>
               <span>₹{totalAmount.toLocaleString("en-IN")}</span>
             </div>
+          </div>
+        </div>
+
+        {/* Sticky Mobile Checkout Bar (Fixed above bottom nav on mobile) */}
+        <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
+            <div>
+              <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">
+                Total Payable
+              </span>
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-xs font-bold text-gray-600">₹</span>
+                <span className="text-lg font-black text-[#191142]">
+                  {totalAmount.toLocaleString("en-IN")}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={processing}
+              className="py-2.5 px-6 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold shadow-xs transition-all text-center shrink-0 cursor-pointer"
+            >
+              {processing ? "Processing..." : "Place Order & Pay"}
+            </button>
           </div>
         </div>
       </form>

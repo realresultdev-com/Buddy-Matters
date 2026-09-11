@@ -6,6 +6,7 @@ import {
   FolderTree,
   ShoppingBag,
   Users,
+  Database,
   ArrowLeft,
 } from "lucide-react";
 
@@ -14,6 +15,7 @@ export default function AdminSidebar() {
     { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/products", label: "Manage Inventory", icon: Package },
     { path: "/admin/products/new", label: "Add a Product", icon: PlusCircle },
+    { path: "/admin/media", label: "R2 Media Storage", icon: Database },
     { path: "/admin/categories", label: "Categories / Taxonomy", icon: FolderTree },
     { path: "/admin/orders", label: "Manage Orders", icon: ShoppingBag },
     { path: "/admin/users", label: "User Directory", icon: Users },

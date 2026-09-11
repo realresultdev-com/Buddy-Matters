@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html[lang="ta"],
+html[lang="ta"] body,
+html[lang="ta"] button,
+html[lang="ta"] input,
+html[lang="ta"] select,
+html[lang="ta"] textarea {
+  font-family: "Noto Sans Tamil", "Mukta Malar", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: normal !important;
+}
+
