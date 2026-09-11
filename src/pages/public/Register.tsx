@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
 import GoogleLoginButton from "../../components/common/GoogleLoginButton";
@@ -14,6 +14,13 @@ export default function Register() {
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const fromQuery = new URLSearchParams(location.search).get("redirect");
+  const redirectPath =
+    fromQuery && fromQuery !== "/register" && fromQuery !== "/login"
+      ? fromQuery
+      : "/";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +29,7 @@ export default function Register() {
     try {
       const res = await authService.register(name, email, password);
       login(res.data.user, res.data.token);
-      navigate("/");
+      navigate(redirectPath, { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to create account");
     } finally {
@@ -110,12 +117,15 @@ export default function Register() {
         {/* Google OAuth Button */}
         <div className="pt-2 border-t border-gray-200 space-y-2">
           <p className="text-[11px] font-medium text-gray-500 text-center">Or continue with</p>
-          <GoogleLoginButton onSuccess={() => navigate("/")} onError={(msg) => setError(msg)} />
+          <GoogleLoginButton onSuccess={() => navigate(redirectPath, { replace: true })} onError={(msg) => setError(msg)} />
         </div>
 
         <div className="pt-2 border-t border-gray-200 text-xs text-gray-700">
           Already have an account?{" "}
-          <Link to="/login" className="text-amazon-blue hover:text-amazon-linkHover hover:underline font-bold">
+          <Link
+            to={fromQuery ? `/login?redirect=${encodeURIComponent(fromQuery)}` : "/login"}
+            className="text-amazon-blue hover:text-amazon-linkHover hover:underline font-bold"
+          >
             Sign in
           </Link>
         </div>

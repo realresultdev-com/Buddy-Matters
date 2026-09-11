@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Check, Edit3 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
@@ -15,6 +15,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const { user } = useAuth();
   const { addItem } = useCart();
   const { language, t } = useLanguage();
+  const navigate = useNavigate();
   const [added, setAdded] = useState(false);
 
   const isAdmin = user?.role === "ADMIN";
@@ -32,6 +33,14 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Block unauthenticated/unregistered guests from adding to cart and redirect to sign up
+    if (!user) {
+      const redirectUrl = window.location.pathname + window.location.search;
+      navigate(`/register?redirect=${encodeURIComponent(redirectUrl)}`);
+      return;
+    }
+
     addItem({
       productId: product.id,
       name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,

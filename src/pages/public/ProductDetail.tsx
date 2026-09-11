@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { productService } from "../../services/product.service";
+import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { decryptId } from "../../utils/urlSecurity";
 import type { Product, ProductColorVariant } from "../../types/product.types";
@@ -15,6 +16,8 @@ export default function ProductDetail() {
   const { id: urlParamId } = useParams<{ id: string }>();
   const id = decryptId(urlParamId || "");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const { addItem } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
@@ -71,6 +74,12 @@ export default function ProductDetail() {
       : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800");
 
   const handleAddToCart = (quantity: number) => {
+    // Unregistered / unauthenticated guest cannot add to cart - redirect to sign up screen
+    if (!user) {
+      navigate(`/register?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+
     addItem({
       productId: product.id,
       name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,
@@ -84,6 +93,12 @@ export default function ProductDetail() {
   };
 
   const handleBuyNow = (quantity: number) => {
+    // Unregistered / unauthenticated guest cannot add to cart - redirect to sign up screen
+    if (!user) {
+      navigate(`/register?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
+
     addItem({
       productId: product.id,
       name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,

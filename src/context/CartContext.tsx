@@ -43,6 +43,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addItem = (item: CartItem) => {
+    // Unregistered / unauthenticated users cannot hold or add items to cart
+    if (!localStorage.getItem("token")) {
+      return;
+    }
+
     setItems((prev) => {
       const existing = prev.find(
         (i) => i.productId === item.productId && (i.color || "") === (item.color || "")
