@@ -176,18 +176,6 @@ export default function ProductCard({ product }: { product: Product }) {
             )}
           </button>
         )}
-
-        {/* Secondary Admin Quick Update Link */}
-        {isAdmin && (
-          <Link
-            to={`/admin/products/${product.id}/edit`}
-            className="mt-2 w-full py-1.5 px-3 rounded-lg border border-gray-300 hover:border-[#0ea9df] bg-gray-50 hover:bg-cyan-50 text-[#191142] hover:text-[#0ea9df] text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs"
-            title="Edit in Seller Central"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>Edit Product</span>
-          </Link>
-        )}
       </div>
     </div>
   );
