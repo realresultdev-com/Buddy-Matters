@@ -11,6 +11,7 @@ import ProductGallery from "../../components/product/ProductGallery";
 import ProductInfo from "../../components/product/ProductInfo";
 import ProductBuyBox from "../../components/product/ProductBuyBox";
 import ProductReviewsSection from "../../components/product/ProductReviewsSection";
+import ProductStatutorySection from "../../components/product/ProductStatutorySection";
 
 export default function ProductDetail() {
   const { id: urlParamId } = useParams<{ id: string }>();
@@ -149,6 +150,9 @@ export default function ProductDetail() {
           />
         </div>
       </div>
+
+      {/* Mandatory Statutory Information / Legal Metrology Declarations */}
+      <ProductStatutorySection product={product} />
 
       {/* Customer Ratings & Verified Buyer Reviews */}
       <ProductReviewsSection product={product} />
