@@ -129,12 +129,12 @@ export default function Navbar() {
                 className="flex items-center gap-2 h-9 px-3 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-pointer text-xs font-semibold text-gray-800"
                 aria-label="User profile"
               >
-                <div className="w-5.5 h-5.5 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-2xs overflow-hidden">
+                <div className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-2xs overflow-hidden">
                   {user.avatar_url ? (
                     <img
                       src={user.avatar_url}
                       alt={user.name || user.email}
-                      className="w-full h-full object-cover"
+                      className="w-6 h-6 min-w-[24px] min-h-[24px] max-w-[24px] max-h-[24px] object-cover rounded-full"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
@@ -152,12 +152,12 @@ export default function Navbar() {
                   <div className="bg-white text-gray-900 rounded-2xl shadow-xl border border-gray-200 p-3 text-xs">
                     {/* Display user avatar & mail ID */}
                     <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100 mb-1.5 px-1">
-                      <div className="w-8 h-8 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                      <div className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
                         {user.avatar_url ? (
                           <img
                             src={user.avatar_url}
                             alt={user.name || user.email}
-                            className="w-full h-full object-cover"
+                            className="w-8 h-8 min-w-[32px] min-h-[32px] max-w-[32px] max-h-[32px] object-cover rounded-full"
                             referrerPolicy="no-referrer"
                           />
                         ) : (
@@ -364,12 +364,12 @@ export default function Navbar() {
               {/* User Greeting Box */}
               {user ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="w-10 h-10 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                  <div className="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
                     {user.avatar_url ? (
                       <img
                         src={user.avatar_url}
                         alt={user.name || user.email}
-                        className="w-full h-full object-cover"
+                        className="w-10 h-10 min-w-[40px] min-h-[40px] max-w-[40px] max-h-[40px] object-cover rounded-full"
                         referrerPolicy="no-referrer"
                       />
                     ) : (
