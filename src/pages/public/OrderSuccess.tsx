@@ -28,8 +28,8 @@ export default function OrderSuccess() {
         )}
 
         <div className="space-y-1 text-xs text-gray-700">
-          <p className="font-bold">Guaranteed Delivery by Tomorrow, 11 AM</p>
-          <p className="text-gray-500">Shipped with Amazon Prime Free Delivery</p>
+          <p className="font-bold">Guaranteed Delivery within 2 to 4 Business Days</p>
+          <p className="text-gray-500">Shipped with Buddy Express Insured Doorstep Delivery</p>
         </div>
 
         <div className="pt-2 flex flex-wrap gap-3">

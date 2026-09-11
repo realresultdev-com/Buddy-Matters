@@ -127,17 +127,17 @@ export default function Login() {
       {/* Minimal Footer */}
       <footer className="text-center text-[11px] text-[#86868b] space-y-1 pt-6">
         <div className="flex justify-center gap-4 text-[#86868b]">
-          <a href="#" className="hover:underline">
-            Conditions of Use
-          </a>
+          <Link to="/terms" className="hover:underline">
+            Terms of Service
+          </Link>
           <span>•</span>
-          <a href="#" className="hover:underline">
-            Privacy Notice
-          </a>
+          <Link to="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
           <span>•</span>
-          <a href="#" className="hover:underline">
-            Help & Support
-          </a>
+          <Link to="/grievance" className="hover:underline">
+            Customer Support & Grievance
+          </Link>
         </div>
         <p className="text-[#a1a1a6]">
           © {new Date().getFullYear()} Buddy Mattress. All rights reserved.

@@ -85,7 +85,7 @@ export const translations = {
     quantity: "Quantity:",
     buyNow: "Buy Now",
     secureCheckout: "100% Secure 256-bit Encrypted Checkout",
-    buddyPrimeFree: "✓ Buddy Prime FREE delivery within 2-4 days",
+    buddyPrimeFree: "✓ Buddy Express FREE delivery within 2-4 days",
     deliverToLocation: "Deliver to Bengaluru 560001",
 
     // Trust Guarantees
@@ -199,7 +199,7 @@ export const translations = {
     quantity: "அளவு:",
     buyNow: "இப்போதே வாங்குக",
     secureCheckout: "100% பாதுகாப்பான 256-பிட் என்க்ரிப்ட் செய்யப்பட்ட கட்டணம்",
-    buddyPrimeFree: "✓ Buddy Prime இலவச டெலிவரி 2-4 நாட்களில்",
+    buddyPrimeFree: "✓ Buddy Express இலவச டெலிவரி 2-4 நாட்களில்",
     deliverToLocation: "பெங்களூரு 560001-க்கு டெலிவரி",
 
     // Trust Guarantees

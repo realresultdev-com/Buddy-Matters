@@ -109,9 +109,9 @@ export default function Register() {
         </form>
 
         <p className="text-[11px] text-gray-600 leading-normal">
-          By creating an account or logging in, you agree to Buddy Mattress's{" "}
-          <a href="#" className="text-amazon-blue hover:underline">Conditions of Use</a> and{" "}
-          <a href="#" className="text-amazon-blue hover:underline">Privacy Notice</a>.
+          By creating an account or logging in, you agree to Buddy Mattress&apos;s{" "}
+          <Link to="/terms" className="text-[#0ea9df] hover:underline font-semibold">Terms of Service</Link> and{" "}
+          <Link to="/privacy" className="text-[#0ea9df] hover:underline font-semibold">Privacy Policy</Link>.
         </p>
 
         {/* Google OAuth Button */}
