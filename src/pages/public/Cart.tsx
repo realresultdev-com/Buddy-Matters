@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
-import { CheckCircle2, ArrowLeft, Trash2, ShieldCheck, Sparkles } from "lucide-react";
+import { CheckCircle2, Trash2, ShieldCheck } from "lucide-react";
 import { getProductUrl } from "../../utils/urlSecurity";
 
 export default function Cart() {
@@ -8,21 +8,15 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="bg-white border border-gray-200 p-8 sm:p-12 rounded-2xl text-center space-y-4 shadow-xs max-w-2xl mx-auto my-8">
-        <div className="w-16 h-16 rounded-full bg-cyan-50 text-[#0ea9df] flex items-center justify-center mx-auto">
-          <Sparkles className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-[#191142]">
-          Your Buddy Mattress Cart is empty
+      <div className="bg-white border border-gray-200 p-8 sm:p-10 rounded-2xl text-center space-y-4 max-w-md mx-auto my-12 shadow-xs">
+        <h2 className="text-lg sm:text-xl font-bold text-[#191142]">
+          Your cart is empty
         </h2>
-        <p className="text-xs text-gray-500 max-w-md mx-auto leading-relaxed">
-          Your sleep sanctuary awaits. Explore our orthopedic memory foam mattresses, cooling gel pillows, and breathable protectors.
-        </p>
         <Link
-          to="/"
-          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white font-bold text-xs shadow-xs transition-colors"
+          to="/shop"
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold transition-all"
         >
-          <ArrowLeft className="w-4 h-4" /> Explore Sleep Products
+          Continue shopping
         </Link>
       </div>
     );
