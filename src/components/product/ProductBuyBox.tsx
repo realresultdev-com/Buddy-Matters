@@ -70,26 +70,26 @@ export default function ProductBuyBox({
             </select>
           </div>
 
-          {/* Add to Cart */}
+          {/* Add to Cart: Amazon Signature Yellow Button */}
           <button
             type="button"
             onClick={() => onAddToCart(quantity)}
-            className="w-full py-3 rounded-lg font-bold text-xs bg-[#0ea9df] hover:bg-[#0c93c4] text-white shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-3 rounded-full font-bold text-xs bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] border border-[#fcd200] shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
           >
             {isAdding ? (
               <>
-                <Check className="w-4 h-4 text-white animate-bounce" /> {t("addedToCart")}
+                <Check className="w-4 h-4 text-emerald-700 animate-bounce" /> {t("addedToCart")}
               </>
             ) : (
               t("addToCart")
             )}
           </button>
 
-          {/* Buy Now */}
+          {/* Buy Now: Amazon Signature Orange Button */}
           <button
             type="button"
             onClick={() => onBuyNow(quantity)}
-            className="w-full py-3 rounded-lg font-bold text-xs bg-[#191142] hover:bg-[#261d5e] text-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+            className="w-full py-3 rounded-full font-bold text-xs bg-[#ffa41c] hover:bg-[#fa8900] text-[#0f1111] border border-[#ff8f00] shadow-xs hover:shadow-md transition-all cursor-pointer active:scale-95"
           >
             {t("buyNow")}
           </button>

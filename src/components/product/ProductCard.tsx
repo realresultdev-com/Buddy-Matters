@@ -98,8 +98,17 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
+        {/* Amazon Deal Badge if discounted */}
+        {((product.discount_percent ?? 0) >= 15 || Boolean(product.is_trending)) && (
+          <div className="mt-1.5">
+            <span className="bg-[#CC0C39] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] uppercase tracking-wide inline-block shadow-2xs">
+              Limited time deal
+            </span>
+          </div>
+        )}
+
         {/* Price Block */}
-        <div className="mt-1.5 sm:mt-2.5">
+        <div className="mt-1 sm:mt-1.5">
           <PriceTag
             price={product.price}
             originalMRP={product.original_price ?? product.originalMRP}
@@ -109,12 +118,12 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Action Button */}
+      {/* Action Button: Amazon Signature Button */}
       <div className="mt-3 pt-2">
         {product.stock <= 0 ? (
           <button
             disabled
-            className="w-full py-2 px-2 rounded-lg text-xs font-semibold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+            className="w-full py-2 px-2 rounded-full text-xs font-semibold bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
           >
             {t("currentlyUnavailable")}
           </button>
@@ -122,10 +131,10 @@ export default function ProductCard({ product }: { product: Product }) {
           <button
             type="button"
             onClick={handleAddToCart}
-            className={`w-full py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer ${
+            className={`w-full py-2 sm:py-2.5 px-2 sm:px-4 rounded-full text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 ${
               added
                 ? "bg-emerald-600 text-white"
-                : "bg-[#0ea9df] hover:bg-[#0c93c4] text-white hover:shadow-md"
+                : "bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] border border-[#fcd200] hover:shadow-md"
             }`}
           >
             {added ? (

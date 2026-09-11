@@ -133,13 +133,14 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                   <div className="absolute -bottom-24 -left-16 w-80 h-80 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Left Column: Product Info & CTA */}
-                  <div className="w-full md:w-1/2 lg:w-7/12 space-y-3.5 sm:space-y-4 z-10 text-center md:text-left flex flex-col items-center md:items-start justify-center">
-                    <div className="inline-flex items-center gap-2">
-                      <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-md bg-white/20 backdrop-blur-md text-white border border-white/30">
-                        Trending Deal
+                  <div className="w-full md:w-1/2 lg:w-7/12 space-y-3 sm:space-y-3.5 z-10 text-center md:text-left flex flex-col items-center md:items-start justify-center">
+                    {/* Authentic Amazon Deal Header Badges */}
+                    <div className="flex items-center gap-2.5">
+                      <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-2.5 py-1 rounded-[2px] uppercase tracking-wider shadow-xs">
+                        Limited time deal
                       </span>
-                      <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-md border border-emerald-400/30">
-                        In Stock
+                      <span className="text-xs font-semibold text-[#7fda69] flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#7fda69]" /> In Stock
                       </span>
                     </div>
 
@@ -152,44 +153,60 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                           {product.name}
                         </h3>
                       </Link>
-                      <p className="text-xs sm:text-sm text-gray-200/90 mt-2 line-clamp-2 sm:line-clamp-3 max-w-xl leading-relaxed">
+                      <p className="text-xs sm:text-sm text-gray-200/90 mt-1.5 line-clamp-2 sm:line-clamp-3 max-w-xl leading-relaxed">
                         {product.description}
                       </p>
                     </div>
 
-                    {/* Amazon / Flipkart Style Price & Savings */}
-                    <div className="flex flex-wrap items-baseline justify-center md:justify-start gap-3 pt-1">
-                      <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
-                        ₹{product.price.toLocaleString("en-IN")}
-                      </div>
-                      {(() => {
-                        const mrp = product.original_price || product.originalMRP || Math.round(product.price * 1.35);
-                        const discount = product.discount_percent || product.discountPercent || (mrp > product.price ? Math.round(((mrp - product.price) / mrp) * 100) : 0);
-                        return (
-                          <>
-                            {mrp > product.price && (
-                              <div className="text-base sm:text-lg text-gray-300/80 line-through font-medium">
-                                M.R.P.: ₹{mrp.toLocaleString("en-IN")}
-                              </div>
-                            )}
+                    {/* Authentic Amazon Price & Savings Formula */}
+                    {(() => {
+                      const mrp = product.original_price || product.originalMRP || Math.round(product.price * 1.35);
+                      const discount = product.discount_percent || product.discountPercent || (mrp > product.price ? Math.round(((mrp - product.price) / mrp) * 100) : 0);
+                      const savings = mrp > product.price ? mrp - product.price : 0;
+
+                      return (
+                        <div className="space-y-1 pt-1">
+                          {/* Price Row: -X%  ₹[Price] */}
+                          <div className="flex flex-wrap items-baseline justify-center md:justify-start gap-3">
                             {discount > 0 && (
-                              <span className="text-xs font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded-md">
-                                Save {discount}%
+                              <span className="text-3xl sm:text-4xl font-light text-[#ff5252] tracking-tight">
+                                -{discount}%
                               </span>
                             )}
-                          </>
-                        );
-                      })()}
-                    </div>
+                            <div className="flex items-start text-white">
+                              <span className="text-xl sm:text-2xl font-normal pt-1 mr-0.5">₹</span>
+                              <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+                                {product.price.toLocaleString("en-IN")}
+                              </span>
+                            </div>
+                          </div>
 
-                    {/* Action Buttons */}
+                          {/* M.R.P. & You Save (Amazon style) */}
+                          {mrp > product.price && (
+                            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs sm:text-sm text-gray-300">
+                              <span>M.R.P.: <span className="line-through text-gray-400">₹{mrp.toLocaleString("en-IN")}</span></span>
+                              {savings > 0 && (
+                                <>
+                                  <span className="text-gray-400">•</span>
+                                  <span className="text-[#7fda69] font-bold">
+                                    You Save: ₹{savings.toLocaleString("en-IN")} ({discount}%)
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Action Button: Authentic Amazon Primary Amber Pill Button */}
                     <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
                       <Link
                         to={getProductUrl(product.id)}
-                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs sm:text-sm transition-all shadow-lg hover:scale-105 cursor-pointer ${theme.buttonBg}`}
+                        className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-xs sm:text-sm bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] text-[#0f1111] border border-[#fcd200] shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
                       >
-                        <span>Shop This Deal</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <span>Shop the deal</span>
+                        <ArrowRight className="w-4 h-4 text-[#0f1111]" />
                       </Link>
                     </div>
                   </div>
