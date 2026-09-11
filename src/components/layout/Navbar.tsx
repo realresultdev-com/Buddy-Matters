@@ -17,7 +17,6 @@ import {
   LogIn,
   Check,
   Globe,
-  RotateCcw,
   MapPin,
   Sparkles,
   LayoutGrid,

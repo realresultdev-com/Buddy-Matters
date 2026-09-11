@@ -6,7 +6,7 @@ import {
   Home,
   LayoutGrid,
   ShoppingCart,
-  RotateCcw,
+  Package,
   User as UserIcon,
   LogIn,
   ShieldCheck,
@@ -49,7 +49,7 @@ export default function MobileBottomNav() {
     {
       name: "Orders",
       to: user ? "/orders" : "/login?redirect=/orders",
-      icon: RotateCcw,
+      icon: Package,
       active: isActive("/orders"),
     },
     ...(user?.role === "ADMIN"
