@@ -134,15 +134,14 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
                   {/* Left Column: Product Info & CTA */}
                   <div className="w-full md:w-1/2 lg:w-7/12 space-y-3 sm:space-y-3.5 z-10 text-center md:text-left flex flex-col items-center md:items-start justify-center">
-                    {/* Authentic Amazon Deal Header Badges */}
-                    <div className="flex items-center gap-2.5">
-                      <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-2.5 py-1 rounded-[2px] uppercase tracking-wider shadow-xs">
-                        Limited time deal
-                      </span>
-                      <span className="text-xs font-semibold text-[#7fda69] flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#7fda69]" /> In Stock
-                      </span>
-                    </div>
+                    {/* Deal Header Badge - only if discount or offer exists */}
+                    {(Boolean(product.discount_percent && product.discount_percent > 0) || Boolean(product.offer_badge_value)) && (
+                      <div className="flex items-center gap-2.5">
+                        <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-2.5 py-1 rounded-[2px] uppercase tracking-wider shadow-xs">
+                          {product.offer_badge_value || "Limited time deal"}
+                        </span>
+                      </div>
+                    )}
 
                     <div>
                       <Link
