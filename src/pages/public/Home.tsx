@@ -75,7 +75,7 @@ export default function Home() {
       <div className="relative -mx-2 sm:-mx-4 -mt-4 overflow-hidden select-none">
         <div className="min-h-[300px] sm:h-[400px] md:h-[480px] w-full relative bg-gradient-to-r from-[#191142] via-[#201850] to-[#123860] py-8 sm:py-0">
           <img
-            src="https://images.unsplash.com/photo-1540518614846-7ede433c4ef5?w=1600&auto=format&fit=crop&q=80"
+            src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1600&auto=format&fit=crop&q=80"
             alt="Buddy Mattress Luxury Bedroom Comfort"
             className="w-full h-full object-cover object-center mix-blend-overlay opacity-60 absolute inset-0"
           />

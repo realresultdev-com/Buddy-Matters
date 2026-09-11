@@ -250,6 +250,7 @@ app.get("/auth/me", authMiddleware, async (c) => {
 
 app.get("/categories", async (c) => {
   const { results } = await c.env.DB.prepare("SELECT * FROM categories ORDER BY name ASC").all();
+  c.header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
   return c.json(results);
 });
 
@@ -327,6 +328,7 @@ app.get("/products", async (c) => {
     };
   });
 
+  c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json(formatted);
 });
 
@@ -354,6 +356,7 @@ app.get("/products/:id", async (c) => {
     images = row.images ? [row.images] : [];
   }
 
+  c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
     id: row.id,
     name: row.name,
