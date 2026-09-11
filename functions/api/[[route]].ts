@@ -246,6 +246,58 @@ app.get("/auth/me", authMiddleware, async (c) => {
 });
 
 /* ==========================================================================
+   USER SEARCH HISTORY (PERSISTED ON DB)
+   ========================================================================== */
+
+app.get("/user/searches", authMiddleware, async (c) => {
+  const user = c.get("user");
+  const { results } = await c.env.DB.prepare(
+    "SELECT id, query, created_at FROM user_searches WHERE user_id = ? ORDER BY created_at DESC LIMIT 8"
+  ).bind(user.userId).all();
+  return c.json(results || []);
+});
+
+app.post("/user/searches", authMiddleware, async (c) => {
+  const user = c.get("user");
+  const { query } = await c.req.json();
+  if (!query || typeof query !== "string" || !query.trim()) {
+    return c.json({ message: "Query is required" }, 400);
+  }
+
+  const trimmed = query.trim().slice(0, 80);
+  // Delete any existing duplicate query for this user to bump to top
+  await c.env.DB.prepare(
+    "DELETE FROM user_searches WHERE user_id = ? AND LOWER(query) = LOWER(?)"
+  ).bind(user.userId, trimmed).run();
+
+  const id = `srch-${crypto.randomUUID()}`;
+  await c.env.DB.prepare(
+    "INSERT INTO user_searches (id, user_id, query) VALUES (?, ?, ?)"
+  ).bind(id, user.userId, trimmed).run();
+
+  // Keep only latest 15 searches per user
+  await c.env.DB.prepare(`
+    DELETE FROM user_searches 
+    WHERE user_id = ? AND id NOT IN (
+      SELECT id FROM user_searches WHERE user_id = ? ORDER BY created_at DESC LIMIT 15
+    )
+  `).bind(user.userId, user.userId).run();
+
+  return c.json({ id, query: trimmed, success: true }, 201);
+});
+
+app.delete("/user/searches/:id", authMiddleware, async (c) => {
+  const user = c.get("user");
+  const id = c.req.param("id");
+  if (id === "all") {
+    await c.env.DB.prepare("DELETE FROM user_searches WHERE user_id = ?").bind(user.userId).run();
+    return c.json({ success: true });
+  }
+  await c.env.DB.prepare("DELETE FROM user_searches WHERE id = ? AND user_id = ?").bind(id, user.userId).run();
+  return c.json({ success: true });
+});
+
+/* ==========================================================================
    2. CATEGORIES
    ========================================================================== */
 

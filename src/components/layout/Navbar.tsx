@@ -22,6 +22,7 @@ import {
   Sparkles,
   LayoutGrid,
 } from "lucide-react";
+import SearchBar from "./SearchBar";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -30,7 +31,6 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [langDropdown, setLangDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,13 +43,6 @@ export default function Navbar() {
       })
       .catch(console.error);
   }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
-    setMobileMenuOpen(false);
-  };
 
   const handleLogout = () => {
     logout();
@@ -86,26 +79,9 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Search Bar (Hidden on Mobile) */}
-        <form
-          onSubmit={handleSearch}
-          className="hidden md:flex flex-1 max-w-xl items-center h-10 rounded-full border border-gray-200 hover:border-gray-300 focus-within:border-[#191142] focus-within:ring-2 focus-within:ring-[#191142]/10 bg-gray-50/80 hover:bg-white focus-within:bg-white transition-all shadow-2xs pl-4 pr-1.5"
-        >
-          <Search className="w-4 h-4 text-gray-400 shrink-0 mr-2.5" />
-          <input
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 text-[16px] md:text-sm text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium py-2"
-          />
-          <button
-            type="submit"
-            className="px-4 h-7 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-2xs"
-            aria-label="Search"
-          >
-            {t("search") || "Search"}
-          </button>
-        </form>
+        <div className="hidden md:flex flex-1 max-w-xl">
+          <SearchBar />
+        </div>
 
         {/* Right Action Icons: Reordered properly (Account -> Language -> Cart) */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
@@ -272,36 +248,7 @@ export default function Navbar() {
 
       {/* 2. Dedicated Full-Width Search Bar for Mobile Viewports (< md) */}
       <div className="md:hidden px-3 py-2 bg-gray-50/90 border-b border-gray-200 w-full max-w-full">
-        <form
-          onSubmit={handleSearch}
-          className="flex items-center h-10 w-full rounded-full border border-gray-200 bg-white shadow-2xs pl-3.5 pr-1.5 focus-within:border-[#191142] focus-within:ring-2 focus-within:ring-[#191142]/10 transition-all"
-        >
-          <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
-          <input
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 text-[16px] text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="p-1 text-gray-400 hover:text-gray-600 mr-1 cursor-pointer"
-              aria-label="Clear search"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          )}
-          <button
-            type="submit"
-            className="px-3.5 h-7 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold flex items-center justify-center transition-all shrink-0 cursor-pointer"
-            aria-label="Search mobile"
-          >
-            {t("search") || "Search"}
-          </button>
-        </form>
+        <SearchBar isMobile onSearchComplete={() => setMobileMenuOpen(false)} />
       </div>
 
       {/* 3. Subnav Bar (Categories Row) */}
