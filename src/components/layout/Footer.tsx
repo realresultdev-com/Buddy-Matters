@@ -20,9 +20,9 @@ export default function Footer() {
         {t("backToTop")}
       </button>
 
-      {/* 2. Brand & Language Row */}
-      <div className="bg-[#191142] py-8 px-4 sm:px-8">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      {/* 2. Brand & Navigation Row */}
+      <div className="bg-[#191142] py-8 px-4 sm:px-8 border-b border-[#261d5e]">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <Link to="/" className="flex items-center">
             <img
               src="/logo-white.png"
@@ -30,6 +30,18 @@ export default function Footer() {
               className="h-8 w-auto object-contain drop-shadow-xs"
             />
           </Link>
+
+          <div className="flex flex-wrap items-center justify-center gap-5 text-xs text-gray-300">
+            <Link to="/about" className="hover:text-[#0ea9df] transition-colors font-medium">
+              About Us
+            </Link>
+            <Link to="/shop" className="hover:text-[#0ea9df] transition-colors font-medium">
+              Shop Mattresses
+            </Link>
+            <Link to="/cart" className="hover:text-[#0ea9df] transition-colors font-medium">
+              Cart
+            </Link>
+          </div>
 
           <button
             type="button"

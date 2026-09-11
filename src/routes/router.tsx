@@ -12,6 +12,7 @@ import CategoryPage from "../pages/public/CategoryPage";
 import Cart from "../pages/public/Cart";
 import Checkout from "../pages/public/Checkout";
 import OrderSuccess from "../pages/public/OrderSuccess";
+import About from "../pages/public/About";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       // Public
       { index: true, element: <Home /> },
       { path: "shop", element: <Shop /> },
+      { path: "about", element: <About /> },
       { path: "product/:id", element: <ProductDetail /> },
       { path: "category/:id", element: <CategoryPage /> },
       { path: "cart", element: <Cart /> },

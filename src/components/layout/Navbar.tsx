@@ -270,6 +270,12 @@ export default function Navbar() {
               {cat.name}
             </Link>
           ))}
+          <Link
+            to="/about"
+            className="py-1 px-1 text-gray-600 hover:text-[#0ea9df] transition-colors whitespace-nowrap font-medium"
+          >
+            About Us
+          </Link>
         </div>
       </div>
 
@@ -382,6 +388,13 @@ export default function Navbar() {
                   className="block py-2 px-2 rounded-lg hover:bg-gray-100 hover:text-[#0ea9df] font-bold text-[#0ea9df]"
                 >
                   Shop All Products
+                </Link>
+                <Link
+                  to="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 px-2 rounded-lg hover:bg-gray-100 hover:text-[#0ea9df]"
+                >
+                  About Buddy Mattress
                 </Link>
                 <Link
                   to="/cart"
