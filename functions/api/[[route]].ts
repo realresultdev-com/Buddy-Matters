@@ -346,8 +346,74 @@ app.delete("/categories/:id", authMiddleware, adminMiddleware, async (c) => {
 });
 
 /* ==========================================================================
-   3. PRODUCTS
+   3. PRODUCTS & PRODUCT IMAGES
    ========================================================================== */
+
+async function getProductImagesMap(db: any, productIds: string[]) {
+  if (!productIds || productIds.length === 0) return {};
+  try {
+    const placeholders = productIds.map(() => "?").join(",");
+    const { results } = await db.prepare(`
+      SELECT id, product_id, image_url, color_name, color_hex, is_primary, sort_order, created_at
+      FROM product_images
+      WHERE product_id IN (${placeholders})
+      ORDER BY sort_order ASC, created_at ASC
+    `).bind(...productIds).all();
+
+    const map: Record<string, any[]> = {};
+    for (const img of (results || [])) {
+      if (!map[img.product_id]) map[img.product_id] = [];
+      map[img.product_id].push({
+        id: img.id,
+        productId: img.product_id,
+        imageUrl: img.image_url,
+        colorName: img.color_name || null,
+        colorHex: img.color_hex || null,
+        isPrimary: Boolean(img.is_primary),
+        sortOrder: img.sort_order,
+        createdAt: img.created_at,
+      });
+    }
+    return map;
+  } catch (err) {
+    console.error("Failed to query product_images:", err);
+    return {};
+  }
+}
+
+async function syncProductImages(db: any, productId: string, images: string[], colorVariants: any[]) {
+  try {
+    await db.prepare("DELETE FROM product_images WHERE product_id = ?").bind(productId).run();
+
+    let sortOrder = 0;
+    // 1. General images
+    if (Array.isArray(images)) {
+      for (let i = 0; i < images.length; i++) {
+        const url = images[i];
+        if (!url || typeof url !== "string") continue;
+        const imgId = `img-${crypto.randomUUID().slice(0, 12)}`;
+        await db.prepare(
+          "INSERT INTO product_images (id, product_id, image_url, color_name, color_hex, is_primary, sort_order) VALUES (?, ?, ?, NULL, NULL, ?, ?)"
+        ).bind(imgId, productId, url, sortOrder === 0 ? 1 : 0, sortOrder++).run();
+      }
+    }
+
+    // 2. Color-specific images
+    if (Array.isArray(colorVariants)) {
+      for (let i = 0; i < colorVariants.length; i++) {
+        const cv = colorVariants[i];
+        if (cv && cv.image) {
+          const imgId = `img-${crypto.randomUUID().slice(0, 12)}`;
+          await db.prepare(
+            "INSERT INTO product_images (id, product_id, image_url, color_name, color_hex, is_primary, sort_order) VALUES (?, ?, ?, ?, ?, 0, ?)"
+          ).bind(imgId, productId, cv.image, cv.name || null, cv.color || null, sortOrder++).run();
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to sync product_images:", err);
+  }
+}
 
 app.get("/products", async (c) => {
   const categoryId = c.req.query("categoryId");
@@ -378,14 +444,22 @@ app.get("/products", async (c) => {
   query += ` ORDER BY p.created_at DESC`;
 
   const { results } = await c.env.DB.prepare(query).bind(...params).all();
+  const productIds = results.map((r: any) => r.id);
+  const imagesMap = await getProductImagesMap(c.env.DB, productIds);
 
   const formatted = results.map((row: any) => {
+    const productImages = imagesMap[row.id] || [];
+
     let images: string[] = [];
     try {
       images = typeof row.images === "string" ? JSON.parse(row.images) : row.images || [];
     } catch {
       images = row.images ? [row.images] : [];
     }
+    if (images.length === 0 && productImages.length > 0) {
+      images = productImages.map((pi: any) => pi.imageUrl);
+    }
+
     let about: any[] = [];
     try {
       about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
@@ -401,6 +475,16 @@ app.get("/products", async (c) => {
     } catch {
       colorVariants = [];
     }
+    if (colorVariants.length === 0 && productImages.length > 0) {
+      const colorImages = productImages.filter((pi: any) => pi.colorHex);
+      if (colorImages.length > 0) {
+        colorVariants = colorImages.map((ci: any) => ({
+          name: ci.colorName || "Color",
+          color: ci.colorHex,
+          image: ci.imageUrl,
+        }));
+      }
+    }
 
     return {
       id: row.id,
@@ -414,6 +498,7 @@ app.get("/products", async (c) => {
       stock: row.stock,
       images,
       color_variants: Array.isArray(colorVariants) ? colorVariants : [],
+      product_images: productImages,
       categoryId: row.categoryId,
       category: {
         id: row.cat_id,
@@ -454,11 +539,17 @@ app.get("/products/:id", async (c) => {
     return c.json({ message: "Product not found" }, 404);
   }
 
+  const imagesMap = await getProductImagesMap(c.env.DB, [row.id]);
+  const productImages = imagesMap[row.id] || [];
+
   let images: string[] = [];
   try {
     images = typeof row.images === "string" ? JSON.parse(row.images) : row.images || [];
   } catch {
     images = row.images ? [row.images] : [];
+  }
+  if (images.length === 0 && productImages.length > 0) {
+    images = productImages.map((pi: any) => pi.imageUrl);
   }
 
   let about: any[] = [];
@@ -477,6 +568,16 @@ app.get("/products/:id", async (c) => {
   } catch {
     colorVariants = [];
   }
+  if (colorVariants.length === 0 && productImages.length > 0) {
+    const colorImages = productImages.filter((pi: any) => pi.colorHex);
+    if (colorImages.length > 0) {
+      colorVariants = colorImages.map((ci: any) => ({
+        name: ci.colorName || "Color",
+        color: ci.colorHex,
+        image: ci.imageUrl,
+      }));
+    }
+  }
 
   c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
@@ -491,6 +592,7 @@ app.get("/products/:id", async (c) => {
     stock: row.stock,
     images,
     color_variants: Array.isArray(colorVariants) ? colorVariants : [],
+    product_images: productImages,
     categoryId: row.categoryId,
     category: {
       id: row.cat_id,
@@ -777,14 +879,22 @@ const handleProductDetailsQuery = async (c: any) => {
   }
 
   const { results } = await c.env.DB.prepare(query).bind(...binds).all();
+  const productIds = results.map((r: any) => r.id);
+  const imagesMap = await getProductImagesMap(c.env.DB, productIds);
 
   const formatProduct = (row: any) => {
+    const productImages = imagesMap[row.id] || [];
+
     let images: string[] = [];
     try {
       images = typeof row.images === "string" ? JSON.parse(row.images) : row.images || [];
     } catch {
       images = row.images ? [row.images] : [];
     }
+    if (images.length === 0 && productImages.length > 0) {
+      images = productImages.map((pi: any) => pi.imageUrl);
+    }
+
     const originalMRP = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
     const discountPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (originalMRP > row.price ? Math.round(((originalMRP - row.price) / originalMRP) * 100) : 0);
     let about: any[] = [];
@@ -800,6 +910,16 @@ const handleProductDetailsQuery = async (c: any) => {
     } catch {
       colorVariants = [];
     }
+    if (colorVariants.length === 0 && productImages.length > 0) {
+      const colorImages = productImages.filter((pi: any) => pi.colorHex);
+      if (colorImages.length > 0) {
+        colorVariants = colorImages.map((ci: any) => ({
+          name: ci.colorName || "Color",
+          color: ci.colorHex,
+          image: ci.imageUrl,
+        }));
+      }
+    }
 
     return {
       id: row.id,
@@ -814,7 +934,8 @@ const handleProductDetailsQuery = async (c: any) => {
       inStock: row.stock > 0,
       images,
       color_variants: Array.isArray(colorVariants) ? colorVariants : [],
-      thumbnail: images[0] || "/logo-transparent.png",
+      product_images: productImages,
+      thumbnail: images[0] || (productImages[0]?.imageUrl) || "/logo-transparent.png",
       categoryId: row.categoryId,
       category: {
         id: row.cat_id,
@@ -910,6 +1031,12 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
     "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value, original_price, discount_percent, color_variants) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent, colorVariantsJson).run();
 
+  const parsedImages = JSON.parse(imagesJson);
+  const parsedColorVariants = JSON.parse(colorVariantsJson);
+  await syncProductImages(c.env.DB, id, parsedImages, parsedColorVariants);
+  const imagesMap = await getProductImagesMap(c.env.DB, [id]);
+  const productImages = imagesMap[id] || [];
+
   return c.json({
     id,
     ...body,
@@ -917,11 +1044,12 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
     originalMRP: originalPrice,
     discount_percent: discountPercent,
     discountPercent: discountPercent,
-    color_variants: JSON.parse(colorVariantsJson),
+    color_variants: parsedColorVariants,
+    product_images: productImages,
     is_trending: Boolean(isTrending),
     offer_badge_prefix: offerBadgePrefix,
     offer_badge_value: offerBadgeValue,
-    images: JSON.parse(imagesJson),
+    images: parsedImages,
     about: JSON.parse(aboutJson),
   }, 201);
 });
@@ -998,6 +1126,17 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     parsedColors = [];
   }
 
+  let parsedImgs: any[] = [];
+  try {
+    parsedImgs = JSON.parse(images);
+  } catch {
+    parsedImgs = [];
+  }
+
+  await syncProductImages(c.env.DB, id, parsedImgs, parsedColors);
+  const imagesMap = await getProductImagesMap(c.env.DB, [id]);
+  const productImages = imagesMap[id] || [];
+
   return c.json({
     id,
     name,
@@ -1008,12 +1147,13 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     discount_percent: discountPercent,
     discountPercent: discountPercent,
     color_variants: parsedColors,
+    product_images: productImages,
     stock,
     categoryId,
     is_trending: Boolean(isTrending),
     offer_badge_prefix: offerBadgePrefix,
     offer_badge_value: offerBadgeValue,
-    images: JSON.parse(images),
+    images: parsedImgs,
     about: parsedAbout,
   });
 });
@@ -1022,6 +1162,58 @@ app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const id = c.req.param("id");
   await c.env.DB.prepare("DELETE FROM products WHERE id = ?").bind(id).run();
   return c.json({ success: true });
+});
+
+/* ==========================================================================
+   PRODUCT IMAGES DEDICATED API
+   ========================================================================== */
+
+app.get("/products/:id/images", async (c) => {
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
+  const imagesMap = await getProductImagesMap(c.env.DB, [id]);
+  return c.json(imagesMap[id] || []);
+});
+
+app.post("/products/:id/images", authMiddleware, adminMiddleware, async (c) => {
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
+  const body = await c.req.json();
+  const { imageUrl, colorName, colorHex, isPrimary, sortOrder } = body;
+  if (!imageUrl) {
+    return c.json({ error: "imageUrl is required" }, 400);
+  }
+
+  const imgId = `img-${crypto.randomUUID().slice(0, 12)}`;
+  await c.env.DB.prepare(`
+    INSERT INTO product_images (id, product_id, image_url, color_name, color_hex, is_primary, sort_order)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).bind(
+    imgId,
+    id,
+    imageUrl,
+    colorName || null,
+    colorHex || null,
+    isPrimary ? 1 : 0,
+    sortOrder || 0
+  ).run();
+
+  return c.json({
+    id: imgId,
+    productId: id,
+    imageUrl,
+    colorName: colorName || null,
+    colorHex: colorHex || null,
+    isPrimary: Boolean(isPrimary),
+    sortOrder: sortOrder || 0,
+    createdAt: new Date().toISOString(),
+  }, 201);
+});
+
+app.delete("/products/:id/images/:imageId", authMiddleware, adminMiddleware, async (c) => {
+  const imageId = c.req.param("imageId");
+  await c.env.DB.prepare("DELETE FROM product_images WHERE id = ?").bind(imageId).run();
+  return c.json({ success: true, message: "Image deleted successfully" });
 });
 
 /* ==========================================================================

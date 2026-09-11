@@ -16,6 +16,17 @@ export interface ProductColorVariant {
   image?: string;
 }
 
+export interface ProductImage {
+  id: string;
+  productId: string;
+  imageUrl: string;
+  colorName?: string | null;
+  colorHex?: string | null;
+  isPrimary?: boolean;
+  sortOrder?: number;
+  createdAt?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -31,6 +42,7 @@ export interface Product {
   reviewsCount?: number;
   about?: ProductAboutItem[];
   color_variants?: ProductColorVariant[];
+  product_images?: ProductImage[];
   offer_badge_prefix?: string;
   offer_badge_value?: string;
   original_price?: number | null;
