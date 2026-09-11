@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Edit3 } from "lucide-react";
+import { Edit3, PhoneCall, Mail } from "lucide-react";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 import { useAuth } from "../../context/AuthContext";
@@ -94,6 +94,35 @@ export default function ProductInfo({
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
           <span>Net Quantity: <strong className="font-bold text-slate-900">{netQtyBadge}</strong></span>
         </span>
+      </div>
+
+      {/* Consumer Care & Queries for this Commodity (Statutory Requirement) */}
+      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
+        <div className="w-7 h-7 rounded-full bg-white text-[#0ea9df] border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+          <PhoneCall className="w-3.5 h-3.5" />
+        </div>
+        <div className="text-xs space-y-1 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <span className="font-bold text-[#191142]">Consumer Care for this Product</span>
+            <span className="text-[10px] text-emerald-700 bg-emerald-50 font-semibold px-2 py-0.2 rounded-full border border-emerald-200">
+              Direct Helpline
+            </span>
+          </div>
+          <p className="text-gray-500 text-[11px] leading-relaxed">
+            Have queries about size, customization, or warranty for this item?
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-0.5 text-xs font-medium">
+            <a href="tel:+919443300000" className="inline-flex items-center gap-1 text-[#191142] hover:text-[#0ea9df] transition-colors font-bold">
+              <PhoneCall className="w-3 h-3 text-[#0ea9df]" />
+              <span>+91 94433 00000</span>
+            </a>
+            <span className="text-gray-300">•</span>
+            <a href="mailto:support@buddymattress.in" className="inline-flex items-center gap-1 text-[#191142] hover:text-[#0ea9df] transition-colors">
+              <Mail className="w-3 h-3 text-[#0ea9df]" />
+              <span>support@buddymattress.in</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Color Selection Swatches */}

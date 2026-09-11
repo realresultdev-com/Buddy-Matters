@@ -94,6 +94,17 @@ export default function ProductBuyBox({
                 Buddy Mattress (TN)
               </span>
             </div>
+            <div className="flex justify-between items-start pt-0.5 border-t border-gray-100">
+              <span className="text-gray-400">Consumer Care:</span>
+              <div className="text-right text-[10px]">
+                <a href="tel:+919443300000" className="font-bold text-[#0ea9df] hover:underline block">
+                  +91 94433 00000
+                </a>
+                <a href="mailto:support@buddymattress.in" className="text-gray-500 hover:text-[#0ea9df] hover:underline block">
+                  support@buddymattress.in
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* Add to Cart: Buddy Mattress Brand Button */}
