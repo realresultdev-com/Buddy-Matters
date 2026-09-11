@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { Edit3 } from "lucide-react";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
+import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Product, ProductColorVariant } from "../../types/product.types";
 import ColorSwatches from "../common/ColorSwatches";
@@ -18,15 +20,29 @@ export default function ProductInfo({
   selectedVariant,
   onSelectVariant,
 }: ProductInfoProps) {
+  const { user } = useAuth();
   const { language, t } = useLanguage();
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Brand & Title */}
       <div>
-        <Link to="/" className="text-xs font-bold text-[#0ea9df] hover:underline uppercase tracking-wider">
-          {t("officialStore")}
-        </Link>
+        <div className="flex items-center justify-between gap-2">
+          <Link to="/" className="text-xs font-bold text-[#0ea9df] hover:underline uppercase tracking-wider">
+            {t("officialStore")}
+          </Link>
+          {isAdmin && (
+            <Link
+              to={`/admin/products/${product.id}/edit`}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-bold shadow-xs transition-colors"
+              title="Edit in Seller Central"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Product</span>
+            </Link>
+          )}
+        </div>
         <h1 className="text-xl sm:text-2xl font-bold text-[#191142] leading-snug mt-1">
           {product.name}
         </h1>

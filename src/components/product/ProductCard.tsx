@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Edit3 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getProductUrl } from "../../utils/urlSecurity";
@@ -11,9 +12,12 @@ import OfferBadge from "../common/OfferBadge";
 import ColorSwatches from "../common/ColorSwatches";
 
 export default function ProductCard({ product }: { product: Product }) {
+  const { user } = useAuth();
   const { addItem } = useCart();
   const { language, t } = useLanguage();
   const [added, setAdded] = useState(false);
+
+  const isAdmin = user?.role === "ADMIN";
 
   const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(
     product.color_variants && product.color_variants.length > 0 ? product.color_variants[0] : null
@@ -42,6 +46,19 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 flex flex-col justify-between hover:border-[#0ea9df] hover:shadow-md transition-all relative group h-full">
+      {/* Admin Direct Edit Button (Visible to Admin User Only) */}
+      {isAdmin && (
+        <Link
+          to={`/admin/products/${product.id}/edit`}
+          onClick={(e) => e.stopPropagation()}
+          className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#191142] hover:bg-[#0ea9df] text-white text-[11px] font-bold shadow-md transition-all cursor-pointer"
+          title="Edit product details in Seller Central"
+        >
+          <Edit3 className="w-3.5 h-3.5" />
+          <span>Edit</span>
+        </Link>
+      )}
+
       {/* Optional Deal Offer Sticker Badge */}
       {Boolean(product.offer_badge_value) && (
         <div className="absolute top-2 right-2 z-10 pointer-events-none drop-shadow-md">
@@ -145,6 +162,18 @@ export default function ProductCard({ product }: { product: Product }) {
               t("addToCart")
             )}
           </button>
+        )}
+
+        {/* Secondary Admin Quick Update Link */}
+        {isAdmin && (
+          <Link
+            to={`/admin/products/${product.id}/edit`}
+            className="mt-2 w-full py-1.5 px-3 rounded-lg border border-gray-300 hover:border-[#0ea9df] bg-gray-50 hover:bg-cyan-50 text-[#191142] hover:text-[#0ea9df] text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-2xs"
+            title="Edit in Seller Central"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Product</span>
+          </Link>
         )}
       </div>
     </div>
