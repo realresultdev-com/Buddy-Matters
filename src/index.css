@@ -2,6 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   PRODUCTION iOS & MOBILE OPTIMIZATIONS
+   Fixes:
+   1. iOS Safari viewport auto-zoom on input/textarea focus (<16px bug)
+   2. Horizontal screen wobble / overflow-x scroll on small screens
+   3. iPhone notch and Home Indicator safe-area insets
+   4. Double-tap zoom delays via touch-action manipulation
+   ========================================================================== */
+
+/* 1. Global iOS Auto-Zoom Prevention: Force min 16px font-size on mobile inputs */
+@media screen and (max-width: 768px) {
+  input,
+  select,
+  textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="number"] {
+    font-size: 16px !important;
+  }
+}
+
+/* 2. Prevent horizontal scrolling and screen jitter on mobile */
+html,
+body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  position: relative;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-x: none;
+}
+
+#root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Smooth touch scrolling on mobile */
+* {
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
+}
+
+/* 4. Touch Action Manipulation: Eliminate double-tap zoom delay */
+button,
+a,
+input,
+select,
+textarea,
+label {
+  touch-action: manipulation;
+}
+
+/* 5. Safe Area Insets for iPhone (Notch & Home Bar) */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+.pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+}
+
+/* 6. Tamil Font overrides */
 html[lang="ta"],
 html[lang="ta"] body,
 html[lang="ta"] button,
@@ -11,4 +91,3 @@ html[lang="ta"] textarea {
   font-family: "Noto Sans Tamil", "Mukta Malar", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   letter-spacing: normal !important;
 }
-
