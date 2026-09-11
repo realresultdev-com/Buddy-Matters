@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProductGalleryProps {
   images?: string[];
   productName: string;
   className?: string;
+  featuredImage?: string;
 }
 
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800";
@@ -12,11 +13,25 @@ export default function ProductGallery({
   images = [],
   productName,
   className = "",
+  featuredImage,
 }: ProductGalleryProps) {
-  const imageList = images.length > 0 ? images : [FALLBACK_IMAGE];
-  const [selectedImage, setSelectedImage] = useState<string>(imageList[0]);
+  const baseImageList = images.length > 0 ? images : [FALLBACK_IMAGE];
+  const imageList =
+    featuredImage && !baseImageList.includes(featuredImage)
+      ? [featuredImage, ...baseImageList]
+      : baseImageList;
+
+  const [selectedImage, setSelectedImage] = useState<string>(featuredImage || imageList[0]);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    if (featuredImage) {
+      setSelectedImage(featuredImage);
+    } else if (imageList.length > 0) {
+      setSelectedImage(imageList[0]);
+    }
+  }, [featuredImage]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window !== "undefined" && !window.matchMedia("(hover: hover)").matches) return;

@@ -2,14 +2,22 @@ import { Link } from "react-router-dom";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 import { useLanguage } from "../../context/LanguageContext";
-import type { Product } from "../../types/product.types";
+import type { Product, ProductColorVariant } from "../../types/product.types";
+import ColorSwatches from "../common/ColorSwatches";
 
 interface ProductInfoProps {
   product: Product;
   className?: string;
+  selectedVariant?: ProductColorVariant | null;
+  onSelectVariant?: (variant: ProductColorVariant) => void;
 }
 
-export default function ProductInfo({ product, className = "" }: ProductInfoProps) {
+export default function ProductInfo({
+  product,
+  className = "",
+  selectedVariant,
+  onSelectVariant,
+}: ProductInfoProps) {
   const { language, t } = useLanguage();
 
   return (
@@ -59,6 +67,19 @@ export default function ProductInfo({ product, className = "" }: ProductInfoProp
         discountPercent={product.discount_percent ?? product.discountPercent}
         size="lg"
       />
+
+      {/* Color Selection Swatches */}
+      {product.color_variants && product.color_variants.length > 0 && (
+        <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200/80 space-y-2">
+          <ColorSwatches
+            variants={product.color_variants}
+            selectedVariant={selectedVariant}
+            onSelect={onSelectVariant}
+            size="md"
+            showLabel={true}
+          />
+        </div>
+      )}
 
       {/* Product Description */}
       {product.description && (

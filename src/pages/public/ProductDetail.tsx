@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { productService } from "../../services/product.service";
 import { useCart } from "../../context/CartContext";
 import { decryptId } from "../../utils/urlSecurity";
-import type { Product } from "../../types/product.types";
+import type { Product, ProductColorVariant } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import ProductBreadcrumbs from "../../components/product/ProductBreadcrumbs";
 import ProductGallery from "../../components/product/ProductGallery";
@@ -18,6 +18,7 @@ export default function ProductDetail() {
   const { addItem } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(null);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
 
@@ -29,7 +30,13 @@ export default function ProductDetail() {
       setLoading(true);
       try {
         const res = await productService.getById(id);
-        if (isMounted) setProduct(res.data);
+        if (isMounted) {
+          const p = res.data;
+          setProduct(p);
+          if (p.color_variants && p.color_variants.length > 0) {
+            setSelectedVariant(p.color_variants[0]);
+          }
+        }
       } catch (err) {
         console.error("Failed to load product details:", err);
       } finally {
@@ -57,13 +64,20 @@ export default function ProductDetail() {
     );
   }
 
+  const activeImage =
+    selectedVariant?.image ||
+    (product.images && product.images.length > 0
+      ? product.images[0]
+      : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800");
+
   const handleAddToCart = (quantity: number) => {
     addItem({
       productId: product.id,
-      name: product.name,
+      name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,
       price: product.price,
       quantity,
-      image: product.images?.[0] || "",
+      image: activeImage,
+      color: selectedVariant?.name,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -72,10 +86,11 @@ export default function ProductDetail() {
   const handleBuyNow = (quantity: number) => {
     addItem({
       productId: product.id,
-      name: product.name,
+      name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,
       price: product.price,
       quantity,
-      image: product.images?.[0] || "",
+      image: activeImage,
+      color: selectedVariant?.name,
     });
     navigate("/checkout");
   };
@@ -93,12 +108,20 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Column 1: Image Gallery (5 cols) */}
         <div className="lg:col-span-5 w-full min-w-0">
-          <ProductGallery images={product.images} productName={product.name} />
+          <ProductGallery
+            images={product.images}
+            productName={product.name}
+            featuredImage={selectedVariant?.image}
+          />
         </div>
 
         {/* Column 2: Specs & Details (4 cols) */}
         <div className="lg:col-span-4 w-full min-w-0">
-          <ProductInfo product={product} />
+          <ProductInfo
+            product={product}
+            selectedVariant={selectedVariant}
+            onSelectVariant={(v) => setSelectedVariant(v)}
+          />
         </div>
 
         {/* Column 3: Buy Box (3 cols) */}

@@ -354,7 +354,7 @@ app.get("/products", async (c) => {
   const trending = c.req.query("trending");
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent, p.color_variants,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -395,6 +395,13 @@ app.get("/products", async (c) => {
     const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
     const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
 
+    let colorVariants: any[] = [];
+    try {
+      colorVariants = typeof row.color_variants === "string" ? JSON.parse(row.color_variants) : row.color_variants || [];
+    } catch {
+      colorVariants = [];
+    }
+
     return {
       id: row.id,
       name: row.name,
@@ -406,6 +413,7 @@ app.get("/products", async (c) => {
       discountPercent: discPercent,
       stock: row.stock,
       images,
+      color_variants: Array.isArray(colorVariants) ? colorVariants : [],
       categoryId: row.categoryId,
       category: {
         id: row.cat_id,
@@ -432,7 +440,7 @@ app.get("/products/:id", async (c) => {
   const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent, p.color_variants,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -463,6 +471,13 @@ app.get("/products/:id", async (c) => {
   const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
   const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
 
+  let colorVariants: any[] = [];
+  try {
+    colorVariants = typeof row.color_variants === "string" ? JSON.parse(row.color_variants) : row.color_variants || [];
+  } catch {
+    colorVariants = [];
+  }
+
   c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
     id: row.id,
@@ -475,6 +490,7 @@ app.get("/products/:id", async (c) => {
     discountPercent: discPercent,
     stock: row.stock,
     images,
+    color_variants: Array.isArray(colorVariants) ? colorVariants : [],
     categoryId: row.categoryId,
     category: {
       id: row.cat_id,
@@ -685,7 +701,7 @@ const handleProductDetailsQuery = async (c: any) => {
 
   let query = `
     SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending, p.about,
-           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent,
+           p.offer_badge_prefix, p.offer_badge_value, p.original_price, p.discount_percent, p.color_variants,
            c.id as cat_id, c.name as cat_name, c.offer_badge_prefix as cat_offer_badge_prefix, c.offer_badge_value as cat_offer_badge_value,
            p.created_at as createdAt,
            (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
@@ -778,6 +794,13 @@ const handleProductDetailsQuery = async (c: any) => {
       about = [];
     }
 
+    let colorVariants: any[] = [];
+    try {
+      colorVariants = typeof row.color_variants === "string" ? JSON.parse(row.color_variants) : row.color_variants || [];
+    } catch {
+      colorVariants = [];
+    }
+
     return {
       id: row.id,
       name: row.name,
@@ -790,6 +813,7 @@ const handleProductDetailsQuery = async (c: any) => {
       stock: row.stock,
       inStock: row.stock > 0,
       images,
+      color_variants: Array.isArray(colorVariants) ? colorVariants : [],
       thumbnail: images[0] || "/logo-transparent.png",
       categoryId: row.categoryId,
       category: {
@@ -880,10 +904,11 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   const offerBadgeValue = body.offer_badge_value || "";
   const originalPrice = body.original_price !== undefined && body.original_price !== null && body.original_price !== "" ? Number(body.original_price) : Math.round(Number(body.price) * 1.35);
   const discountPercent = body.discount_percent !== undefined && body.discount_percent !== null && body.discount_percent !== "" ? Number(body.discount_percent) : (originalPrice > Number(body.price) ? Math.round(((originalPrice - Number(body.price)) / originalPrice) * 100) : 0);
+  const colorVariantsJson = JSON.stringify(Array.isArray(body.color_variants) ? body.color_variants : []);
 
   await c.env.DB.prepare(
-    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value, original_price, discount_percent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent).run();
+    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending, about, offer_badge_prefix, offer_badge_value, original_price, discount_percent, color_variants) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending, aboutJson, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent, colorVariantsJson).run();
 
   return c.json({
     id,
@@ -892,6 +917,7 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
     originalMRP: originalPrice,
     discount_percent: discountPercent,
     discountPercent: discountPercent,
+    color_variants: JSON.parse(colorVariantsJson),
     is_trending: Boolean(isTrending),
     offer_badge_prefix: offerBadgePrefix,
     offer_badge_value: offerBadgeValue,
@@ -952,15 +978,24 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
   }
 
+  const colorVariants = body.color_variants !== undefined ? (typeof body.color_variants === "string" ? body.color_variants : JSON.stringify(body.color_variants)) : (existing.color_variants || "[]");
+
   await c.env.DB.prepare(
-    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ?, original_price = ?, discount_percent = ? WHERE id = ?"
-  ).bind(name, description, price, stock, categoryId, images, isTrending, about, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent, id).run();
+    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ?, original_price = ?, discount_percent = ?, color_variants = ? WHERE id = ?"
+  ).bind(name, description, price, stock, categoryId, images, isTrending, about, offerBadgePrefix, offerBadgeValue, originalPrice, discountPercent, colorVariants, id).run();
 
   let parsedAbout: any[] = [];
   try {
     parsedAbout = JSON.parse(about);
   } catch {
     parsedAbout = [];
+  }
+
+  let parsedColors: any[] = [];
+  try {
+    parsedColors = JSON.parse(colorVariants);
+  } catch {
+    parsedColors = [];
   }
 
   return c.json({
@@ -972,6 +1007,7 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
     originalMRP: originalPrice,
     discount_percent: discountPercent,
     discountPercent: discountPercent,
+    color_variants: parsedColors,
     stock,
     categoryId,
     is_trending: Boolean(isTrending),

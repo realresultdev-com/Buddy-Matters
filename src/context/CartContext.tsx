@@ -4,8 +4,8 @@ import type { CartItem } from "../types/product.types";
 interface CartContextType {
   items: CartItem[];
   addItem: (item: CartItem) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (productId: string, color?: string) => void;
+  updateQuantity: (productId: string, quantity: number, color?: string) => void;
   clearCart: () => void;
   totalCount: number;
   totalAmount: number;
@@ -29,10 +29,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = (item: CartItem) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === item.productId);
+      const existing = prev.find(
+        (i) => i.productId === item.productId && (i.color || "") === (item.color || "")
+      );
       if (existing) {
         return prev.map((i) =>
-          i.productId === item.productId
+          i.productId === item.productId && (i.color || "") === (item.color || "")
             ? { ...i, quantity: i.quantity + item.quantity }
             : i
         );
@@ -41,19 +43,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const removeItem = (productId: string) => {
-    setItems((prev) => prev.filter((i) => i.productId !== productId));
+  const removeItem = (productId: string, color?: string) => {
+    setItems((prev) =>
+      prev.filter(
+        (i) =>
+          !(
+            i.productId === productId &&
+            (color === undefined || (i.color || "") === (color || ""))
+          )
+      )
+    );
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, color?: string) => {
     if (quantity <= 0) {
-      removeItem(productId);
+      removeItem(productId, color);
       return;
     }
     setItems((prev) =>
-      prev.map((i) => (i.productId === productId ? { ...i, quantity } : i))
+      prev.map((i) =>
+        i.productId === productId &&
+        (color === undefined || (i.color || "") === (color || ""))
+          ? { ...i, quantity }
+          : i
+      )
     );
   };
+
 
   const clearCart = () => setItems([]);
 

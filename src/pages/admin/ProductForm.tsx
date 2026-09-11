@@ -3,11 +3,39 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { productService } from "../../services/product.service";
 import { categoryService } from "../../services/category.service";
 import { api } from "../../services/api";
-import type { Category } from "../../types/product.types";
+import type { Category, ProductColorVariant } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import R2ImageUploader from "../../components/admin/R2ImageUploader";
 import OfferBadge from "../../components/common/OfferBadge";
-import { ArrowLeft, AlertCircle, CheckCircle2, Flame, Plus, Trash2, Tag, Percent, Calculator, Sparkles } from "lucide-react";
+import ColorSwatches from "../../components/common/ColorSwatches";
+import {
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
+  Flame,
+  Plus,
+  Trash2,
+  Tag,
+  Percent,
+  Calculator,
+  Sparkles,
+  Palette,
+  UploadCloud,
+  Image as ImageIcon,
+  Loader2,
+} from "lucide-react";
+
+const COLOR_PRESETS = [
+  { name: "Midnight Navy", color: "#1e2238" },
+  { name: "Olive Green", color: "#858636" },
+  { name: "Blush Pink", color: "#f1d8d9" },
+  { name: "Warm Amber", color: "#e49e4d" },
+  { name: "Crimson Red", color: "#b73644" },
+  { name: "Charcoal Gray", color: "#2b2d42" },
+  { name: "Pure White", color: "#ffffff" },
+  { name: "Sky Blue", color: "#0ea9df" },
+  { name: "Forest Green", color: "#2e7d32" },
+];
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +46,7 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingVariantIndex, setUploadingVariantIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -31,6 +60,7 @@ export default function ProductForm() {
     offer_badge_prefix: "",
     offer_badge_value: "",
     images: [] as string[],
+    color_variants: [] as ProductColorVariant[],
     about: [] as { key: string; value: string }[],
   });
 
@@ -58,6 +88,7 @@ export default function ProductForm() {
             offer_badge_prefix: p.offer_badge_prefix || "",
             offer_badge_value: p.offer_badge_value || (discPercent > 0 ? `${discPercent}% Off` : ""),
             images: p.images && p.images.length > 0 ? p.images : [],
+            color_variants: Array.isArray(p.color_variants) ? p.color_variants : [],
             about: Array.isArray(p.about) ? p.about : [],
           });
         } else if (catRes.data.length > 0) {
@@ -148,6 +179,67 @@ export default function ProductForm() {
     }));
   };
 
+  const handleAddColorVariant = (preset?: { name: string; color: string }) => {
+    setFormData((prev) => ({
+      ...prev,
+      color_variants: [
+        ...prev.color_variants,
+        {
+          name: preset?.name || "New Color",
+          color: preset?.color || "#1e2238",
+          image: prev.images.length > 0 ? prev.images[0] : "",
+        },
+      ],
+    }));
+  };
+
+  const handleColorVariantChange = (
+    index: number,
+    field: "name" | "color" | "image",
+    val: string
+  ) => {
+    setFormData((prev) => {
+      const updated = [...prev.color_variants];
+      updated[index] = { ...updated[index], [field]: val };
+      return { ...prev, color_variants: updated };
+    });
+  };
+
+  const handleRemoveColorVariant = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      color_variants: prev.color_variants.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleColorImageFileUpload = async (index: number, file: File) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    setUploadingVariantIndex(index);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await api.post("/upload", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const url = res.data.url || res.data.urls?.[0];
+      if (url) {
+        handleColorVariantChange(index, "image", url);
+        // Also add to general images if not already present
+        if (!formData.images.includes(url)) {
+          setFormData((prev) => ({
+            ...prev,
+            images: [...prev.images, url],
+          }));
+        }
+      }
+    } catch (err: any) {
+      console.error("Failed to upload variant image:", err);
+      setError(err.response?.data?.error || "Failed to upload image for color variant");
+    } finally {
+      setUploadingVariantIndex(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -168,6 +260,7 @@ export default function ProductForm() {
         formData.images.length > 0
           ? formData.images
           : ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"],
+      color_variants: formData.color_variants.filter((c) => c.name.trim() || c.color.trim()),
       about: formData.about.filter((item) => item.key.trim() || item.value.trim()),
     };
 
@@ -548,10 +641,247 @@ export default function ProductForm() {
           />
         </div>
 
+        {/* 3. Color-Based Product Display & Variants (Color Swatches & Image Mapping) */}
+        <div className="space-y-4 pt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
+            <div>
+              <h2 className="text-sm font-bold text-[#191142] flex items-center gap-1.5">
+                <Palette className="w-4 h-4 text-[#0ea9df]" />
+                3. Color-Based Product Display &amp; Variants
+              </h2>
+              <p className="text-[11px] text-gray-500">
+                Display interactive color swatch circles on product cards and PDP. Upload or assign dedicated photos for each color.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleAddColorVariant()}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#0ea9df]/10 hover:bg-[#0ea9df]/20 text-[#0ea9df] text-xs font-bold transition-colors self-start sm:self-auto cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Color Variant</span>
+            </button>
+          </div>
+
+          {/* Quick Color Presets */}
+          <div className="bg-gray-50/80 p-3 rounded-xl border border-gray-200/80 space-y-2">
+            <span className="text-[11px] font-bold text-gray-600 block">
+              Quick Add Presets:
+            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              {COLOR_PRESETS.map((preset) => {
+                const isAlreadyAdded = formData.color_variants.some(
+                  (c) => c.color.toLowerCase() === preset.color.toLowerCase()
+                );
+                return (
+                  <button
+                    key={preset.color}
+                    type="button"
+                    onClick={() => handleAddColorVariant(preset)}
+                    disabled={isAlreadyAdded}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                      isAlreadyAdded
+                        ? "bg-gray-200/60 text-gray-400 border-gray-200 cursor-not-allowed"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-[#0ea9df] hover:bg-blue-50/40 hover:shadow-2xs"
+                    }`}
+                  >
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-black/20 shrink-0"
+                      style={{ backgroundColor: preset.color }}
+                    />
+                    <span>{preset.name}</span>
+                    {isAlreadyAdded && <span className="text-[10px] text-gray-400">(Added)</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Storefront Live Preview of Swatches */}
+          {formData.color_variants.length > 0 && (
+            <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/80 flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">
+                  Storefront Swatches Live Preview
+                </span>
+                <span className="text-xs text-blue-700">
+                  {formData.color_variants.length} color{formData.color_variants.length > 1 ? "s" : ""} configured:
+                </span>
+              </div>
+              <ColorSwatches
+                variants={formData.color_variants}
+                size="md"
+                showLabel={true}
+              />
+            </div>
+          )}
+
+          {/* List of Color Variants */}
+          {formData.color_variants.length === 0 ? (
+            <div className="p-5 border border-dashed border-gray-200 rounded-xl text-center text-xs text-gray-400 bg-gray-50/50">
+              No color variants configured. Select a quick preset above or click &quot;Add Color Variant&quot; to configure colors and color-specific images.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {formData.color_variants.map((variant, idx) => (
+                <div
+                  key={idx}
+                  className="p-3.5 bg-white border border-gray-200 rounded-xl shadow-2xs space-y-3 relative group transition-all hover:border-[#0ea9df]/60"
+                >
+                  <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[#191142] text-white text-[10px] font-black flex items-center justify-center">
+                        {idx + 1}
+                      </span>
+                      <span className="text-xs font-bold text-[#191142]">
+                        {variant.name || `Color #${idx + 1}`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveColorVariant(idx)}
+                      className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                      title="Remove this color variant"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                    {/* Color Swatch & Hex Picker (3 cols) */}
+                    <div className="md:col-span-3 space-y-1.5">
+                      <label className="block text-[11px] font-bold text-gray-700">
+                        Color Swatch &amp; Hex *
+                      </label>
+                      <div className="flex items-center gap-2">
+                        {/* Interactive Color Circle with Native Color Picker */}
+                        <label
+                          className="relative w-9 h-9 rounded-full border-2 border-gray-300 shadow-2xs cursor-pointer shrink-0 overflow-hidden hover:scale-105 transition-transform flex items-center justify-center"
+                          style={{ backgroundColor: variant.color || "#1e2238" }}
+                          title="Click to pick color"
+                        >
+                          <input
+                            type="color"
+                            value={variant.color.startsWith("#") ? variant.color : "#1e2238"}
+                            onChange={(e) => handleColorVariantChange(idx, "color", e.target.value)}
+                            className="opacity-0 w-full h-full cursor-pointer absolute inset-0"
+                          />
+                        </label>
+                        <input
+                          type="text"
+                          value={variant.color}
+                          onChange={(e) => handleColorVariantChange(idx, "color", e.target.value)}
+                          placeholder="#1e2238"
+                          className="w-full px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs font-mono font-bold text-gray-800 focus:border-[#0ea9df] outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Color Name (4 cols) */}
+                    <div className="md:col-span-4 space-y-1.5">
+                      <label className="block text-[11px] font-bold text-gray-700">
+                        Color Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={variant.name}
+                        onChange={(e) => handleColorVariantChange(idx, "name", e.target.value)}
+                        placeholder="e.g. Midnight Navy, Olive Green"
+                        className="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-900 focus:border-[#0ea9df] outline-none"
+                      />
+                    </div>
+
+                    {/* Color-Specific Image (5 cols) */}
+                    <div className="md:col-span-5 space-y-1.5">
+                      <label className="block text-[11px] font-bold text-gray-700">
+                        Color-Specific Image (Cloudflare R2)
+                      </label>
+
+                      <div className="flex items-center gap-2">
+                        {/* Image Preview Thumbnail if assigned */}
+                        {variant.image ? (
+                          <div className="relative w-12 h-12 rounded-lg border border-gray-200 overflow-hidden shrink-0 bg-gray-50 group/img">
+                            <img
+                              src={variant.image}
+                              alt={variant.name}
+                              className="w-full h-full object-contain"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleColorVariantChange(idx, "image", "")}
+                              className="absolute top-0.5 right-0.5 bg-red-600 text-white rounded-full p-0.5 opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer"
+                              title="Clear image"
+                            >
+                              <Trash2 className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg border border-dashed border-gray-300 flex items-center justify-center shrink-0 bg-gray-50 text-gray-400">
+                            <ImageIcon className="w-5 h-5" />
+                          </div>
+                        )}
+
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex items-center gap-1.5">
+                            {/* Dedicated R2 Upload Button */}
+                            <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-[11px] font-bold cursor-pointer transition-colors shadow-2xs">
+                              {uploadingVariantIndex === idx ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <UploadCloud className="w-3 h-3" />
+                              )}
+                              <span>{uploadingVariantIndex === idx ? "Uploading..." : "Upload Photo"}</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                disabled={uploadingVariantIndex !== null}
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleColorImageFileUpload(idx, file);
+                                }}
+                              />
+                            </label>
+
+                            {/* Dropdown to pick from product general images if available */}
+                            {formData.images.length > 0 && (
+                              <select
+                                value={variant.image || ""}
+                                onChange={(e) => handleColorVariantChange(idx, "image", e.target.value)}
+                                className="px-2 py-1 border border-gray-300 rounded-lg text-[11px] bg-white text-gray-700 outline-none max-w-[130px]"
+                              >
+                                <option value="">Select from photos...</option>
+                                {formData.images.map((img, imgIdx) => (
+                                  <option key={imgIdx} value={img}>
+                                    Photo #{imgIdx + 1}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+                          </div>
+
+                          {/* Direct image URL input */}
+                          <input
+                            type="url"
+                            value={variant.image || ""}
+                            onChange={(e) => handleColorVariantChange(idx, "image", e.target.value)}
+                            placeholder="Or paste image URL"
+                            className="w-full px-2.5 py-1 border border-gray-200 rounded-lg text-[10px] text-gray-600 focus:border-[#0ea9df] outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Description */}
         <div className="space-y-2 pt-2">
           <h2 className="text-sm font-bold text-[#191142] border-b border-gray-100 pb-2">
-            3. Detailed Description & Specifications
+            4. Detailed Description &amp; Specifications
           </h2>
           <div>
             <textarea
@@ -565,12 +895,12 @@ export default function ProductForm() {
           </div>
         </div>
 
-        {/* 4. About This Item / Specifications (Key & Value) */}
+        {/* 5. About This Item / Specifications (Key & Value) */}
         <div className="space-y-3 pt-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
             <div>
               <h2 className="text-sm font-bold text-[#191142]">
-                4. About This Item / Key & Value Specifications
+                5. About This Item / Key &amp; Value Specifications
               </h2>
               <p className="text-[11px] text-gray-500">
                 Add custom key-value details (e.g. Firmness: Medium Firm, Dimensions: 78x72 in, Material: Memory Foam)

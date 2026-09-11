@@ -4,30 +4,37 @@ import { Check } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getProductUrl } from "../../utils/urlSecurity";
-import type { Product } from "../../types/product.types";
+import type { Product, ProductColorVariant } from "../../types/product.types";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 import OfferBadge from "../common/OfferBadge";
+import ColorSwatches from "../common/ColorSwatches";
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { language, t } = useLanguage();
   const [added, setAdded] = useState(false);
 
-  const mainImage =
-    product.images && product.images.length > 0
+  const [selectedVariant, setSelectedVariant] = useState<ProductColorVariant | null>(
+    product.color_variants && product.color_variants.length > 0 ? product.color_variants[0] : null
+  );
+
+  const displayedImage =
+    selectedVariant?.image ||
+    (product.images && product.images.length > 0
       ? product.images[0]
-      : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800";
+      : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800");
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     addItem({
       productId: product.id,
-      name: product.name,
+      name: selectedVariant?.name ? `${product.name} (${selectedVariant.name})` : product.name,
       price: product.price,
       quantity: 1,
-      image: mainImage,
+      image: displayedImage,
+      color: selectedVariant?.name,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
@@ -50,15 +57,28 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Product Image */}
         <Link
           to={getProductUrl(product.id)}
-          className="block aspect-square w-full overflow-hidden bg-white p-1 sm:p-2 mb-2 sm:mb-3 flex items-center justify-center rounded-lg relative"
+          className="block aspect-square w-full overflow-hidden bg-white p-1 sm:p-2 mb-2 sm:mb-2.5 flex items-center justify-center rounded-lg relative"
         >
           <img
-            src={mainImage}
+            src={displayedImage}
             alt={product.name}
             className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
         </Link>
+
+        {/* Color Swatches (if product has color variants) */}
+        {product.color_variants && product.color_variants.length > 0 && (
+          <div className="mb-2">
+            <ColorSwatches
+              variants={product.color_variants}
+              selectedVariant={selectedVariant}
+              onSelect={(v) => setSelectedVariant(v)}
+              onHover={(v) => setSelectedVariant(v)}
+              size="sm"
+            />
+          </div>
+        )}
 
         {/* Title */}
         <Link to={getProductUrl(product.id)}>

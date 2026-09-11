@@ -45,7 +45,7 @@ export default function Cart() {
         {/* Items list */}
         <div className="divide-y divide-gray-100">
           {items.map((item) => (
-            <div key={item.productId} className="py-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div key={`${item.productId}-${item.color || "default"}`} className="py-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex gap-3 items-start flex-1 min-w-0">
                 {/* Product Thumbnail */}
                 <Link
@@ -67,6 +67,15 @@ export default function Cart() {
                   >
                     {item.name}
                   </Link>
+
+                  {item.color && (
+                    <p className="text-[11px] font-semibold text-gray-700 mt-1 flex items-center gap-1.5">
+                      <span className="text-gray-400">Selected Color:</span>
+                      <span className="bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-md text-[#191142]">
+                        {item.color}
+                      </span>
+                    </p>
+                  )}
 
                   <p className="text-xs font-semibold text-emerald-700 mt-1">In stock</p>
                   <p className="text-[11px] text-gray-500">
@@ -98,13 +107,13 @@ export default function Cart() {
 
                 <div className="flex items-center gap-2 text-xs">
                   <div className="flex items-center gap-1.5 border border-gray-300 rounded-lg bg-gray-50 px-2 py-1">
-                    <label htmlFor={`qty-${item.productId}`} className="text-[11px] text-gray-500 font-medium">
+                    <label htmlFor={`qty-${item.productId}-${item.color || ""}`} className="text-[11px] text-gray-500 font-medium">
                       Qty:
                     </label>
                     <select
-                      id={`qty-${item.productId}`}
+                      id={`qty-${item.productId}-${item.color || ""}`}
                       value={item.quantity}
-                      onChange={(e) => updateQuantity(item.productId, Number(e.target.value))}
+                      onChange={(e) => updateQuantity(item.productId, Number(e.target.value), item.color)}
                       className="bg-transparent text-xs font-bold text-[#191142] focus:outline-none cursor-pointer"
                     >
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -116,7 +125,7 @@ export default function Cart() {
                   </div>
 
                   <button
-                    onClick={() => removeItem(item.productId)}
+                    onClick={() => removeItem(item.productId, item.color)}
                     className="p-1.5 rounded-lg border border-gray-200 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
                     title="Remove item"
                     aria-label="Remove item"

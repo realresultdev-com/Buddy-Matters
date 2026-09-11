@@ -10,6 +10,12 @@ export interface ProductAboutItem {
   value: string;
 }
 
+export interface ProductColorVariant {
+  name: string;
+  color: string;
+  image?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -24,6 +30,7 @@ export interface Product {
   review_count?: number;
   reviewsCount?: number;
   about?: ProductAboutItem[];
+  color_variants?: ProductColorVariant[];
   offer_badge_prefix?: string;
   offer_badge_value?: string;
   original_price?: number | null;
@@ -59,5 +66,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image?: string;
+  color?: string;
 }
+
 
