@@ -63,12 +63,53 @@ label {
   touch-action: manipulation;
 }
 
-/* 5. Safe Area Insets for iPhone (Notch & Home Bar) */
+/* 5. Safe Area Insets for iPhone (Notch & Home Bar) & Enterprise Typography */
 :root {
   --sat: env(safe-area-inset-top, 0px);
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --font-heading: 'DM Sans', 'Inter', -apple-system, sans-serif;
+  --font-accent: 'Georgia', 'Noto Serif', serif;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Hierarchy (Amazon-Inspired System) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+button,
+.btn-cta {
+  letter-spacing: 0.2px;
 }
 
 .pb-safe {

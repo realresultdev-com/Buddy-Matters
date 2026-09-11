@@ -6,13 +6,23 @@ export default {
     extend: {
       fontFamily: {
         sans: [
+          "'Inter'",
           "-apple-system",
           "BlinkMacSystemFont",
-          '"SF Pro Display"',
-          '"SF Pro Text"',
-          '"SF Pro"',
-          "system-ui",
+          "'Segoe UI'",
+          "Arial",
           "sans-serif",
+        ],
+        heading: [
+          "'DM Sans'",
+          "'Inter'",
+          "-apple-system",
+          "sans-serif",
+        ],
+        serif: [
+          "'Georgia'",
+          "'Noto Serif'",
+          "serif",
         ],
       },
       colors: {
