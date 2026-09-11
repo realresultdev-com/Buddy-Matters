@@ -49,37 +49,36 @@ export default function PriceTag({
   return (
     <div className={`space-y-1 ${className}`}>
       {isLarge ? (
-        /* Amazon Product Detail Page (PDP) Price Formula */
         <div>
-          <div className="flex items-baseline gap-2.5 flex-wrap">
-            {showDiscount && discountPercent > 0 && (
-              <span className="text-2xl sm:text-3xl font-light text-[#CC0C39] tracking-tight">
-                -{discountPercent}%
-              </span>
-            )}
-            <div className="flex items-start text-[#0f1111]">
-              <span className={`${sizeStyles.symbol} font-normal text-gray-700 mr-0.5 leading-none pt-0.5`}>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <div className="flex items-start text-[#191142]">
+              <span className={`${sizeStyles.symbol} font-bold text-[#191142] mr-0.5 leading-none pt-0.5`}>
                 ₹
               </span>
-              <span className={`${sizeStyles.main} tracking-tight leading-none text-[#0f1111]`}>
+              <span className={`${sizeStyles.main} font-black tracking-tight leading-none text-[#191142]`}>
                 {price.toLocaleString("en-IN")}
               </span>
             </div>
+            {showDiscount && discountPercent > 0 && (
+              <span className="text-xs sm:text-sm font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 tracking-wide">
+                {discountPercent}% OFF
+              </span>
+            )}
           </div>
 
           {originalMRP && originalMRP > price && (
-            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-600">
+            <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
               <span>
                 M.R.P.:{" "}
-                <span className="line-through text-gray-500">
+                <span className="line-through text-gray-400">
                   ₹{originalMRP.toLocaleString("en-IN")}
                 </span>
               </span>
               {savings > 0 && (
                 <>
                   <span className="text-gray-300">•</span>
-                  <span className="text-gray-700 font-medium">
-                    You Save: <strong className="text-[#CC0C39]">₹{savings.toLocaleString("en-IN")} ({discountPercent}%)</strong>
+                  <span className="text-emerald-700 font-semibold">
+                    You Save: ₹{savings.toLocaleString("en-IN")}
                   </span>
                 </>
               )}
@@ -87,29 +86,27 @@ export default function PriceTag({
           )}
         </div>
       ) : (
-        /* Amazon Product Listing & Card Price Layout */
         <div className="flex items-baseline gap-1.5 flex-wrap">
-          <div className="flex items-start text-[#0f1111]">
-            <span className={`${sizeStyles.symbol} font-semibold text-gray-700 mr-0.5 leading-none`}>
+          <div className="flex items-start text-[#191142]">
+            <span className={`${sizeStyles.symbol} font-bold text-[#191142] mr-0.5 leading-none`}>
               ₹
             </span>
-            <span className={`${sizeStyles.main} tracking-tight leading-none text-[#0f1111]`}>
+            <span className={`${sizeStyles.main} tracking-tight leading-none text-[#191142]`}>
               {price.toLocaleString("en-IN")}
             </span>
           </div>
 
           {originalMRP && originalMRP > price && (
-            <div className={`${sizeStyles.mrp} text-gray-500 font-normal whitespace-nowrap`}>
-              M.R.P:{" "}
-              <span className="line-through text-gray-400">
+            <div className={`${sizeStyles.mrp} text-gray-400 font-normal whitespace-nowrap`}>
+              <span className="line-through">
                 ₹{originalMRP.toLocaleString("en-IN")}
               </span>
             </div>
           )}
 
           {showDiscount && discountPercent > 0 && (
-            <span className={`${sizeStyles.discount} font-bold text-[#CC0C39] whitespace-nowrap`}>
-              ({discountPercent}% off)
+            <span className={`${sizeStyles.discount} font-bold text-emerald-600 whitespace-nowrap`}>
+              {discountPercent}% off
             </span>
           )}
         </div>

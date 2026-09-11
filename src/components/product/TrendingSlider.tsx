@@ -137,8 +137,8 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                     {/* Deal Header Badge - only if discount or offer exists */}
                     {(Boolean(product.discount_percent && product.discount_percent > 0) || Boolean(product.offer_badge_value)) && (
                       <div className="flex items-center gap-2.5">
-                        <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-2.5 py-1 rounded-[2px] uppercase tracking-wider shadow-xs">
-                          {product.offer_badge_value || "Limited time deal"}
+                        <span className="bg-gradient-to-r from-[#0ea9df] to-[#191142] text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm border border-cyan-400/30">
+                          {product.offer_badge_value || "Special Offer"}
                         </span>
                       </div>
                     )}
@@ -157,7 +157,7 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       </p>
                     </div>
 
-                    {/* Authentic Amazon Price & Savings Formula - only if genuine data exists */}
+                    {/* Price & Savings Display */}
                     {(() => {
                       const mrp =
                         (product.original_price && product.original_price > product.price)
@@ -172,31 +172,31 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       const savings = mrp && mrp > product.price ? mrp - product.price : 0;
 
                       return (
-                        <div className="space-y-1 pt-1">
+                        <div className="space-y-1.5 pt-1">
                           {/* Price Row: -X%  ₹[Price] */}
-                          <div className="flex flex-wrap items-baseline justify-center md:justify-start gap-3">
-                            {discount > 0 && (
-                              <span className="text-3xl sm:text-4xl font-light text-[#ff5252] tracking-tight">
-                                -{discount}%
-                              </span>
-                            )}
+                          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
                             <div className="flex items-start text-white">
                               <span className="text-xl sm:text-2xl font-normal pt-1 mr-0.5">₹</span>
-                              <span className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+                              <span className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
                                 {product.price.toLocaleString("en-IN")}
                               </span>
                             </div>
+                            {discount > 0 && (
+                              <span className="text-xs sm:text-sm font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 tracking-wide">
+                                {discount}% OFF
+                              </span>
+                            )}
                           </div>
 
-                          {/* M.R.P. & You Save (Amazon style) - only if genuine MRP exists */}
+                          {/* M.R.P. & You Save - only if genuine MRP exists */}
                           {Boolean(mrp && mrp > product.price) && (
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs sm:text-sm text-gray-300">
                               <span>M.R.P.: <span className="line-through text-gray-400">₹{mrp!.toLocaleString("en-IN")}</span></span>
                               {savings > 0 && (
                                 <>
                                   <span className="text-gray-400">•</span>
-                                  <span className="text-[#7fda69] font-bold">
-                                    You Save: ₹{savings.toLocaleString("en-IN")} ({discount}%)
+                                  <span className="text-emerald-300 font-bold">
+                                    You Save: ₹{savings.toLocaleString("en-IN")}
                                   </span>
                                 </>
                               )}
@@ -206,14 +206,14 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       );
                     })()}
 
-                    {/* Action Button: Authentic Amazon Primary Amber Pill Button */}
+                    {/* Action Button: Buddy Mattress Cyan CTA Button */}
                     <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
                       <Link
                         to={getProductUrl(product.id)}
-                        className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-xs sm:text-sm bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] text-[#0f1111] border border-[#fcd200] shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+                        className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-bold text-xs sm:text-sm bg-[#0ea9df] hover:bg-[#0c95c5] text-white shadow-lg shadow-cyan-500/25 transition-all active:scale-95 cursor-pointer"
                       >
-                        <span>Shop the deal</span>
-                        <ArrowRight className="w-4 h-4 text-[#0f1111]" />
+                        <span>View Details</span>
+                        <ArrowRight className="w-4 h-4 text-white" />
                       </Link>
                     </div>
                   </div>

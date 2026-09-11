@@ -124,15 +124,15 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Amazon Deal Badge - only if genuine positive discount & original price > price exist */}
+        {/* Brand Deal Badge - only if genuine positive discount & original price > price exist */}
         {Boolean(
           (product.original_price ?? product.originalMRP) &&
           (product.original_price ?? product.originalMRP)! > product.price &&
           (product.discount_percent ?? product.discountPercent ?? 0) > 0
         ) && (
           <div className="mt-1.5">
-            <span className="bg-[#CC0C39] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] uppercase tracking-wide inline-block shadow-2xs">
-              Limited time deal
+            <span className="bg-[#191142] text-cyan-300 border border-cyan-400/20 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1 shadow-2xs">
+              Special Offer
             </span>
           </div>
         )}
@@ -148,7 +148,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Action Button: Amazon Signature Button */}
+      {/* Action Button: Buddy Mattress Brand Button */}
       <div className="mt-3 pt-2">
         {product.stock <= 0 ? (
           <button
@@ -164,7 +164,7 @@ export default function ProductCard({ product }: { product: Product }) {
             className={`w-full py-2 sm:py-2.5 px-2 sm:px-4 rounded-full text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer active:scale-95 ${
               added
                 ? "bg-emerald-600 text-white"
-                : "bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] border border-[#fcd200] hover:shadow-md"
+                : "bg-[#191142] hover:bg-[#0ea9df] text-white shadow-xs hover:shadow-md"
             }`}
           >
             {added ? (

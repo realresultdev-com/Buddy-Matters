@@ -170,14 +170,14 @@ export default function ProductDetail() {
             <button
               type="button"
               onClick={() => handleAddToCart(1)}
-              className="flex-1 max-w-[135px] py-2.5 px-2 rounded-full bg-[#ffd814] hover:bg-[#f7ca00] active:bg-[#f0b800] text-[#0f1111] text-xs font-bold transition-all text-center border border-[#fcd200] cursor-pointer shadow-xs active:scale-95"
+              className="flex-1 max-w-[135px] py-2.5 px-2 rounded-full bg-[#191142] hover:bg-[#281c62] text-white text-xs font-bold transition-all text-center cursor-pointer shadow-xs active:scale-95"
             >
               {added ? "Added!" : "Add to Cart"}
             </button>
             <button
               type="button"
               onClick={() => handleBuyNow(1)}
-              className="flex-1 max-w-[135px] py-2.5 px-2 rounded-full bg-[#ffa41c] hover:bg-[#fa8900] active:bg-[#e67a00] text-[#0f1111] text-xs font-bold transition-all text-center border border-[#ff8f00] shadow-xs cursor-pointer active:scale-95"
+              className="flex-1 max-w-[135px] py-2.5 px-2 rounded-full bg-[#0ea9df] hover:bg-[#0c95c5] text-white text-xs font-bold transition-all text-center shadow-xs cursor-pointer active:scale-95"
             >
               Buy Now
             </button>

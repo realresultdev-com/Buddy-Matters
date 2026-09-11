@@ -356,7 +356,7 @@ export default function Profile() {
             </div>
             <Link
               to="/shop"
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] border border-[#fcd200] text-xs font-bold shadow-xs transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0ea9df] hover:bg-[#0c95c5] text-white text-xs font-bold shadow-xs hover:shadow-md transition-all"
             >
               <span>Explore Mattresses</span>
               <ArrowRight className="w-3.5 h-3.5" />
