@@ -8,7 +8,7 @@ import {
   ShoppingBag,
   Users,
   PlusCircle,
-  FolderPlus,
+  FolderTree,
   ShieldCheck,
 } from "lucide-react";
 
@@ -144,15 +144,15 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/admin/media"
+            to="/admin/categories"
             className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
           >
             <span className="p-2 rounded-lg bg-purple-50 text-purple-600 shrink-0">
-              <FolderPlus className="w-4 h-4" />
+              <FolderTree className="w-4 h-4" />
             </span>
             <div className="min-w-0">
-              <p className="font-bold text-xs truncate">R2 Media Storage</p>
-              <p className="text-[10px] text-gray-400 truncate">Uploads &amp; photos</p>
+              <p className="font-bold text-xs truncate">Categories</p>
+              <p className="text-[10px] text-gray-400 truncate">Taxonomy &amp; offers</p>
             </div>
           </Link>
         </div>

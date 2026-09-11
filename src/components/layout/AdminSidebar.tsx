@@ -6,7 +6,6 @@ import {
   FolderTree,
   ShoppingBag,
   Users,
-  Database,
   ArrowLeft,
   X,
 } from "lucide-react";
@@ -15,7 +14,6 @@ export const ADMIN_NAV_ITEMS = [
   { path: "/admin", label: "Dashboard", shortLabel: "Dashboard", icon: LayoutDashboard },
   { path: "/admin/products", label: "Manage Inventory", shortLabel: "Inventory", icon: Package },
   { path: "/admin/products/new", label: "Add a Product", shortLabel: "Add Product", icon: PlusCircle },
-  { path: "/admin/media", label: "R2 Media Storage", shortLabel: "Media", icon: Database },
   { path: "/admin/categories", label: "Categories / Taxonomy", shortLabel: "Categories", icon: FolderTree },
   { path: "/admin/orders", label: "Manage Orders", shortLabel: "Orders", icon: ShoppingBag },
   { path: "/admin/users", label: "User Directory", shortLabel: "Users", icon: Users },

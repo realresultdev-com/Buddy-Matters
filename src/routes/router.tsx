@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import RootLayout from "../components/layout/RootLayout";
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
@@ -27,7 +27,6 @@ import ProductForm from "../pages/admin/ProductForm";
 import CategoriesManage from "../pages/admin/CategoriesManage";
 import OrdersManage from "../pages/admin/OrdersManage";
 import UsersManage from "../pages/admin/UsersManage";
-import MediaManager from "../pages/admin/MediaManager";
 
 export const router = createBrowserRouter([
   {
@@ -77,7 +76,7 @@ export const router = createBrowserRouter([
               { path: "products", element: <ProductsList /> },
               { path: "products/new", element: <ProductForm /> },
               { path: "products/:id/edit", element: <ProductForm /> },
-              { path: "media", element: <MediaManager /> },
+              { path: "media", element: <Navigate to="/admin/products" replace /> },
               { path: "categories", element: <CategoriesManage /> },
               { path: "orders", element: <OrdersManage /> },
               { path: "users", element: <UsersManage /> },
