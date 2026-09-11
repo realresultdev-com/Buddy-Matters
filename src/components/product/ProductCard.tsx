@@ -61,7 +61,7 @@ export default function ProductCard({ product }: { product: Product }) {
           to={`/admin/products/${product.id}/edit`}
           onClick={(e) => e.stopPropagation()}
           className="absolute top-2 left-2 z-20 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#191142] hover:bg-[#0ea9df] text-white text-[11px] font-bold shadow-md transition-all cursor-pointer"
-          title="Edit product details in Seller Central"
+          title="Edit in Admin Page"
         >
           <Edit3 className="w-3.5 h-3.5" />
           <span>Edit</span>

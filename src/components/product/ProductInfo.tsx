@@ -45,7 +45,7 @@ export default function ProductInfo({
             <Link
               to={`/admin/products/${product.id}/edit`}
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-bold shadow-xs transition-colors"
-              title="Edit in Seller Central"
+              title="Edit in Admin Page"
             >
               <Edit3 className="w-3.5 h-3.5" />
               <span>Edit Product</span>
@@ -103,13 +103,13 @@ export default function ProductInfo({
         </div>
         <div className="text-xs space-y-1 min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="font-bold text-[#191142]">Consumer Care for this Product</span>
+            <span className="font-bold text-[#191142]">Customer Support for this Product</span>
             <span className="text-[10px] text-emerald-700 bg-emerald-50 font-semibold px-2 py-0.2 rounded-full border border-emerald-200">
               Direct Helpline
             </span>
           </div>
           <p className="text-gray-500 text-[11px] leading-relaxed">
-            Have queries about size, customization, or warranty for this item?
+            Have questions about size, delivery, or warranty for this item?
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-0.5 text-xs font-medium">
             <a href="tel:+919443300000" className="inline-flex items-center gap-1 text-[#191142] hover:text-[#0ea9df] transition-colors font-bold">

@@ -42,7 +42,7 @@ export default function AdminLayout() {
               className="h-5 w-auto object-contain shrink-0"
             />
             <span className="text-[10px] font-bold tracking-wider uppercase bg-white/15 px-2 py-0.5 rounded-md border border-white/20 shrink-0">
-              Seller Central
+              Admin Page
             </span>
             <span className="text-xs text-gray-300 truncate font-semibold border-l border-white/20 pl-2 hidden sm:inline">
               {currentItem.label}
@@ -53,17 +53,17 @@ export default function AdminLayout() {
             <Link
               to="/"
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
-              title="Return to Storefront"
+              title="Return to Store"
             >
               <Store className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Storefront</span>
+              <span className="hidden sm:inline">Store</span>
             </Link>
 
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
               className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-              aria-label="Open seller navigation menu"
+              aria-label="Open admin navigation menu"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -75,7 +75,7 @@ export default function AdminLayout() {
           ref={tabsRef}
           className="overflow-x-auto no-scrollbar py-2 px-3 bg-white border-b border-gray-200/90 flex items-center gap-1.5 shadow-2xs"
           role="tablist"
-          aria-label="Seller Central Sections"
+          aria-label="Admin Page Sections"
         >
           {ADMIN_NAV_ITEMS.map((item) => {
             const Icon = item.icon;

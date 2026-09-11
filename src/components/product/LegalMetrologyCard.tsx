@@ -56,11 +56,11 @@ export default function LegalMetrologyCard({
         <div className="flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-[#0ea9df]" />
           <h3 className="text-xs font-bold text-[#191142] uppercase tracking-wider">
-            Statutory Declarations (Legal Metrology Rules)
+            Product &amp; Manufacturer Details
           </h3>
         </div>
         <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
-          Rule 6 & 10 Compliant
+          Verified Details
         </span>
       </div>
 
@@ -112,13 +112,13 @@ export default function LegalMetrologyCard({
           </p>
         </div>
 
-        {/* Row 4: Consumer Care Details */}
+        {/* Row 4: Customer Care & Support */}
         <div className="space-y-1">
           <span className="text-[11px] font-semibold text-gray-400 block uppercase tracking-wider">
-            Consumer Care & Grievance Contact
+            Customer Care &amp; Support
           </span>
           <p className="text-gray-700 leading-relaxed font-medium">
-            For consumer complaints or product feedback, contact Customer Care Executive at:
+            For questions, returns, warranty, or feedback, reach our support team at:
             <br />
             <span className="text-gray-900 font-semibold">Address:</span> Buddy Mattress, Paramathi Velur, Tamil Nadu - 637207
             <br />

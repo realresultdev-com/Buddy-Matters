@@ -12,11 +12,11 @@ import {
 
 export const ADMIN_NAV_ITEMS = [
   { path: "/admin", label: "Dashboard", shortLabel: "Dashboard", icon: LayoutDashboard },
-  { path: "/admin/products", label: "Manage Inventory", shortLabel: "Inventory", icon: Package },
+  { path: "/admin/products", label: "Products List", shortLabel: "Products", icon: Package },
   { path: "/admin/products/new", label: "Add a Product", shortLabel: "Add Product", icon: PlusCircle },
-  { path: "/admin/categories", label: "Categories / Taxonomy", shortLabel: "Categories", icon: FolderTree },
+  { path: "/admin/categories", label: "Categories", shortLabel: "Categories", icon: FolderTree },
   { path: "/admin/orders", label: "Manage Orders", shortLabel: "Orders", icon: ShoppingBag },
-  { path: "/admin/users", label: "User Directory", shortLabel: "Users", icon: Users },
+  { path: "/admin/users", label: "Users List", shortLabel: "Users", icon: Users },
 ];
 
 interface AdminSidebarProps {
@@ -32,7 +32,7 @@ export default function AdminSidebar({ onClose, className = "" }: AdminSidebarPr
           <div className="flex items-center gap-2 min-w-0">
             <img src="/logo-white.png" alt="Buddy Mattress" className="h-5 w-auto object-contain shrink-0" />
             <span className="text-[11px] font-bold tracking-wide uppercase border-l border-white/30 pl-2 truncate">
-              Seller Central
+              Admin Page
             </span>
           </div>
           {onClose && (
@@ -79,7 +79,7 @@ export default function AdminSidebar({ onClose, className = "" }: AdminSidebarPr
           className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-[#0ea9df] hover:bg-gray-50 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Storefront
+          Back to Store
         </Link>
       </div>
     </aside>

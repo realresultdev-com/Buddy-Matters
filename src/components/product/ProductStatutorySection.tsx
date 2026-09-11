@@ -78,10 +78,10 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
             <span className="text-[11px] text-gray-500 hidden sm:inline">Rule 6 & Rule 10 Compliance</span>
           </div>
           <h2 className="text-lg sm:text-2xl font-black text-[#191142] tracking-tight">
-            Mandatory Statutory Information & Product Declarations
+            Product Information &amp; Manufacturer Details
           </h2>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            Statutory disclosures required by the Ministry of Consumer Affairs, Food & Public Distribution, Government of India.
+            Complete product details, manufacturing information, and customer care contact.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
             to="/grievance"
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0ea9df] hover:underline"
           >
-            <span>Grievance Redressal Mechanism</span>
+            <span>Customer Support &amp; Grievance</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
         </div>
@@ -108,7 +108,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
           }`}
         >
           <FileText className="w-3.5 h-3.5" />
-          <span>Statutory Declarations</span>
+          <span>Product Details</span>
         </button>
 
         <button
@@ -121,7 +121,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
           }`}
         >
           <Building2 className="w-3.5 h-3.5" />
-          <span>Manufacturer & Packer</span>
+          <span>Manufacturer &amp; Packer</span>
         </button>
 
         <button
@@ -134,7 +134,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
           }`}
         >
           <PhoneCall className="w-3.5 h-3.5" />
-          <span>Consumer Care & Grievance</span>
+          <span>Customer Care &amp; Support</span>
         </button>
 
         <button
@@ -187,7 +187,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
 
                 <tr>
                   <td className="py-3 px-4 font-bold text-gray-700 border-r border-gray-100">
-                    Generic Commodity Name
+                    Product Type
                   </td>
                   <td className="py-3 px-4 text-gray-900 font-medium">
                     {genericName}
@@ -275,7 +275,7 @@ export default function ProductStatutorySection({ product }: ProductStatutorySec
             <div>
               <h3 className="font-bold text-sm text-[#191142] flex items-center gap-2">
                 <PhoneCall className="w-4 h-4 text-[#0ea9df]" />
-                <span>Dedicated Customer Care for this Commodity</span>
+                <span>Customer Care &amp; Support for this Product</span>
               </h3>
               <p className="text-xs text-gray-600 mt-1">
                 For product queries, installation support, warranty registration, or feedback regarding this product:

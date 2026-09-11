@@ -41,7 +41,7 @@ export default function ProductsList() {
     p.category?.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <Loader text="Loading inventory catalog..." />;
+  if (loading) return <Loader text="Loading products..." />;
 
   return (
     <div className="space-y-6">

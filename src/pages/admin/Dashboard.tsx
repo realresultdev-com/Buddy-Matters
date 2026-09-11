@@ -30,7 +30,7 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  if (loading) return <Loader text="Loading seller metrics..." />;
+  if (loading) return <Loader text="Loading dashboard..." />;
 
   const statCards = [
     {
