@@ -26,6 +26,28 @@ export default function MobileBottomNav() {
     return false;
   };
 
+  // User Avatar Node for registered/authenticated user
+  const userAvatarNode = user ? (
+    <div
+      className={`w-5 h-5 min-w-[20px] min-h-[20px] max-w-[20px] max-h-[20px] rounded-full overflow-hidden flex items-center justify-center font-bold text-[9px] shrink-0 border transition-all ${
+        isActive("/profile")
+          ? "border-[#0ea9df] ring-2 ring-[#0ea9df]/30 scale-105"
+          : "border-gray-300"
+      } bg-[#191142] text-white shadow-2xs`}
+    >
+      {user.avatar_url ? (
+        <img
+          src={user.avatar_url}
+          alt={user.name || user.email}
+          className="w-full h-full object-cover rounded-full"
+          referrerPolicy="no-referrer"
+        />
+      ) : (
+        <span>{user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}</span>
+      )}
+    </div>
+  ) : null;
+
   const navItems = [
     {
       name: "Home",
@@ -66,6 +88,7 @@ export default function MobileBottomNav() {
       name: user ? "Account" : "Sign In",
       to: user ? "/profile" : "/login",
       icon: user ? UserIcon : LogIn,
+      customAvatar: userAvatarNode,
       active: isActive("/profile") || isActive("/login"),
     },
   ];
@@ -88,12 +111,16 @@ export default function MobileBottomNav() {
                   : "text-gray-500 hover:text-[#191142] font-medium"
               }`}
             >
-              <div className="relative">
-                <Icon
-                  className={`w-5 h-5 transition-transform ${
-                    item.active ? "scale-110 text-[#0ea9df]" : "text-gray-500"
-                  }`}
-                />
+              <div className="relative flex items-center justify-center h-5">
+                {item.customAvatar ? (
+                  item.customAvatar
+                ) : (
+                  <Icon
+                    className={`w-5 h-5 transition-transform ${
+                      item.active ? "scale-110 text-[#0ea9df]" : "text-gray-500"
+                    }`}
+                  />
+                )}
                 {item.badge !== undefined && (
                   <span className="absolute -top-1.5 -right-2.5 bg-[#0ea9df] text-white text-[10px] font-extrabold px-1.5 py-0.2 rounded-full min-w-[16px] text-center leading-tight shadow-2xs">
                     {item.badge}

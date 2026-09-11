@@ -84,18 +84,18 @@ export default function Navbar() {
 
         {/* Right Action Icons: Reordered properly (Account -> Language -> Cart) */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-          {/* 1. User Profile / Sign In */}
+          {/* 1. User Profile / Sign In (Hidden on mobile screen; displayed in bottom nav) */}
           {!user ? (
             <Link
               to="/login"
-              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-[#191142] text-xs font-semibold transition-all shrink-0"
+              className="hidden md:flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-[#191142] text-xs font-semibold transition-all shrink-0"
             >
               <User className="w-3.5 h-3.5 text-[#0ea9df]" />
               <span>{t("signIn")}</span>
             </Link>
           ) : (
             <div
-              className="relative shrink-0"
+              className="hidden md:block relative shrink-0"
               onMouseEnter={() => setAccountDropdown(true)}
               onMouseLeave={() => setAccountDropdown(false)}
             >
