@@ -41,6 +41,12 @@ export default function Footer() {
             <Link to="/cart" className="hover:text-[#0ea9df] transition-colors font-medium">
               Cart
             </Link>
+            <Link to="/terms" className="hover:text-[#0ea9df] transition-colors font-medium">
+              Terms of Service
+            </Link>
+            <Link to="/privacy" className="hover:text-[#0ea9df] transition-colors font-medium">
+              Privacy Policy
+            </Link>
           </div>
 
           <button
@@ -55,8 +61,11 @@ export default function Footer() {
       </div>
 
       {/* 3. Bottom Copyright Bar (with safe bottom padding for mobile bar) */}
-      <div className="bg-[#110b2e] py-6 pb-20 md:pb-6 px-4 text-center text-[11px] text-gray-400 border-t border-[#1d1445]">
+      <div className="bg-[#110b2e] py-6 pb-20 md:pb-6 px-4 text-center text-[11px] text-gray-400 border-t border-[#1d1445] space-y-1">
         <p>© {new Date().getFullYear()} Buddy Mattress. All rights reserved.</p>
+        <p className="text-[10px] text-gray-500">
+          Manufactured & Marketed by Buddy Mattress, Paramathi Velur, Namakkal District, Tamil Nadu - 637207, India.
+        </p>
       </div>
     </footer>
   );

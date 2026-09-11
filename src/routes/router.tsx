@@ -13,6 +13,8 @@ import Cart from "../pages/public/Cart";
 import Checkout from "../pages/public/Checkout";
 import OrderSuccess from "../pages/public/OrderSuccess";
 import About from "../pages/public/About";
+import PrivacyPolicy from "../pages/public/PrivacyPolicy";
+import TermsOfService from "../pages/public/TermsOfService";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 
@@ -38,6 +40,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "shop", element: <Shop /> },
       { path: "about", element: <About /> },
+      { path: "privacy", element: <PrivacyPolicy /> },
+      { path: "terms", element: <TermsOfService /> },
       { path: "product/:id", element: <ProductDetail /> },
       { path: "category/:id", element: <CategoryPage /> },
       { path: "cart", element: <Cart /> },

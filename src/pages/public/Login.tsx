@@ -99,16 +99,16 @@ export default function Login() {
             </div>
           )}
 
-          {/* Subtle Terms */}
+          {/* Mandatory DPDP & IT Act Consent */}
           <p className="text-[11px] text-[#86868b] leading-relaxed pt-2">
-            By continuing, you agree to our{" "}
-            <a href="#" className="text-[#0ea9df] hover:underline font-medium">
-              Terms
-            </a>{" "}
+            By continuing, you agree to Buddy Mattress's{" "}
+            <Link to="/terms" className="text-[#0ea9df] hover:underline font-medium">
+              Terms of Service
+            </Link>{" "}
             and{" "}
-            <a href="#" className="text-[#0ea9df] hover:underline font-medium">
+            <Link to="/privacy" className="text-[#0ea9df] hover:underline font-medium">
               Privacy Policy
-            </a>
+            </Link>
             .
           </p>
         </div>

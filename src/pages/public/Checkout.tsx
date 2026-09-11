@@ -297,8 +297,17 @@ export default function Checkout() {
             {processing ? "Processing Order..." : `Place Order & Pay ₹${totalAmount.toLocaleString("en-IN")}`}
           </button>
 
-          <p className="text-[11px] text-gray-500 text-center leading-tight">
-            100-Night Free Trial & Comprehensive 10-Year Warranty apply to this order.
+          {/* Mandatory DPDP & Consumer Protection Act Consent */}
+          <p className="text-[11px] text-gray-500 text-center leading-relaxed">
+            By placing this order, you agree to Buddy Mattress's{" "}
+            <Link to="/terms" target="_blank" className="text-[#0ea9df] hover:underline font-medium">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" target="_blank" className="text-[#0ea9df] hover:underline font-medium">
+              Privacy Policy
+            </Link>
+            .
           </p>
 
           <div className="border-t border-gray-100 pt-3 space-y-2 text-xs">
@@ -341,6 +350,9 @@ export default function Checkout() {
               {processing ? "Processing..." : "Place Order & Pay"}
             </button>
           </div>
+          <p className="text-[10px] text-gray-400 text-center mt-1">
+            By paying, you agree to our <Link to="/terms" className="underline">Terms</Link> & <Link to="/privacy" className="underline">Privacy Policy</Link>
+          </p>
         </div>
       </form>
     </div>
