@@ -1468,15 +1468,28 @@ app.get("/orders", authMiddleware, adminMiddleware, async (c) => {
   const populated = await Promise.all(
     orders.map(async (order: any) => {
       const { results: items } = await c.env.DB.prepare(`
-        SELECT oi.id, oi.product_id as productId, oi.quantity, oi.price, p.name
+        SELECT oi.id, oi.product_id as productId, oi.quantity, oi.price, p.name, p.images
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = ?
       `).bind(order.id).all();
 
+      const parsedItems = items.map((it: any) => {
+        let parsedImgs = [];
+        try {
+          if (typeof it.images === "string") parsedImgs = JSON.parse(it.images);
+          else if (Array.isArray(it.images)) parsedImgs = it.images;
+        } catch {}
+        return {
+          ...it,
+          images: parsedImgs,
+          image: parsedImgs[0] || null,
+        };
+      });
+
       return {
         ...order,
-        items,
+        items: parsedItems,
       };
     })
   );
@@ -1488,7 +1501,17 @@ app.patch("/orders/:id/status", authMiddleware, adminMiddleware, async (c) => {
   const id = c.req.param("id");
   const { status } = await c.req.json<{ status: string }>();
 
-  const validStatuses = ["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
+  const validStatuses = [
+    "PENDING",
+    "PAID",
+    "PACKING",
+    "DISPATCHED",
+    "SHIPPED",
+    "ON_THE_WAY",
+    "ARRIVING_TODAY",
+    "DELIVERED",
+    "CANCELLED",
+  ];
   if (!validStatuses.includes(status)) {
     return c.json({ message: "Invalid status value" }, 400);
   }
