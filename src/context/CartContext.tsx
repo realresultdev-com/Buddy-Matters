@@ -24,8 +24,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    localStorage.setItem("cart_items", JSON.stringify(items));
+    if (items.length > 0) {
+      localStorage.setItem("cart_items", JSON.stringify(items));
+    } else {
+      localStorage.removeItem("cart_items");
+    }
   }, [items]);
+
+  // Completely wipe cart when user logs out
+  useEffect(() => {
+    const handleLogout = () => {
+      setItems([]);
+      localStorage.removeItem("cart_items");
+    };
+
+    window.addEventListener("auth:logout", handleLogout);
+    return () => window.removeEventListener("auth:logout", handleLogout);
+  }, []);
 
   const addItem = (item: CartItem) => {
     setItems((prev) => {

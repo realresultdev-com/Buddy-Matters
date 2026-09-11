@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import catalogReducer from "./productSlice";
-import searchReducer from "./searchSlice";
+import searchReducer, { clearUserSearchData } from "./searchSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +13,13 @@ export const store = configureStore({
       serializableCheck: false,
     }),
 });
+
+// Automatically wipe user search history from Redux when user logs out
+if (typeof window !== "undefined") {
+  window.addEventListener("auth:logout", () => {
+    store.dispatch(clearUserSearchData());
+  });
+}
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

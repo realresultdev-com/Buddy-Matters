@@ -70,6 +70,12 @@ export const searchSlice = createSlice({
     resetSearchLoaded: (state) => {
       state.hasLoaded = false;
     },
+    clearUserSearchData: (state) => {
+      state.recentSearches = [];
+      state.hasLoaded = false;
+      state.searchQuery = "";
+      state.isDropdownOpen = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -87,5 +93,5 @@ export const searchSlice = createSlice({
   },
 });
 
-export const { setSearchQuery, setDropdownOpen, resetSearchLoaded } = searchSlice.actions;
+export const { setSearchQuery, setDropdownOpen, resetSearchLoaded, clearUserSearchData } = searchSlice.actions;
 export default searchSlice.reducer;

@@ -44,7 +44,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     setToken(null);
+
+    // Remove token and user session
     localStorage.removeItem("token");
+
+    // Remove cart data
+    localStorage.removeItem("cart_items");
+
+    // Clean up all user-specific address and search keys
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (
+          key &&
+          (key.startsWith("buddy_") ||
+            key.startsWith("checkout_") ||
+            key.startsWith("user_") ||
+            key === "cart_items")
+        ) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((k) => localStorage.removeItem(k));
+    } catch (e) {
+      console.error("Error clearing user storage on logout:", e);
+    }
+
+    // Dispatch global logout event so CartContext, Redux, and all subcomponents instantly clear
+    window.dispatchEvent(new CustomEvent("auth:logout"));
   };
 
   return (
