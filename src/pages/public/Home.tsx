@@ -111,24 +111,36 @@ export default function Home() {
             "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&auto=format&fit=crop&q=80";
 
           // Calculate dynamic fallback min price from products in this category
+          const defaultMinPrices: Record<string, number> = {
+            cat_mattresses: 10499,
+            cat_pillows: 1499,
+            cat_bedding: 1299,
+          };
           const categoryProducts = products.filter((p) => p.categoryId === cat.id);
-          const minPrice = categoryProducts.length > 0 ? Math.min(...categoryProducts.map((p) => p.price)) : null;
+          const calculatedMin =
+            categoryProducts.length > 0
+              ? Math.min(...categoryProducts.map((p) => p.price))
+              : defaultMinPrices[cat.id] || 99;
+
           const badgePrefix = cat.offer_badge_prefix || "Starting";
-          const badgeValue = cat.offer_badge_value || (minPrice ? `₹${minPrice.toLocaleString("en-IN")}` : "");
+          const badgeValue =
+            cat.offer_badge_value && cat.offer_badge_value.trim() !== ""
+              ? cat.offer_badge_value
+              : `₹${calculatedMin.toLocaleString("en-IN")}`;
 
           return (
             <div
               key={cat.id}
-              className="bg-white p-4.5 rounded-2xl shadow-xs border border-gray-200/90 flex flex-col justify-between hover:shadow-md transition-shadow relative"
+              className="bg-white p-4 sm:p-5 rounded-2xl shadow-xs border border-gray-200/90 flex flex-col justify-between hover:shadow-md transition-shadow relative"
             >
               <div>
-                <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
+                <h3 className="text-base font-bold text-[#191142] mb-3 leading-snug">
                   {cat.name}
                 </h3>
-                <div className="relative mb-2">
+                <div className="relative mb-3">
                   <Link
                     to={getCategoryUrl(cat.id)}
-                    className="block aspect-4/3 sm:aspect-square bg-gray-50 rounded-xl overflow-hidden relative"
+                    className="block aspect-square w-full bg-gray-50 rounded-xl overflow-hidden relative"
                   >
                     <img
                       src={sampleImage}
@@ -137,21 +149,19 @@ export default function Home() {
                     />
                   </Link>
 
-                  {/* Scalloped Yellow Sticker Deal Badge */}
-                  {badgeValue && (
-                    <div className="absolute -bottom-2.5 -right-2 sm:-bottom-3 sm:-right-2.5 z-10 pointer-events-none drop-shadow-md">
-                      <OfferBadge
-                        prefix={badgePrefix}
-                        value={badgeValue}
-                        size="md"
-                      />
-                    </div>
-                  )}
+                  {/* Scalloped Yellow Deal Sticker Badge */}
+                  <div className="absolute -bottom-3 -right-2 sm:-bottom-3.5 sm:-right-2.5 z-10 pointer-events-none drop-shadow-md">
+                    <OfferBadge
+                      prefix={badgePrefix}
+                      value={badgeValue}
+                      size="md"
+                    />
+                  </div>
                 </div>
               </div>
               <Link
                 to={getCategoryUrl(cat.id)}
-                className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-2"
+                className="text-xs font-bold text-[#0ea9df] hover:underline flex items-center gap-1 pt-1"
               >
                 Explore {cat.name} <ChevronRight className="w-3.5 h-3.5" />
               </Link>

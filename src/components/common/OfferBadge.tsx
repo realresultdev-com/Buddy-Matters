@@ -35,14 +35,14 @@ export default function OfferBadge({
     "C 34.74 6.53, 39.46 12.33, 42.39 11.75 C 45.32 11.17, 47.46 4, 50 4 Z";
 
   const sizeStyles = {
-    sm: "w-14 h-14 sm:w-16 sm:h-16",
-    md: "w-18 h-18 sm:w-22 sm:h-22",
-    lg: "w-22 h-22 sm:w-26 sm:h-26",
-    xl: "w-28 h-28 sm:w-32 sm:h-32",
+    sm: "w-[58px] h-[58px] sm:w-[68px] sm:h-[68px]",
+    md: "w-[80px] h-[80px] sm:w-[92px] sm:h-[92px]",
+    lg: "w-[96px] h-[96px] sm:w-[110px] sm:h-[110px]",
+    xl: "w-[120px] h-[120px] sm:w-[136px] sm:h-[136px]",
   }[size];
 
   const prefixSize = {
-    sm: "text-[9px] leading-tight",
+    sm: "text-[9px] leading-tight font-extrabold",
     md: "text-[11px] sm:text-[12px] leading-tight font-black",
     lg: "text-xs sm:text-sm leading-tight font-black",
     xl: "text-sm sm:text-base leading-tight font-black",
@@ -50,8 +50,8 @@ export default function OfferBadge({
 
   const valueSize = {
     sm: "text-xs sm:text-sm font-black",
-    md: "text-base sm:text-xl font-black",
-    lg: "text-lg sm:text-2xl font-black",
+    md: "text-base sm:text-lg font-black",
+    lg: "text-lg sm:text-xl font-black",
     xl: "text-2xl sm:text-3xl font-black",
   }[size];
 
@@ -63,35 +63,29 @@ export default function OfferBadge({
       {/* 16-lobe Yellow Scalloped Starburst SVG matching Amazon & Flipkart sticker */}
       <svg
         viewBox="0 0 100 100"
-        className="w-full h-full filter"
+        className="w-full h-full"
       >
-        <defs>
-          <linearGradient id="scallopYellowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fff200" />
-            <stop offset="100%" stopColor="#ffe600" />
-          </linearGradient>
-        </defs>
         <path
           d={scallopPath}
-          fill="url(#scallopYellowGrad)"
-          stroke="#facc15"
-          strokeWidth="1.5"
+          fill="#ffea00"
+          stroke="#eab308"
+          strokeWidth="1.8"
           strokeLinejoin="round"
         />
       </svg>
 
       {/* Centered Badge Text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1.5 z-10 -rotate-1">
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1 z-10 -rotate-1">
         {prefix && (
           <span
-            className={`text-black font-extrabold tracking-tight ${prefixSize}`}
+            className={`text-black tracking-tight ${prefixSize}`}
           >
             {prefix}
           </span>
         )}
         {value && (
           <span
-            className={`text-black tracking-tight leading-none ${valueSize}`}
+            className={`text-black tracking-tighter leading-none mt-0.5 ${valueSize}`}
           >
             {value}
           </span>
