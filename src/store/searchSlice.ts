@@ -6,6 +6,7 @@ interface SearchState {
   isDropdownOpen: boolean;
   searchQuery: string;
   loadingHistory: boolean;
+  hasLoaded: boolean;
 }
 
 const initialState: SearchState = {
@@ -13,12 +14,22 @@ const initialState: SearchState = {
   isDropdownOpen: false,
   searchQuery: "",
   loadingHistory: false,
+  hasLoaded: false,
 };
 
 export const loadRecentSearches = createAsyncThunk(
   "search/loadRecentSearches",
   async (isLoggedIn: boolean) => {
     return await searchService.getRecentSearches(isLoggedIn);
+  },
+  {
+    condition: (isLoggedIn, { getState }: { getState: () => any }) => {
+      const { search } = getState();
+      // If already loading or already loaded, prevent redundant duplicate API call
+      if (search.loadingHistory) {
+        return false;
+      }
+    },
   }
 );
 
@@ -56,6 +67,9 @@ export const searchSlice = createSlice({
     setDropdownOpen: (state, action: PayloadAction<boolean>) => {
       state.isDropdownOpen = action.payload;
     },
+    resetSearchLoaded: (state) => {
+      state.hasLoaded = false;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -64,6 +78,7 @@ export const searchSlice = createSlice({
       })
       .addCase(loadRecentSearches.fulfilled, (state, action) => {
         state.loadingHistory = false;
+        state.hasLoaded = true;
         state.recentSearches = action.payload;
       })
       .addCase(loadRecentSearches.rejected, (state) => {
@@ -72,5 +87,5 @@ export const searchSlice = createSlice({
   },
 });
 
-export const { setSearchQuery, setDropdownOpen } = searchSlice.actions;
+export const { setSearchQuery, setDropdownOpen, resetSearchLoaded } = searchSlice.actions;
 export default searchSlice.reducer;

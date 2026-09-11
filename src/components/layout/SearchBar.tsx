@@ -30,6 +30,28 @@ interface SearchBarProps {
   className?: string;
 }
 
+// Shared cache for popular searches to guarantee ZERO duplicate network calls across components
+let cachedPopularSearches: string[] | null = null;
+let popularSearchesPromise: Promise<string[]> | null = null;
+
+async function getCachedPopularSearches(): Promise<string[]> {
+  if (cachedPopularSearches) return cachedPopularSearches;
+  if (popularSearchesPromise) return popularSearchesPromise;
+
+  popularSearchesPromise = api
+    .get("/searches/popular")
+    .then((res: any) => {
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        cachedPopularSearches = res.data;
+        return res.data;
+      }
+      return ["Orthopedic", "Memory Foam", "Dual Comfort", "Pillow", "Mattress Protector"];
+    })
+    .catch(() => ["Orthopedic", "Memory Foam", "Dual Comfort", "Pillow", "Mattress Protector"]);
+
+  return popularSearchesPromise;
+}
+
 export default function SearchBar({
   isMobile = false,
   onSearchComplete,
@@ -45,41 +67,33 @@ export default function SearchBar({
 
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [popularSearches, setPopularSearches] = useState<string[]>([
-    "Orthopedic",
-    "Memory Foam",
-    "Dual Comfort",
-    "Pillow",
-    "Mattress Protector",
-  ]);
+  const [popularSearches, setPopularSearches] = useState<string[]>(
+    cachedPopularSearches || [
+      "Orthopedic",
+      "Memory Foam",
+      "Dual Comfort",
+      "Pillow",
+      "Mattress Protector",
+    ]
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isLoggedIn = Boolean(user);
 
-  // Fetch dynamic popular searches from D1 database
-  useEffect(() => {
-    api
-      .get("/searches/popular")
-      .then((res) => {
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          setPopularSearches(res.data);
-        }
-      })
-      .catch((err) => console.error("Failed to fetch dynamic popular searches:", err));
-  }, []);
+  // Lazy load searches ONLY when user focuses/clicks the search bar
+  const handleFocus = () => {
+    setIsOpen(true);
+    dispatch(loadRecentSearches(isLoggedIn));
+    getCachedPopularSearches().then((data) => setPopularSearches(data));
+  };
 
-  // Load catalog into Redux once on initial mount
+  // Load catalog into Redux once on initial mount (in-memory search)
   useEffect(() => {
     if (products.length === 0) {
       dispatch(fetchCatalog());
     }
   }, [dispatch, products.length]);
-
-  // Load recent searches when user status changes or on initial mount
-  useEffect(() => {
-    dispatch(loadRecentSearches(isLoggedIn));
-  }, [dispatch, isLoggedIn]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -190,9 +204,10 @@ export default function SearchBar({
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            if (!isOpen) setIsOpen(true);
+            if (!isOpen) handleFocus();
           }}
-          onFocus={() => setIsOpen(true)}
+          onFocus={handleFocus}
+          onClick={handleFocus}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               setIsOpen(false);
