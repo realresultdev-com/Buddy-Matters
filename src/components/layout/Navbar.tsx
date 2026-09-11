@@ -324,16 +324,6 @@ export default function Navbar() {
             </Link>
           ))}
         </div>
-
-        {user?.role === "ADMIN" && (
-          <Link
-            to="/admin"
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#191142] text-white text-[11px] font-semibold hover:bg-[#261d5e] transition-all whitespace-nowrap shrink-0 shadow-xs ml-3"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#0ea9df]" />
-            <span className="hidden sm:inline">{t("adminPanel")}</span>
-          </Link>
-        )}
       </div>
 
       {/* 4. Enhanced Mobile Drawer with Backdrop */}

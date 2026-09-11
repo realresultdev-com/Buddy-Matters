@@ -9,6 +9,7 @@ import {
   RotateCcw,
   User as UserIcon,
   LogIn,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function MobileBottomNav() {
@@ -51,6 +52,16 @@ export default function MobileBottomNav() {
       icon: RotateCcw,
       active: isActive("/orders"),
     },
+    ...(user?.role === "ADMIN"
+      ? [
+          {
+            name: "Admin",
+            to: "/admin",
+            icon: ShieldCheck,
+            active: currentPath.startsWith("/admin"),
+          },
+        ]
+      : []),
     {
       name: user ? "Account" : "Sign In",
       to: user ? "/profile" : "/login",
@@ -71,7 +82,7 @@ export default function MobileBottomNav() {
             <Link
               key={item.name}
               to={item.to}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors relative min-w-[56px] cursor-pointer ${
+              className={`flex flex-col items-center justify-center py-1 px-1 sm:px-2.5 rounded-xl transition-colors relative min-w-[46px] sm:min-w-[56px] cursor-pointer ${
                 item.active
                   ? "text-[#0ea9df] font-bold"
                   : "text-gray-500 hover:text-[#191142] font-medium"
