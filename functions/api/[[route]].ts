@@ -34,8 +34,32 @@ app.onError((err, c) => {
 // Helper for JWT Secret
 const getJwtSecret = (env: Env) => env.JWT_SECRET || "supersecret_jwt_key_cf_ecommerce_2024";
 
-// URL Security & ID Decryption Helper
+// URL Security & ID Encryption / Decryption Helper
 const SECRET_KEY = "Buddy_Mattress_Secure_Salt_Key_2024";
+
+const encryptId = (rawId: string | undefined): string => {
+  if (!rawId || typeof rawId !== "string") return "";
+  if (rawId.startsWith("enc_")) return rawId;
+
+  const keyChars = SECRET_KEY.split("").map((c) => c.charCodeAt(0));
+  const bytes: number[] = [];
+
+  for (let i = 0; i < rawId.length; i++) {
+    const charCode = rawId.charCodeAt(i);
+    const keyByte = keyChars[i % keyChars.length];
+    bytes.push(charCode ^ keyByte);
+  }
+
+  let checksum = 0;
+  for (let i = 0; i < rawId.length; i++) {
+    checksum = (checksum + rawId.charCodeAt(i) * (i + 1)) % 256;
+  }
+  bytes.push(checksum);
+
+  const hex = bytes.map((b) => b.toString(16).padStart(2, "0")).join("");
+  return `enc_${hex}`;
+};
+
 const decryptId = (cipherText: string | undefined): string => {
   if (!cipherText || typeof cipherText !== "string") return "";
   if (!cipherText.startsWith("enc_")) {
@@ -501,8 +525,8 @@ app.get("/products", async (c) => {
     } catch {
       about = [];
     }
-    const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
-    const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
+    const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : null;
+    const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice && origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : null);
 
     let colorVariants: any[] = [];
     try {
@@ -522,7 +546,7 @@ app.get("/products", async (c) => {
     }
 
     return {
-      id: row.id,
+      id: encryptId(row.id),
       name: row.name,
       description: row.description,
       price: row.price,
@@ -594,8 +618,8 @@ app.get("/products/:id", async (c) => {
     about = [];
   }
 
-  const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
-  const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : 0);
+  const origPrice = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : null;
+  const discPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (origPrice && origPrice > row.price ? Math.round(((origPrice - row.price) / origPrice) * 100) : null);
 
   let colorVariants: any[] = [];
   try {
@@ -616,7 +640,7 @@ app.get("/products/:id", async (c) => {
 
   c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
   return c.json({
-    id: row.id,
+    id: encryptId(row.id),
     name: row.name,
     description: row.description,
     price: row.price,
@@ -930,8 +954,8 @@ const handleProductDetailsQuery = async (c: any) => {
       images = productImages.map((pi: any) => pi.imageUrl);
     }
 
-    const originalMRP = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : Math.round(row.price * 1.35);
-    const discountPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (originalMRP > row.price ? Math.round(((originalMRP - row.price) / originalMRP) * 100) : 0);
+    const originalMRP = row.original_price !== null && row.original_price !== undefined ? Number(row.original_price) : null;
+    const discountPercent = row.discount_percent !== null && row.discount_percent !== undefined ? Number(row.discount_percent) : (originalMRP && originalMRP > row.price ? Math.round(((originalMRP - row.price) / originalMRP) * 100) : null);
     let about: any[] = [];
     try {
       about = typeof row.about === "string" ? JSON.parse(row.about) : row.about || [];
@@ -957,7 +981,7 @@ const handleProductDetailsQuery = async (c: any) => {
     }
 
     return {
-      id: row.id,
+      id: encryptId(row.id),
       name: row.name,
       description: row.description,
       price: row.price,
@@ -1052,14 +1076,20 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
     body = await c.req.json();
   }
 
-  const id = `prod-${crypto.randomUUID()}`;
+  // Auto-generate next 4-digit numeric ID (1001, 1002, 1003...)
+  const { results: existingProducts } = await c.env.DB.prepare("SELECT id FROM products").all();
+  const numericIds = (existingProducts || [])
+    .map((p: any) => parseInt(p.id, 10))
+    .filter((n: number) => !isNaN(n) && n >= 1000);
+  const id = String(numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1001);
+
   const imagesJson = JSON.stringify(Array.isArray(body.images) ? body.images : [body.images || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"]);
   const isTrending = body.is_trending ? 1 : 0;
   const aboutJson = JSON.stringify(Array.isArray(body.about) ? body.about : []);
   const offerBadgePrefix = body.offer_badge_prefix || "";
   const offerBadgeValue = body.offer_badge_value || "";
-  const originalPrice = body.original_price !== undefined && body.original_price !== null && body.original_price !== "" ? Number(body.original_price) : Math.round(Number(body.price) * 1.35);
-  const discountPercent = body.discount_percent !== undefined && body.discount_percent !== null && body.discount_percent !== "" ? Number(body.discount_percent) : (originalPrice > Number(body.price) ? Math.round(((originalPrice - Number(body.price)) / originalPrice) * 100) : 0);
+  const originalPrice = body.original_price !== undefined && body.original_price !== null && body.original_price !== "" ? Number(body.original_price) : null;
+  const discountPercent = body.discount_percent !== undefined && body.discount_percent !== null && body.discount_percent !== "" ? Number(body.discount_percent) : (originalPrice && originalPrice > Number(body.price) ? Math.round(((originalPrice - Number(body.price)) / originalPrice) * 100) : null);
   const colorVariantsJson = JSON.stringify(Array.isArray(body.color_variants) ? body.color_variants : []);
 
   await c.env.DB.prepare(
@@ -1073,7 +1103,7 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
   const productImages = imagesMap[id] || [];
 
   return c.json({
-    id,
+    id: encryptId(id),
     ...body,
     original_price: originalPrice,
     originalMRP: originalPrice,
@@ -1090,7 +1120,8 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
 });
 
 app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
-  const id = c.req.param("id");
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
   let body: any = {};
   const contentType = c.req.header("content-type") || "";
 
@@ -1104,7 +1135,7 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
       discount_percent: formData.discount_percent !== undefined && formData.discount_percent !== "" ? Number(formData.discount_percent) : undefined,
       stock: formData.stock !== undefined ? Number(formData.stock) : undefined,
       categoryId: formData.categoryId,
-      is_trending: formData.is_trending !== undefined ? (String(formData.is_trending) === "true" || String(formData.is_trending) === "1") : undefined,
+      is_trending: formData.is_trending !== undefined ? String(formData.is_trending) === "true" || String(formData.is_trending) === "1" : undefined,
       offer_badge_prefix: formData.offer_badge_prefix,
       offer_badge_value: formData.offer_badge_value,
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : undefined,
@@ -1114,34 +1145,27 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   }
 
   const existing: any = await c.env.DB.prepare("SELECT * FROM products WHERE id = ?").bind(id).first();
-  if (!existing) return c.json({ message: "Product not found" }, 404);
+  if (!existing) {
+    return c.json({ message: "Product not found" }, 404);
+  }
 
   const name = body.name ?? existing.name;
   const description = body.description ?? existing.description;
   const price = body.price !== undefined ? Number(body.price) : existing.price;
   const stock = body.stock !== undefined ? Number(body.stock) : existing.stock;
   const categoryId = body.categoryId ?? existing.category_id;
-  const images = body.images ? JSON.stringify(body.images) : existing.images;
-  const isTrending = body.is_trending !== undefined ? (body.is_trending ? 1 : 0) : (existing.is_trending || 0);
-  const about = body.about !== undefined ? (typeof body.about === "string" ? body.about : JSON.stringify(body.about)) : (existing.about || "[]");
-  const offerBadgePrefix = body.offer_badge_prefix !== undefined ? body.offer_badge_prefix : (existing.offer_badge_prefix || "");
-  const offerBadgeValue = body.offer_badge_value !== undefined ? body.offer_badge_value : (existing.offer_badge_value || "");
+  const isTrending = body.is_trending !== undefined ? (body.is_trending ? 1 : 0) : existing.is_trending;
+  const offerBadgePrefix = body.offer_badge_prefix ?? existing.offer_badge_prefix;
+  const offerBadgeValue = body.offer_badge_value ?? existing.offer_badge_value;
+  const originalPrice = body.original_price !== undefined ? (body.original_price ? Number(body.original_price) : null) : existing.original_price;
+  const discountPercent = body.discount_percent !== undefined ? (body.discount_percent !== null && body.discount_percent !== "" ? Number(body.discount_percent) : null) : existing.discount_percent;
+  const about = body.about !== undefined ? JSON.stringify(body.about) : existing.about;
+  const colorVariants = body.color_variants !== undefined ? JSON.stringify(body.color_variants) : existing.color_variants;
 
-  let originalPrice = existing.original_price;
-  if (body.original_price !== undefined) {
-    originalPrice = body.original_price === null || body.original_price === "" ? null : Number(body.original_price);
-  } else if (!originalPrice && price) {
-    originalPrice = Math.round(price * 1.35);
+  let images = existing.images;
+  if (body.images) {
+    images = JSON.stringify(Array.isArray(body.images) ? body.images : [body.images]);
   }
-
-  let discountPercent = existing.discount_percent;
-  if (body.discount_percent !== undefined) {
-    discountPercent = body.discount_percent === null || body.discount_percent === "" ? null : Number(body.discount_percent);
-  } else if (originalPrice && price && originalPrice > price) {
-    discountPercent = Math.round(((originalPrice - price) / originalPrice) * 100);
-  }
-
-  const colorVariants = body.color_variants !== undefined ? (typeof body.color_variants === "string" ? body.color_variants : JSON.stringify(body.color_variants)) : (existing.color_variants || "[]");
 
   await c.env.DB.prepare(
     "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ?, about = ?, offer_badge_prefix = ?, offer_badge_value = ?, original_price = ?, discount_percent = ?, color_variants = ? WHERE id = ?"
@@ -1173,7 +1197,7 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const productImages = imagesMap[id] || [];
 
   return c.json({
-    id,
+    id: encryptId(id),
     name,
     description,
     price,
@@ -1194,7 +1218,8 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
 });
 
 app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {
-  const id = c.req.param("id");
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
   await c.env.DB.prepare("DELETE FROM products WHERE id = ?").bind(id).run();
   return c.json({ success: true });
 });
@@ -1374,18 +1399,20 @@ app.post("/orders", authMiddleware, async (c) => {
   const pricedItems: { productId: string; quantity: number; price: number; name: string }[] = [];
 
   for (const item of items) {
+    const rawProductId = item.productId;
+    const resolvedProductId = decryptId(rawProductId);
     const product: any = await c.env.DB.prepare("SELECT id, name, price, stock FROM products WHERE id = ?")
-      .bind(item.productId)
+      .bind(resolvedProductId)
       .first();
 
     if (!product) {
-      return c.json({ message: `Product ${item.productId} not found` }, 404);
+      return c.json({ message: `Product not found` }, 404);
     }
 
     const price = product.price;
     totalAmount += price * item.quantity;
     pricedItems.push({
-      productId: item.productId,
+      productId: encryptId(product.id),
       quantity: item.quantity,
       price,
       name: product.name,
@@ -1401,11 +1428,14 @@ app.post("/orders", authMiddleware, async (c) => {
   ).bind(orderId, user.userId, totalAmount, now).run();
 
   // Insert order items
-  for (const item of pricedItems) {
+  for (const item of items) {
     const itemId = `oi-${crypto.randomUUID()}`;
+    const resolvedProductId = decryptId(item.productId);
+    const product: any = await c.env.DB.prepare("SELECT price FROM products WHERE id = ?").bind(resolvedProductId).first();
+    const price = product ? product.price : 0;
     await c.env.DB.prepare(
       "INSERT INTO order_items (id, order_id, product_id, quantity, price) VALUES (?, ?, ?, ?, ?)"
-    ).bind(itemId, orderId, item.productId, item.quantity, item.price).run();
+    ).bind(itemId, orderId, resolvedProductId, item.quantity, price).run();
   }
 
   return c.json(
@@ -1446,6 +1476,7 @@ app.get("/orders/me", authMiddleware, async (c) => {
         createdAt: order.created_at,
         items: items.map((i: any) => ({
           ...i,
+          productId: encryptId(i.productId),
           images: typeof i.images === "string" ? JSON.parse(i.images) : i.images,
         })),
       };
@@ -1482,6 +1513,7 @@ app.get("/orders", authMiddleware, adminMiddleware, async (c) => {
         } catch {}
         return {
           ...it,
+          productId: encryptId(it.productId),
           images: parsedImgs,
           image: parsedImgs[0] || null,
         };

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../../services/product.service";
-import { getProductUrl } from "../../utils/urlSecurity";
+import { getProductUrl, decryptId } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import { Plus, Search, Edit2, Trash2, ShieldAlert, Package, Flame, ExternalLink } from "lucide-react";
@@ -101,6 +101,9 @@ export default function ProductsList() {
                     </div>
 
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <span className="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                        #{decryptId(product.id)}
+                      </span>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">
                         {product.category?.name || "General"}
                       </span>
@@ -193,7 +196,7 @@ export default function ProductsList() {
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] font-mono text-gray-400">ID: {product.id.slice(0, 14)}</p>
+                        <p className="text-[10px] font-mono font-bold text-gray-500">#{decryptId(product.id)}</p>
                       </div>
                     </td>
                     <td className="p-3.5">
