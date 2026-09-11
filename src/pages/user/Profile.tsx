@@ -8,9 +8,7 @@ import type { UserAddress } from "./Addresses";
 import {
   Package,
   RotateCcw,
-  Truck,
   MapPin,
-  User as UserIcon,
   LogOut,
   ShieldAlert,
   ChevronRight,
@@ -19,6 +17,11 @@ import {
   ArrowRight,
   X,
   Send,
+  ShoppingCart,
+  ShieldCheck,
+  Globe,
+  Sparkles,
+  HelpCircle,
 } from "lucide-react";
 
 export default function Profile() {
@@ -36,8 +39,11 @@ export default function Profile() {
   const [returnNotes, setReturnNotes] = useState("");
   const [returnSubmitted, setReturnSubmitted] = useState(false);
 
+  // 100-Night Trial Info modal state
+  const [trialModalOpen, setTrialModalOpen] = useState(false);
+
   useEffect(() => {
-    // Load recent orders
+    // Load user orders
     orderService
       .myOrders()
       .then((res) => {
@@ -79,22 +85,26 @@ export default function Profile() {
     }, 2500);
   };
 
-  // Metrics
-  const activeOrdersCount = orders.filter(
-    (o) => o.status !== "DELIVERED" && o.status !== "CANCELLED"
-  ).length;
+  const statusColors: Record<string, { bg: string; text: string; border: string }> = {
+    PAID: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200" },
+    PACKING: { bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-200" },
+    DISPATCHED: { bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-200" },
+    SHIPPED: { bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-200" },
+    ON_THE_WAY: { bg: "bg-purple-50", text: "text-purple-800", border: "border-purple-200" },
+    ARRIVING_TODAY: { bg: "bg-sky-50", text: "text-sky-800", border: "border-sky-200" },
+    DELIVERED: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
+    PENDING: { bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200" },
+    CANCELLED: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+  };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-      {/* 1. Profile Hero Header */}
-      <div className="bg-gradient-to-r from-[#191142] via-[#23175c] to-[#0ea9df] rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute right-20 top-0 w-36 h-36 bg-[#0ea9df]/20 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4 sm:gap-5">
-            {/* User Avatar */}
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white font-black text-2xl sm:text-3xl shadow-inner shrink-0 overflow-hidden">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24 lg:pb-12">
+      {/* 1. Clean, Minimalist Profile Header */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* User Details */}
+          <div className="flex items-center gap-3.5 sm:gap-4">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-800 font-bold text-xl sm:text-2xl shadow-2xs shrink-0 overflow-hidden">
               {user.avatar_url ? (
                 <img
                   src={user.avatar_url}
@@ -103,163 +113,276 @@ export default function Profile() {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                user.name ? user.name.charAt(0).toUpperCase() : "U"
+                user.name?.charAt(0).toUpperCase() || "U"
               )}
             </div>
 
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{user.name}</h1>
-              <p className="text-white/80 text-xs sm:text-sm mt-1">{user.email}</p>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold text-[#0f1111] truncate">
+                  {user.name}
+                </h1>
+                {user.role === "ADMIN" && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                    Admin
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full md:w-auto justify-start md:justify-end">
+          {/* Quick Header Actions */}
+          <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
             {user.role === "ADMIN" && (
               <Link
                 to="/admin"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-semibold backdrop-blur-md border border-white/30 transition-colors"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold border border-gray-300 transition-colors"
               >
-                <ShieldAlert className="w-4 h-4 text-amber-300" />
-                Admin Portal
+                <ShieldAlert className="w-4 h-4 text-amber-600" />
+                <span>Seller Central</span>
               </Link>
             )}
+
             <button
+              type="button"
               onClick={logout}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-black/20 hover:bg-black/30 text-white/90 hover:text-white text-xs font-semibold backdrop-blur-md border border-white/10 transition-colors cursor-pointer"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors cursor-pointer"
             >
-              <LogOut className="w-4 h-4" />
-              {t("signOut")}
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{t("signOut")}</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* 2. DEDICATED RETURNS & ORDERS SECTION (Placed prominently inside user profile) */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center text-[#0ea9df] shrink-0">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-[#191142]">
-                {language === "ta" ? "ரிட்டர்ன்ஸ் & ஆர்டர்கள்" : "Returns & Orders"}
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Track shipments, view invoices, or initiate hassle-free returns & replacements
-              </p>
-            </div>
-          </div>
-
-          <Link
-            to="/orders"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#0ea9df] hover:text-[#0c93c4] hover:underline"
-          >
-            <span>View All Orders & Return History</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Quick Order Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200/80 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+      {/* 2. Amazon "Your Account" Clean Action Tiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+        {/* Your Orders */}
+        <Link
+          to="/orders"
+          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+        >
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
               <Package className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Total Orders
-              </p>
-              <p className="text-xl font-extrabold text-[#191142] mt-0.5">
-                {orders.length}
+              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
+                Your Orders
+              </h2>
+              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                Track shipments, view invoices, or return items
               </p>
             </div>
           </div>
+          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
+            <span>{orders.length} order(s)</span>
+            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+          </div>
+        </Link>
 
-          <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200/80 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-              <Truck className="w-5 h-5" />
+        {/* Your Addresses */}
+        <Link
+          to="/addresses"
+          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+        >
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform">
+              <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Active Deliveries
-              </p>
-              <p className="text-xl font-extrabold text-[#191142] mt-0.5">
-                {activeOrdersCount}
+              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
+                Your Addresses
+              </h2>
+              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                Edit shipping destinations for fast checkout
               </p>
             </div>
           </div>
+          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
+            <span>Manage</span>
+            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+          </div>
+        </Link>
 
-          <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-200/60 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-[#0ea9df] text-white flex items-center justify-center shrink-0 shadow-2xs">
+        {/* Shopping Cart */}
+        <Link
+          to="/cart"
+          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+        >
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+              <ShoppingCart className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
+                Shopping Cart
+              </h2>
+              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                Review items ready for checkout
+              </p>
+            </div>
+          </div>
+          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
+            <span>View cart</span>
+            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+          </div>
+        </Link>
+
+        {/* 100-Night Home Trial */}
+        <button
+          type="button"
+          onClick={() => setTrialModalOpen(true)}
+          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between text-left cursor-pointer"
+        >
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center text-[#0ea9df] group-hover:scale-105 transition-transform">
               <RotateCcw className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-cyan-800 uppercase tracking-wider">
-                Trial & Return Window
-              </p>
-              <p className="text-xl font-extrabold text-[#191142] mt-0.5">
-                100 Nights
+              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
+                100-Night Trial
+              </h2>
+              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                Zero-risk home sleep trial &amp; warranty details
               </p>
             </div>
+          </div>
+          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
+            <span>Policy info</span>
+            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+          </div>
+        </button>
+
+        {/* Language Switcher */}
+        <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-2xs flex flex-col justify-between">
+          <div className="space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-[#0f1111]">Language / மொழி</h2>
+              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                Choose English or தமிழ்
+              </p>
+            </div>
+          </div>
+          <div className="pt-3 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setLanguage("en")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                language === "en"
+                  ? "bg-[#191142] text-white shadow-2xs"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLanguage("ta")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                language === "ta"
+                  ? "bg-[#191142] text-white shadow-2xs"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+              }`}
+            >
+              தமிழ்
+            </button>
           </div>
         </div>
 
-        {/* Recent Orders List or Empty State */}
+        {/* Admin Portal Tile (Only if user is ADMIN) */}
+        {user.role === "ADMIN" && (
+          <Link
+            to="/admin"
+            className="group p-4 bg-white border border-amber-200 hover:border-amber-400 rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+          >
+            <div className="space-y-2">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-amber-800 transition-colors">
+                  Seller Central
+                </h2>
+                <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
+                  Manage inventory, orders &amp; product catalog
+                </p>
+              </div>
+            </div>
+            <div className="pt-3 flex items-center text-xs font-semibold text-amber-700 group-hover:translate-x-0.5 transition-transform">
+              <span>Open dashboard</span>
+              <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+            </div>
+          </Link>
+        )}
+      </div>
+
+      {/* 3. Recent Orders & Tracking Section */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div>
+            <h2 className="text-base font-bold text-[#0f1111]">Your Recent Orders</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Review placed orders, live shipment status, and invoices
+            </p>
+          </div>
+          <Link
+            to="/orders"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#0ea9df] hover:underline"
+          >
+            <span>View all orders</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
         {loadingOrders ? (
-          <div className="py-10 text-center text-xs text-gray-400">
-            Loading recent orders and return status...
+          <div className="py-8 text-center text-xs text-gray-400">
+            Loading recent orders...
           </div>
         ) : orders.length === 0 ? (
-          <div className="border border-dashed border-gray-300 rounded-xl p-8 text-center space-y-3 bg-gray-50/50">
-            <div className="w-12 h-12 rounded-full bg-cyan-50 text-[#0ea9df] flex items-center justify-center mx-auto">
+          <div className="py-8 text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto text-gray-400">
               <Package className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#191142]">No active orders or returns yet</h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
-                Ready to experience India's premier orthopedic mattress? Every purchase comes with our risk-free 100-night home trial.
+              <p className="text-sm font-bold text-gray-800">No orders placed yet</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Every purchase comes with our risk-free 100-night home trial.
               </p>
             </div>
             <Link
-              to="/"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold transition-all shadow-xs"
+              to="/shop"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] border border-[#fcd200] text-xs font-bold shadow-xs transition-all"
             >
-              <span>Explore Mattress Collection</span>
+              <span>Explore Mattresses</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-              Recent Orders & Eligible Returns
-            </h3>
+          <div className="space-y-3">
             {orders.slice(0, 3).map((order) => {
-              const statusColors: Record<string, string> = {
-                PAID: "bg-blue-50 text-blue-700 border-blue-200",
-                PACKING: "bg-amber-50 text-amber-800 border-amber-300",
-                DISPATCHED: "bg-indigo-50 text-indigo-800 border-indigo-300",
-                SHIPPED: "bg-indigo-50 text-indigo-800 border-indigo-300",
-                ON_THE_WAY: "bg-purple-50 text-purple-800 border-purple-300",
-                ARRIVING_TODAY: "bg-sky-50 text-sky-800 border-sky-300",
-                DELIVERED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-                PENDING: "bg-gray-100 text-gray-700 border-gray-200",
-                CANCELLED: "bg-red-50 text-red-700 border-red-200",
+              const statusCfg = statusColors[order.status] || {
+                bg: "bg-gray-100",
+                text: "text-gray-700",
+                border: "border-gray-200",
               };
-              const colorClass = statusColors[order.status] || "bg-gray-100 text-gray-700 border-gray-200";
 
               return (
                 <div
                   key={order.id}
-                  className="border border-gray-200 rounded-xl p-4 sm:p-5 hover:border-gray-300 transition-colors bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="p-4 rounded-xl border border-gray-200 hover:border-gray-300 bg-white transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3.5"
                 >
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="font-mono font-bold text-xs text-[#191142]">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono font-bold text-xs text-[#0f1111]">
                         #{order.id.slice(0, 10).toUpperCase()}
                       </span>
                       <span
-                        className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${colorClass}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
                       >
                         {order.status}
                       </span>
@@ -274,29 +397,29 @@ export default function Profile() {
 
                     <div className="text-xs text-gray-600">
                       <span>{order.items?.length || 1} item(s)</span>
-                      <span className="mx-2">•</span>
-                      <span className="font-bold text-[#191142]">
+                      <span className="mx-1.5 text-gray-300">•</span>
+                      <span className="font-bold text-[#0f1111]">
                         ₹{order.totalAmount.toLocaleString("en-IN")}
                       </span>
                     </div>
 
                     <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" />
-                      100-Night Free Return Trial applies to this order
+                      Eligible for 100-Night Home Trial
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                  <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                     <button
                       type="button"
                       onClick={() => handleOpenReturnModal(order)}
-                      className="px-3 py-1.5 rounded-lg border border-gray-300 hover:border-gray-400 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs font-semibold text-gray-700 transition-colors cursor-pointer"
                     >
                       Return / Replace
                     </button>
                     <Link
                       to="/orders"
-                      className="px-3.5 py-1.5 rounded-lg bg-[#191142] hover:bg-[#23175c] text-white text-xs font-semibold transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-lg bg-[#0f1111] hover:bg-[#232f3e] text-white text-xs font-semibold transition-colors flex items-center gap-1 shadow-2xs"
                     >
                       <span>Track Order</span>
                       <ExternalLink className="w-3 h-3" />
@@ -307,133 +430,55 @@ export default function Profile() {
             })}
           </div>
         )}
+      </div>
 
-      </section>
-
-      {/* 3. Address & Account Details Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Saved Addresses & Location Card */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div>
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-[#0ea9df] flex items-center justify-center">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#191142]">Delivery Address & Location</h3>
-                  <p className="text-[11px] text-gray-500">Default shipping destination for fast delivery</p>
-                </div>
-              </div>
-              <Link
-                to="/addresses"
-                className="text-xs font-bold text-[#0ea9df] hover:underline"
-              >
-                Manage
-              </Link>
-            </div>
-
-            {defaultAddress ? (
-              <div className="bg-gray-50/70 border border-gray-200/80 rounded-xl p-4 text-xs space-y-1 text-gray-700">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#191142]">{defaultAddress.name}</span>
-                  <span className="text-[10px] font-bold uppercase bg-cyan-50 text-[#0ea9df] px-2 py-0.5 rounded-md border border-cyan-200">
-                    Default
-                  </span>
-                </div>
-                <p>{defaultAddress.addressLine}</p>
-                <p>
-                  {defaultAddress.city}, {defaultAddress.state} -{" "}
-                  <span className="font-semibold text-[#191142]">{defaultAddress.pincode}</span>
-                </p>
-                <p className="text-gray-500 pt-1">Phone: {defaultAddress.phone}</p>
-              </div>
-            ) : (
-              <div className="p-4 border border-dashed border-gray-300 rounded-xl text-center text-xs text-gray-500">
-                No delivery address set. Add one to speed up checkout.
-              </div>
-            )}
+      {/* 4. Default Delivery Address Card */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <h2 className="text-sm font-bold text-[#0f1111]">Default Delivery Address</h2>
           </div>
-
           <Link
             to="/addresses"
-            className="w-full py-2 px-3 rounded-xl border border-gray-300 hover:bg-gray-50 text-xs font-semibold text-center text-[#191142] transition-colors flex items-center justify-center gap-1.5"
+            className="text-xs font-bold text-[#0ea9df] hover:underline"
           >
-            <span>View All Saved Addresses</span>
-            <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+            Manage Addresses
           </Link>
         </div>
 
-        {/* Account Preferences Card */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div>
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-cyan-50 text-[#0ea9df] flex items-center justify-center">
-                  <UserIcon className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#191142]">Account Preferences</h3>
-                  <p className="text-[11px] text-gray-500">Language and session preferences</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200/80">
-                <div>
-                  <span className="font-semibold text-[#191142] block">Language</span>
-                  <span className="text-[11px] text-gray-500">
-                    {language === "ta" ? "தமிழ் (Tamil)" : "English (EN)"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => setLanguage("en")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      language === "en"
-                        ? "bg-[#0ea9df] text-white"
-                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    EN
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLanguage("ta")}
-                    className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      language === "ta"
-                        ? "bg-[#0ea9df] text-white"
-                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    தமிழ்
-                  </button>
-                </div>
-              </div>
-            </div>
+        {defaultAddress ? (
+          <div className="text-xs text-gray-700 space-y-0.5">
+            <p className="font-bold text-[#0f1111]">{defaultAddress.name}</p>
+            <p>{defaultAddress.addressLine}</p>
+            <p>
+              {defaultAddress.city}, {defaultAddress.state} -{" "}
+              <span className="font-semibold text-gray-900">{defaultAddress.pincode}</span>
+            </p>
+            <p className="text-gray-500 pt-1">Phone: {defaultAddress.phone}</p>
           </div>
-
-          <button
-            onClick={logout}
-            className="w-full py-2 px-3 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-50 text-xs font-semibold text-center text-red-600 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            <span>Sign Out of Account</span>
-          </button>
-        </div>
+        ) : (
+          <div className="text-xs text-gray-500 flex items-center justify-between">
+            <span>No default shipping address configured yet.</span>
+            <Link
+              to="/addresses"
+              className="text-xs font-semibold text-[#0ea9df] hover:underline"
+            >
+              + Add Address
+            </Link>
+          </div>
+        )}
       </div>
 
-      {/* 4. Interactive Return & Exchange Modal */}
+      {/* 5. Return & Exchange Request Modal */}
       {returnModalOpen && selectedOrderForReturn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in-50 zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div className="flex items-center gap-2">
                 <RotateCcw className="w-4 h-4 text-[#0ea9df]" />
-                <h3 className="text-base font-bold text-[#191142]">
-                  Initiate Return / Exchange
+                <h3 className="text-base font-bold text-[#0f1111]">
+                  Initiate Return / Replacement
                 </h3>
               </div>
               <button
@@ -450,7 +495,7 @@ export default function Profile() {
                 <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
-                <h4 className="text-base font-bold text-[#191142]">
+                <h4 className="text-base font-bold text-[#0f1111]">
                   Return Request Registered
                 </h4>
                 <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
@@ -461,23 +506,23 @@ export default function Profile() {
               <form onSubmit={handleConfirmReturn} className="space-y-4 pt-4">
                 <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 text-xs">
                   <span className="text-gray-500 block">Order ID:</span>
-                  <span className="font-mono font-bold text-[#191142]">
+                  <span className="font-mono font-bold text-[#0f1111]">
                     #{selectedOrderForReturn.id}
                   </span>
                   <span className="text-gray-500 block mt-1">Total Paid:</span>
-                  <span className="font-bold text-[#191142]">
+                  <span className="font-bold text-[#0f1111]">
                     ₹{selectedOrderForReturn.totalAmount.toLocaleString("en-IN")}
                   </span>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#191142] mb-1.5">
+                  <label className="block text-xs font-bold text-[#0f1111] mb-1.5">
                     Reason for Return / Replacement
                   </label>
                   <select
                     value={returnReason}
                     onChange={(e) => setReturnReason(e.target.value)}
-                    className="w-full text-xs border border-gray-300 rounded-lg p-2.5 text-[#191142] focus:outline-none focus:border-[#0ea9df]"
+                    className="w-full text-xs border border-gray-300 rounded-lg p-2.5 text-[#0f1111] focus:outline-none focus:border-[#0ea9df]"
                   >
                     <option value="Too firm / comfort preference">Too firm / comfort preference</option>
                     <option value="Too soft / need extra orthopedic support">Too soft / need extra orthopedic support</option>
@@ -488,7 +533,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#191142] mb-1.5">
+                  <label className="block text-xs font-bold text-[#0f1111] mb-1.5">
                     Additional Feedback (Optional)
                   </label>
                   <textarea
@@ -496,12 +541,12 @@ export default function Profile() {
                     value={returnNotes}
                     onChange={(e) => setReturnNotes(e.target.value)}
                     placeholder="Tell us about your sleep experience or request a replacement size..."
-                    className="w-full text-xs border border-gray-300 rounded-lg p-2.5 text-[#191142] focus:outline-none focus:border-[#0ea9df] resize-none"
+                    className="w-full text-xs border border-gray-300 rounded-lg p-2.5 text-[#0f1111] focus:outline-none focus:border-[#0ea9df] resize-none"
                   />
                 </div>
 
-                <div className="bg-cyan-50/70 border border-cyan-200/80 rounded-xl p-3 text-[11px] text-cyan-900 leading-relaxed">
-                  <strong>Zero-Cost Pickup:</strong> You do not need to pack the mattress in original plastic. Our logistics partner will bring industrial protective mattress bags.
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-[11px] text-blue-900 leading-relaxed">
+                  <strong>Zero-Cost Doorstep Pickup:</strong> You do not need to pack the mattress into original cardboard boxes. Our courier partner brings dedicated protective mattress packaging.
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
@@ -514,14 +559,61 @@ export default function Profile() {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-[#0f1111] hover:bg-[#232f3e] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    Submit Return Request
+                    Submit Request
                   </button>
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 6. 100-Night Trial Info Modal */}
+      {trialModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-150 space-y-4">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-2">
+                <RotateCcw className="w-4 h-4 text-[#0ea9df]" />
+                <h3 className="text-base font-bold text-[#0f1111]">
+                  100-Night Risk-Free Home Trial
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTrialModalOpen(false)}
+                className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-gray-600 leading-relaxed">
+              <p>
+                We believe your body requires at least 3 to 4 weeks to adjust to the orthopedic support of a high-density memory foam mattress.
+              </p>
+              <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1.5">
+                <p className="font-bold text-gray-900">How it works:</p>
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  <li>Sleep on your Buddy Mattress for up to 100 nights in your home.</li>
+                  <li>If you are not 100% satisfied with the comfort, initiate a return from your profile.</li>
+                  <li>We provide 100% free doorstep pickup and full refund to your original payment method.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setTrialModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-[#0f1111] text-white text-xs font-bold hover:bg-[#232f3e] transition-colors"
+              >
+                Got it
+              </button>
+            </div>
           </div>
         </div>
       )}
