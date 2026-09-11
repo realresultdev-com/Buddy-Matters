@@ -157,15 +157,6 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                   {/* Left Column: Product Info & CTA */}
                   <div className="flex-1 space-y-3 sm:space-y-4 z-10 text-center sm:text-left">
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-xs ${theme.badgeBg}`}
-                      >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Trending Choice
-                      </span>
-                      <span className="text-[11px] font-semibold bg-white/20 text-white px-2.5 py-0.5 rounded-full backdrop-blur-xs">
-                        100-Night Free Trial
-                      </span>
                       <RatingBadge
                         rating={product.rating ?? 4.5}
                         reviewCount={product.review_count ?? 12}

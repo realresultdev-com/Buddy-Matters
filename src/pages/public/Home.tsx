@@ -80,9 +80,6 @@ export default function Home() {
             className="w-full h-full object-cover object-center mix-blend-overlay opacity-60 absolute inset-0"
           />
           <div className="relative z-10 flex flex-col justify-center px-4 sm:px-12 md:px-16 max-w-2xl text-white h-full">
-            <span className="inline-flex items-center gap-1.5 bg-[#0ea9df] text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full w-fit mb-2 sm:mb-3 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" /> {t("heroBadge")}
-            </span>
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
               {t("heroTitle")}
             </h1>

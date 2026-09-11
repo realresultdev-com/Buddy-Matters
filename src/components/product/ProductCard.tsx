@@ -36,19 +36,6 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 flex flex-col justify-between hover:border-[#0ea9df] hover:shadow-md transition-all relative group h-full">
       <div>
-        {/* Brand Badge */}
-        <div className="min-h-[20px] mb-1.5 sm:mb-2">
-          {product.stock > 15 ? (
-            <span className="inline-flex items-center gap-1 bg-[#191142] text-white text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full shadow-2xs">
-              <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#0ea9df]" /> {t("bestSeller")}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 bg-cyan-50 text-[#0ea9df] border border-cyan-200 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full">
-              {t("buddyPick")}
-            </span>
-          )}
-        </div>
-
         {/* Product Image */}
         <Link
           to={getProductUrl(product.id)}

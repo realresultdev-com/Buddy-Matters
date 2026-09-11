@@ -44,13 +44,6 @@ export default function ProductInfo({ product, className = "" }: ProductInfoProp
         </a>
       </div>
 
-      {/* Choice Badge */}
-      <div className="inline-flex items-center">
-        <span className="bg-[#191142] text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-xs">
-          {t("buddysChoice")}
-        </span>
-      </div>
-
       {/* Price & EMI block */}
       <PriceTag price={product.price} size="lg" showDiscount showEMI />
 
