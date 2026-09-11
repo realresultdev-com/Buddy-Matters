@@ -34,9 +34,9 @@ export default function MobileBottomNav() {
     },
     {
       name: "Shop",
-      to: "/#catalog",
+      to: "/shop",
       icon: LayoutGrid,
-      active: currentPath.startsWith("/category"),
+      active: currentPath === "/shop" || currentPath.startsWith("/category"),
     },
     {
       name: "Cart",

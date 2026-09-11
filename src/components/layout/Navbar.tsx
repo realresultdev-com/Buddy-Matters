@@ -20,6 +20,7 @@ import {
   RotateCcw,
   MapPin,
   Sparkles,
+  LayoutGrid,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -307,10 +308,11 @@ export default function Navbar() {
       <div className="bg-white border-b border-gray-200 px-3 sm:px-6 py-1.5 flex items-center justify-between text-xs text-gray-700 overflow-x-auto scrollbar-none h-[40px] w-full max-w-full">
         <div className="flex items-center gap-4 sm:gap-6 shrink-0 font-medium text-xs">
           <Link
-            to="/#catalog"
-            className="py-1 px-1 text-gray-600 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
+            to="/shop"
+            className="py-1 px-1 text-gray-800 hover:text-[#0ea9df] font-bold transition-colors whitespace-nowrap flex items-center gap-1.5"
           >
-            {t("allDepartments")}
+            <LayoutGrid className="w-3.5 h-3.5 text-[#0ea9df]" />
+            <span>Shop All</span>
           </Link>
           {categories.map((cat) => (
             <Link
@@ -436,6 +438,13 @@ export default function Navbar() {
                   className="block py-2 px-2 rounded-lg hover:bg-gray-100 hover:text-[#0ea9df]"
                 >
                   Home
+                </Link>
+                <Link
+                  to="/shop"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block py-2 px-2 rounded-lg hover:bg-gray-100 hover:text-[#0ea9df] font-bold text-[#0ea9df]"
+                >
+                  Shop All Products
                 </Link>
                 <Link
                   to="/cart"

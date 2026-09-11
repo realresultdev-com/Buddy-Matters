@@ -6,6 +6,7 @@ import AdminLayout from "../components/layout/AdminLayout";
 
 // Public pages
 import Home from "../pages/public/Home";
+import Shop from "../pages/public/Shop";
 import ProductDetail from "../pages/public/ProductDetail";
 import CategoryPage from "../pages/public/CategoryPage";
 import Cart from "../pages/public/Cart";
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
     children: [
       // Public
       { index: true, element: <Home /> },
+      { path: "shop", element: <Shop /> },
       { path: "product/:id", element: <ProductDetail /> },
       { path: "category/:id", element: <CategoryPage /> },
       { path: "cart", element: <Cart /> },
