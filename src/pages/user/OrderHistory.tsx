@@ -122,12 +122,21 @@ export default function OrderHistory() {
           {filteredOrders.map((order) => {
             const statusBadgeColors: Record<string, string> = {
               PAID: "bg-blue-50 text-blue-700 border-blue-200",
-              SHIPPED: "bg-amber-50 text-amber-700 border-amber-200",
-              DELIVERED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+              PACKING: "bg-amber-50 text-amber-800 border-amber-300",
+              DISPATCHED: "bg-indigo-50 text-indigo-800 border-indigo-300",
+              SHIPPED: "bg-indigo-50 text-indigo-800 border-indigo-300",
+              ON_THE_WAY: "bg-purple-50 text-purple-800 border-purple-300",
+              ARRIVING_TODAY: "bg-sky-50 text-sky-800 border-sky-300",
+              DELIVERED: "bg-emerald-50 text-emerald-800 border-emerald-300",
               PENDING: "bg-gray-100 text-gray-700 border-gray-200",
               CANCELLED: "bg-red-50 text-red-700 border-red-200",
             };
             const colorClass = statusBadgeColors[order.status] || "bg-gray-100 text-gray-700 border-gray-200";
+
+            // Fulfillment stage index
+            const stages = ["PAID", "PACKING", "DISPATCHED", "ON_THE_WAY", "ARRIVING_TODAY", "DELIVERED"];
+            let effectiveStatus = order.status === "SHIPPED" ? "DISPATCHED" : order.status;
+            const currentStageIdx = stages.indexOf(effectiveStatus);
 
             return (
               <div key={order.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xs">
@@ -154,8 +163,8 @@ export default function OrderHistory() {
 
                     <div>
                       <span className="uppercase text-[10px] text-gray-400 font-bold block">STATUS</span>
-                      <span className={`inline-block font-bold text-[10px] px-2 py-0.5 rounded-full border ${colorClass}`}>
-                        {order.status}
+                      <span className={`inline-block font-bold text-[10px] px-2.5 py-0.5 rounded-full border ${colorClass}`}>
+                        {order.status.replace(/_/g, " ")}
                       </span>
                     </div>
                   </div>
@@ -171,23 +180,85 @@ export default function OrderHistory() {
                 </div>
 
                 {/* Order Body */}
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-5">
                   <div>
-                    <h3 className="text-sm font-bold text-[#191142]">
+                    <h3 className="text-base font-bold text-[#191142]">
                       {order.status === "PAID"
                         ? "Order Confirmed — Preparing for Dispatch"
+                        : order.status === "PACKING"
+                        ? "Items Packed & Undergoing Quality Inspection"
+                        : order.status === "DISPATCHED" || order.status === "SHIPPED"
+                        ? "Dispatched — Handed over to Logistics Partner"
+                        : order.status === "ON_THE_WAY"
+                        ? "In Transit — On the Way to Your Local Hub"
+                        : order.status === "ARRIVING_TODAY"
+                        ? "Out for Delivery — Arriving at Your Doorstep Today!"
                         : order.status === "DELIVERED"
                         ? "Delivered Successfully"
-                        : order.status === "SHIPPED"
-                        ? "In Transit with Buddy Logistics"
                         : order.status === "CANCELLED"
                         ? "Order Cancelled"
-                        : "Processing Confirmation"}
+                        : "Processing Order"}
                     </h3>
                     <p className="text-xs text-gray-500 mt-0.5">
                       100-Night Sleep Trial guarantee active. Zero-cost doorstep returns & replacements.
                     </p>
                   </div>
+
+                  {/* Customer Live Delivery Stepper Bar */}
+                  {order.status !== "CANCELLED" && currentStageIdx >= 0 && (
+                    <div className="pt-1 pb-3 px-2">
+                      <div className="relative flex items-center justify-between w-full">
+                        {/* Connecting track */}
+                        <div className="absolute top-3.5 left-3 right-3 h-1 bg-gray-100 -z-0">
+                          <div
+                            className="h-full bg-[#0ea9df] transition-all duration-300"
+                            style={{
+                              width: `${(Math.max(0, currentStageIdx) / (stages.length - 1)) * 100}%`,
+                            }}
+                          />
+                        </div>
+
+                        {[
+                          { id: "PAID", label: "Confirmed" },
+                          { id: "PACKING", label: "Packing" },
+                          { id: "DISPATCHED", label: "Dispatched" },
+                          { id: "ON_THE_WAY", label: "On the Way" },
+                          { id: "ARRIVING_TODAY", label: "Arriving Today" },
+                          { id: "DELIVERED", label: "Delivered" },
+                        ].map((s, idx) => {
+                          const isDone = idx <= currentStageIdx;
+                          const isCurrent = idx === currentStageIdx;
+
+                          return (
+                            <div key={s.id} className="relative z-10 flex flex-col items-center">
+                              <div
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                                  isCurrent
+                                    ? "bg-[#191142] border-2 border-[#0ea9df] text-white ring-4 ring-[#0ea9df]/20 scale-105"
+                                    : isDone
+                                    ? "bg-[#0ea9df] text-white"
+                                    : "bg-white border-2 border-gray-200 text-gray-400"
+                                }`}
+                              >
+                                {isDone ? "✓" : idx + 1}
+                              </div>
+                              <span
+                                className={`text-[10px] font-bold mt-1.5 transition-colors ${
+                                  isCurrent
+                                    ? "text-[#191142]"
+                                    : isDone
+                                    ? "text-[#0ea9df]"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {s.label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Items in order */}
                   <div className="space-y-3 pt-2">

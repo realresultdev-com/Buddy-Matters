@@ -1303,7 +1303,7 @@ app.get("/admin/dashboard", authMiddleware, adminMiddleware, async (c) => {
   const orderCountResult: any = await c.env.DB.prepare("SELECT count(*) as count FROM orders").first();
   const userCountResult: any = await c.env.DB.prepare("SELECT count(*) as count FROM users").first();
   const revenueResult: any = await c.env.DB.prepare(
-    "SELECT COALESCE(sum(total_amount), 0) as totalRevenue FROM orders WHERE status = 'PAID'"
+    "SELECT COALESCE(sum(total_amount), 0) as totalRevenue FROM orders WHERE status NOT IN ('CANCELLED', 'PENDING')"
   ).first();
 
   return c.json({

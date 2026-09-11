@@ -81,7 +81,7 @@ export default function Profile() {
 
   // Metrics
   const activeOrdersCount = orders.filter(
-    (o) => o.status === "PENDING" || o.status === "PAID" || o.status === "SHIPPED"
+    (o) => o.status !== "DELIVERED" && o.status !== "CANCELLED"
   ).length;
 
   return (
@@ -237,7 +237,11 @@ export default function Profile() {
             {orders.slice(0, 3).map((order) => {
               const statusColors: Record<string, string> = {
                 PAID: "bg-blue-50 text-blue-700 border-blue-200",
-                SHIPPED: "bg-amber-50 text-amber-700 border-amber-200",
+                PACKING: "bg-amber-50 text-amber-800 border-amber-300",
+                DISPATCHED: "bg-indigo-50 text-indigo-800 border-indigo-300",
+                SHIPPED: "bg-indigo-50 text-indigo-800 border-indigo-300",
+                ON_THE_WAY: "bg-purple-50 text-purple-800 border-purple-300",
+                ARRIVING_TODAY: "bg-sky-50 text-sky-800 border-sky-300",
                 DELIVERED: "bg-emerald-50 text-emerald-700 border-emerald-200",
                 PENDING: "bg-gray-100 text-gray-700 border-gray-200",
                 CANCELLED: "bg-red-50 text-red-700 border-red-200",
