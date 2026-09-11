@@ -257,6 +257,41 @@ app.get("/user/searches", authMiddleware, async (c) => {
   return c.json(results || []);
 });
 
+// Dynamic Popular Searches (Aggregated from real user searches and active categories)
+app.get("/searches/popular", async (c) => {
+  try {
+    // 1. Get most frequently searched terms across all users
+    const { results: topSearches } = await c.env.DB.prepare(`
+      SELECT query, COUNT(*) as frequency 
+      FROM user_searches 
+      GROUP BY LOWER(query) 
+      ORDER BY frequency DESC, MAX(created_at) DESC 
+      LIMIT 6
+    `).all();
+
+    const popularTerms: string[] = (topSearches || []).map((r: any) => r.query);
+
+    // 2. If fewer than 5 queries exist, supplement with active D1 store categories
+    if (popularTerms.length < 5) {
+      const { results: categories } = await c.env.DB.prepare(
+        "SELECT name FROM categories ORDER BY name ASC LIMIT 6"
+      ).all();
+
+      for (const cat of categories || []) {
+        if (!popularTerms.some((t) => t.toLowerCase() === (cat as any).name.toLowerCase())) {
+          popularTerms.push((cat as any).name);
+        }
+        if (popularTerms.length >= 6) break;
+      }
+    }
+
+    return c.json(popularTerms);
+  } catch (err: any) {
+    console.error("Failed to load popular searches:", err);
+    return c.json(["Orthopedic", "Memory Foam", "Dual Comfort", "Pillow", "Mattress Protector"]);
+  }
+});
+
 app.post("/user/searches", authMiddleware, async (c) => {
   const user = c.get("user");
   const { query } = await c.req.json();

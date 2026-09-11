@@ -22,20 +22,13 @@ import {
 } from "../../store/searchSlice";
 import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
+import { api } from "../../services/api";
 
 interface SearchBarProps {
   isMobile?: boolean;
   onSearchComplete?: () => void;
   className?: string;
 }
-
-const POPULAR_SUGGESTIONS = [
-  "Orthopedic",
-  "Memory Foam",
-  "Dual Comfort",
-  "Pillow",
-  "Mattress Protector",
-];
 
 export default function SearchBar({
   isMobile = false,
@@ -52,10 +45,29 @@ export default function SearchBar({
 
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [popularSearches, setPopularSearches] = useState<string[]>([
+    "Orthopedic",
+    "Memory Foam",
+    "Dual Comfort",
+    "Pillow",
+    "Mattress Protector",
+  ]);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isLoggedIn = Boolean(user);
+
+  // Fetch dynamic popular searches from D1 database
+  useEffect(() => {
+    api
+      .get("/searches/popular")
+      .then((res) => {
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setPopularSearches(res.data);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch dynamic popular searches:", err));
+  }, []);
 
   // Load catalog into Redux once on initial mount
   useEffect(() => {
@@ -272,7 +284,7 @@ export default function SearchBar({
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 px-2">
-                  {POPULAR_SUGGESTIONS.map((suggestion) => (
+                  {popularSearches.map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"
