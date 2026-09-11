@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Product, ProductColorVariant } from "../../types/product.types";
 import ColorSwatches from "../common/ColorSwatches";
+import LegalMetrologyCard from "./LegalMetrologyCard";
 
 interface ProductInfoProps {
   product: Product;
@@ -23,6 +24,14 @@ export default function ProductInfo({
   const { user } = useAuth();
   const { language, t } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
+
+  const isPillow =
+    product.categoryId === "cat_pillows" ||
+    product.name.toLowerCase().includes("pillow");
+  const isProtector =
+    product.categoryId === "cat_bedding" ||
+    product.name.toLowerCase().includes("protector");
+  const netQtyBadge = isPillow ? "1 N (Pillow)" : isProtector ? "1 N (Protector)" : "1 N (Mattress)";
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -76,6 +85,17 @@ export default function ProductInfo({
         size="lg"
       />
 
+      {/* Statutory Quick Indicators (Legal Metrology Rule 6 & 10) */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
+          <span>🇮🇳</span>
+          <span>Country of Origin: <strong className="font-bold text-slate-900">India</strong></span>
+        </span>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
+          <span>Net Quantity: <strong className="font-bold text-slate-900">{netQtyBadge}</strong></span>
+        </span>
+      </div>
+
       {/* Color Selection Swatches */}
       {product.color_variants && product.color_variants.length > 0 && (
         <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200/80 space-y-2">
@@ -123,6 +143,9 @@ export default function ProductInfo({
           </div>
         </div>
       )}
+
+      {/* Mandatory Statutory Declarations (Legal Metrology Rules 6 & 10) */}
+      <LegalMetrologyCard product={product} className="pt-1" />
     </div>
   );
 }

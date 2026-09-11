@@ -70,6 +70,32 @@ export default function ProductBuyBox({
             </select>
           </div>
 
+          {/* Statutory Disclosures (Legal Metrology Rule 6 & 10) */}
+          <div className="pt-2 pb-1 border-t border-gray-100 space-y-1.5 text-[11px] text-gray-600">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Country of Origin:</span>
+              <span className="font-bold text-gray-800 flex items-center gap-1">
+                <span>🇮🇳</span> India
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Net Quantity:</span>
+              <span className="font-bold text-gray-800">
+                {product.categoryId === "cat_pillows" || product.name.toLowerCase().includes("pillow")
+                  ? "1 N (Pillow)"
+                  : product.categoryId === "cat_bedding" || product.name.toLowerCase().includes("protector")
+                  ? "1 N (Protector)"
+                  : "1 N (Mattress)"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Manufacturer:</span>
+              <span className="font-semibold text-gray-700 truncate max-w-[160px]" title="Buddy Mattress, Paramathi Velur, Tamil Nadu">
+                Buddy Mattress (TN)
+              </span>
+            </div>
+          </div>
+
           {/* Add to Cart: Buddy Mattress Brand Button */}
           <button
             type="button"
