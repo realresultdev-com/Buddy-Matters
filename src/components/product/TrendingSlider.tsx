@@ -126,57 +126,72 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                 className="w-full shrink-0 relative overflow-hidden"
               >
                 <div
-                  className={`${theme.bg} text-white p-5 sm:p-8 md:p-10 min-h-[240px] sm:min-h-[290px] md:min-h-[320px] flex flex-col sm:flex-row items-center justify-between gap-6 relative`}
+                  className={`${theme.bg} text-white p-6 sm:p-8 md:p-10 lg:p-12 min-h-[380px] sm:min-h-[420px] md:min-h-[440px] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 relative overflow-hidden`}
                 >
                   {/* Background Accents */}
-                  <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-                  <div className="absolute -bottom-20 -left-12 w-64 h-64 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="absolute -bottom-24 -left-16 w-80 h-80 bg-cyan-400/15 rounded-full blur-3xl pointer-events-none" />
 
                   {/* Left Column: Product Info & CTA */}
-                  <div className="flex-1 space-y-3 sm:space-y-4 z-10 text-center sm:text-left">
+                  <div className="w-full md:w-1/2 lg:w-7/12 space-y-3.5 sm:space-y-4 z-10 text-center md:text-left flex flex-col items-center md:items-start justify-center">
+                    <div className="inline-flex items-center gap-2">
+                      <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-md bg-white/20 backdrop-blur-md text-white border border-white/30">
+                        Trending Deal
+                      </span>
+                      <span className="text-[11px] font-bold text-emerald-300 bg-emerald-500/20 px-2.5 py-0.5 rounded-md border border-emerald-400/30">
+                        In Stock
+                      </span>
+                    </div>
+
                     <div>
                       <Link
                         to={getProductUrl(product.id)}
                         className="hover:underline block"
                       >
-                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-snug line-clamp-2">
+                        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight line-clamp-2">
                           {product.name}
                         </h3>
                       </Link>
-                      <p className="text-xs sm:text-sm text-gray-200/90 mt-1.5 line-clamp-2 max-w-xl">
+                      <p className="text-xs sm:text-sm text-gray-200/90 mt-2 line-clamp-2 sm:line-clamp-3 max-w-xl leading-relaxed">
                         {product.description}
                       </p>
                     </div>
 
-                    {/* Price */}
-                    <div className="flex items-baseline justify-center sm:justify-start gap-3">
-                      <div className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+                    {/* Amazon / Flipkart Style Price & Savings */}
+                    <div className="flex flex-wrap items-baseline justify-center md:justify-start gap-3 pt-1">
+                      <div className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white">
                         ₹{product.price.toLocaleString("en-IN")}
                       </div>
+                      <div className="text-base sm:text-lg text-gray-300/80 line-through font-medium">
+                        ₹{Math.round(product.price * 1.3).toLocaleString("en-IN")}
+                      </div>
+                      <span className="text-xs font-extrabold text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded-md">
+                        Save 23%
+                      </span>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                    <div className="pt-2 flex flex-wrap items-center justify-center md:justify-start gap-3">
                       <Link
                         to={getProductUrl(product.id)}
-                        className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer hover:scale-102 ${theme.buttonBg}`}
+                        className={`inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-xs sm:text-sm transition-all shadow-lg hover:scale-105 cursor-pointer ${theme.buttonBg}`}
                       >
-                        <span>Explore Product</span>
+                        <span>Shop This Deal</span>
                         <ArrowRight className="w-4 h-4" />
                       </Link>
                     </div>
                   </div>
 
-                  {/* Right Column: Hero Product Visual */}
-                  <div className="w-48 sm:w-64 md:w-80 h-44 sm:h-60 md:h-68 shrink-0 flex items-center justify-center z-10">
+                  {/* Right Column: HUGE Product Visual (Like Amazon & Flipkart) */}
+                  <div className="w-full md:w-1/2 lg:w-5/12 h-64 sm:h-80 md:h-96 lg:h-[380px] shrink-0 flex items-center justify-center z-10">
                     <Link
                       to={getProductUrl(product.id)}
-                      className="w-full h-full flex items-center justify-center group"
+                      className="w-full h-full rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-xs border border-white/20 flex items-center justify-center group relative"
                     >
                       <img
                         src={img}
                         alt={product.name}
-                        className="max-w-full max-h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-300 rounded-xl"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </Link>
                   </div>
