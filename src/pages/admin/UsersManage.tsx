@@ -42,11 +42,8 @@ export default function UsersManage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="border-b border-gray-300 pb-4">
-        <h1 className="text-2xl font-bold text-gray-900">Manage Users & Roles</h1>
-        <p className="text-xs text-gray-500 mt-1">
-          Dynamic role permissions stored and verified in Cloudflare D1.
-        </p>
+      <div className="border-b border-gray-300 pb-3">
+        <h1 className="text-2xl font-bold text-gray-900">Users</h1>
       </div>
 
       {/* Mobile Card Layout (Visible on phone/tablet screens) */}

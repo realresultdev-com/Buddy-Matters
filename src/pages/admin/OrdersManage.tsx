@@ -52,27 +52,27 @@ export interface AdminOrder {
 
 // Order fulfillment lifecycle stages
 export const FULFILLMENT_STEPS = [
-  { id: "PAID", label: "Placed / Paid", icon: Clock, color: "blue", shortDesc: "Payment verified & confirmed" },
-  { id: "PACKING", label: "Packing", icon: Package, color: "amber", shortDesc: "Items packaging & QC in warehouse" },
-  { id: "DISPATCHED", label: "Dispatched", icon: Truck, color: "indigo", shortDesc: "Handed over to courier service" },
-  { id: "ON_THE_WAY", label: "On the Way", icon: Navigation, color: "purple", shortDesc: "In transit to delivery hub" },
-  { id: "ARRIVING_TODAY", label: "Arriving Today", icon: MapPin, color: "sky", shortDesc: "Out with courier for final delivery" },
-  { id: "DELIVERED", label: "Delivered", icon: CheckCircle2, color: "emerald", shortDesc: "Successfully delivered to customer" },
+  { id: "PAID", label: "Paid", icon: Clock, color: "blue" },
+  { id: "PACKING", label: "Packing", icon: Package, color: "amber" },
+  { id: "DISPATCHED", label: "Dispatched", icon: Truck, color: "indigo" },
+  { id: "ON_THE_WAY", label: "On the Way", icon: Navigation, color: "purple" },
+  { id: "ARRIVING_TODAY", label: "Out for Delivery", icon: MapPin, color: "sky" },
+  { id: "DELIVERED", label: "Delivered", icon: CheckCircle2, color: "emerald" },
 ];
 
 export const STATUS_CONFIG: Record<
   string,
-  { label: string; bg: string; text: string; border: string; icon: any; desc: string }
+  { label: string; bg: string; text: string; border: string; icon: any }
 > = {
-  PENDING: { label: "Payment Pending", bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200", icon: Clock, desc: "Awaiting customer payment confirmation." },
-  PAID: { label: "Order Placed", bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: Clock, desc: "Payment verified. Ready for warehouse processing." },
-  PACKING: { label: "Packing", bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-300", icon: Package, desc: "Items currently being packaged and quality-checked." },
-  DISPATCHED: { label: "Dispatched", bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-300", icon: Truck, desc: "Shipment packaged and dispatched with logistics partner." },
-  SHIPPED: { label: "Dispatched", bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-300", icon: Truck, desc: "Shipment packaged and dispatched with logistics partner." },
-  ON_THE_WAY: { label: "On the Way", bg: "bg-purple-50", text: "text-purple-800", border: "border-purple-300", icon: Navigation, desc: "Shipment is in transit between fulfillment hubs." },
-  ARRIVING_TODAY: { label: "Arriving Today", bg: "bg-sky-50", text: "text-sky-800", border: "border-sky-300", icon: MapPin, desc: "Out for delivery with the local delivery agent." },
-  DELIVERED: { label: "Delivered", bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-300", icon: CheckCircle2, desc: "Order safely received and signed for by customer." },
-  CANCELLED: { label: "Cancelled", bg: "bg-red-50", text: "text-red-700", border: "border-red-200", icon: XCircle, desc: "Order was cancelled and fulfillment halted." },
+  PENDING: { label: "Payment Pending", bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200", icon: Clock },
+  PAID: { label: "Paid", bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: Clock },
+  PACKING: { label: "Packing", bg: "bg-amber-50", text: "text-amber-800", border: "border-amber-300", icon: Package },
+  DISPATCHED: { label: "Dispatched", bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-300", icon: Truck },
+  SHIPPED: { label: "Dispatched", bg: "bg-indigo-50", text: "text-indigo-800", border: "border-indigo-300", icon: Truck },
+  ON_THE_WAY: { label: "On the Way", bg: "bg-purple-50", text: "text-purple-800", border: "border-purple-300", icon: Navigation },
+  ARRIVING_TODAY: { label: "Out for Delivery", bg: "bg-sky-50", text: "text-sky-800", border: "border-sky-300", icon: MapPin },
+  DELIVERED: { label: "Delivered", bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-300", icon: CheckCircle2 },
+  CANCELLED: { label: "Cancelled", bg: "bg-red-50", text: "text-red-700", border: "border-red-200", icon: XCircle },
 };
 
 export default function OrdersManage() {
@@ -310,55 +310,44 @@ export default function OrdersManage() {
             </div>
           </div>
 
-          {/* Current Status Explanation Callout */}
-          <div className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${statusMeta.bg} ${statusMeta.border}`}>
-            <div className="flex items-center gap-3">
-              <span className={`p-2 rounded-lg bg-white/80 ${statusMeta.text}`}>
-                <statusMeta.icon className="w-5 h-5" />
+          {/* Current Status Callout */}
+          <div className={`p-3.5 rounded-xl border flex items-center justify-between gap-3 ${statusMeta.bg} ${statusMeta.border}`}>
+            <div className="flex items-center gap-2.5">
+              <span className={`p-1.5 rounded-lg bg-white/80 ${statusMeta.text}`}>
+                <statusMeta.icon className="w-4 h-4" />
               </span>
-              <div>
-                <h4 className={`text-xs font-black ${statusMeta.text}`}>
-                  Current Stage: {statusMeta.label}
-                </h4>
-                <p className="text-[11px] text-gray-600 mt-0.5">{statusMeta.desc}</p>
-              </div>
+              <h4 className={`text-xs font-bold ${statusMeta.text}`}>
+                Status: {statusMeta.label}
+              </h4>
             </div>
 
             {isUpdating && (
               <span className="text-xs font-bold text-[#0ea9df] flex items-center gap-1.5 animate-pulse shrink-0">
                 <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                Updating live...
+                Updating...
               </span>
             )}
           </div>
         </div>
 
         {/* Status Update Control Section: Interactive Pipeline Stepper */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
-            <div>
-              <h2 className="text-base font-black text-[#191142] flex items-center gap-2">
-                <Truck className="w-5 h-5 text-[#0ea9df]" />
-                <span>Live Order Fulfillment Pipeline</span>
-              </h2>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Click any stage circle below to set and broadcast the fulfillment status to the customer immediately.
-              </p>
-            </div>
-            <span className="text-[11px] font-bold text-gray-400">
-              Interactive 6-Stage Tracking
-            </span>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-5">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h2 className="text-sm font-bold text-[#191142] flex items-center gap-2">
+              <Truck className="w-4 h-4 text-[#0ea9df]" />
+              <span>Fulfillment Status</span>
+            </h2>
           </div>
 
           {/* Stepper Line & Steps */}
           {!isCancelled ? (
-            <div className="py-4">
-              <div className="overflow-x-auto scrollbar-none py-3 -mx-1 px-1">
-                <div className="relative flex items-center justify-between min-w-[580px] sm:min-w-0 sm:w-full">
+            <div className="py-2">
+              <div className="overflow-x-auto scrollbar-none py-2 -mx-1 px-1">
+                <div className="relative flex items-center justify-between min-w-[500px] sm:min-w-0 sm:w-full">
                   {/* Connecting Track */}
-                  <div className="absolute top-5 left-6 right-6 h-1.5 bg-gray-200 -z-0 rounded-full">
+                  <div className="absolute top-5 left-6 right-6 h-1 bg-gray-200 -z-0 rounded-full">
                     <div
-                      className="h-full bg-gradient-to-r from-[#191142] via-[#0ea9df] to-[#25a970] transition-all duration-300 rounded-full"
+                      className="h-full bg-[#191142] transition-all duration-300 rounded-full"
                       style={{
                         width: `${(currentStepIdx / (FULFILLMENT_STEPS.length - 1)) * 100}%`,
                       }}
@@ -377,38 +366,34 @@ export default function OrdersManage() {
                         type="button"
                         onClick={() => handleStatusChange(selectedOrder.id, step.id)}
                         disabled={isUpdating}
-                        title={`Click to set status to ${step.label}`}
                         className="group relative z-10 flex flex-col items-center focus:outline-none cursor-pointer"
                       >
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
+                          className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-200 ${
                             isCurrent
-                              ? "bg-[#191142] border-[#0ea9df] text-white ring-4 ring-[#0ea9df]/20 scale-110 shadow-md"
+                              ? "bg-[#191142] border-[#0ea9df] text-white ring-4 ring-[#0ea9df]/20 scale-105 shadow-sm"
                               : isCompleted
                               ? "bg-[#0ea9df] border-[#0ea9df] text-white shadow-2xs"
-                              : "bg-white border-gray-300 text-gray-400 group-hover:border-gray-400 group-hover:text-gray-600 hover:scale-105"
+                              : "bg-white border-gray-300 text-gray-400 group-hover:border-gray-400 group-hover:text-gray-600"
                           }`}
                         >
                           {isCompleted && !isCurrent ? (
-                            <Check className="w-5 h-5 stroke-[3]" />
+                            <Check className="w-4 h-4 stroke-[3]" />
                           ) : (
                             <StepIcon className="w-4 h-4" />
                           )}
                         </div>
 
                         <span
-                          className={`text-xs font-bold mt-2 transition-colors ${
+                          className={`text-xs font-bold mt-1.5 transition-colors ${
                             isCurrent
-                              ? "text-[#191142] font-black"
+                              ? "text-[#191142]"
                               : isCompleted
                               ? "text-[#0ea9df]"
                               : "text-gray-400 group-hover:text-gray-600"
                           }`}
                         >
                           {step.label}
-                        </span>
-                        <span className="text-[10px] text-gray-400 mt-0.5 max-w-[90px] text-center leading-tight">
-                          {step.shortDesc}
                         </span>
                       </button>
                     );
@@ -417,25 +402,25 @@ export default function OrdersManage() {
               </div>
             </div>
           ) : (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
+            <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between gap-3">
               <span className="text-xs font-bold text-red-800 flex items-center gap-1.5">
                 <XCircle className="w-4 h-4 text-red-600" />
-                This order is marked as Cancelled.
+                Cancelled
               </span>
               <button
                 type="button"
                 onClick={() => handleStatusChange(selectedOrder.id, "PAID")}
                 className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors cursor-pointer"
               >
-                Re-activate Order as Paid
+                Re-activate Order
               </button>
             </div>
           )}
 
-          {/* Quick 1-Click Action Buttons */}
-          <div className="pt-4 border-t border-gray-100 space-y-3">
+          {/* Quick Action Buttons */}
+          <div className="pt-3 border-t border-gray-100 space-y-2.5">
             <span className="text-xs font-bold text-gray-500 block">
-              1-Click Status Update Actions:
+              Quick Actions:
             </span>
 
             <div className="flex flex-wrap items-center gap-2.5">
@@ -713,15 +698,12 @@ export default function OrdersManage() {
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-black text-[#191142] tracking-tight flex items-center gap-2.5">
               <ShoppingBag className="w-6 h-6 text-[#0ea9df]" />
-              <span>Customer Orders</span>
+              <span>Orders</span>
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#191142] text-white">
-              {orders.length} Total
+              {orders.length}
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            Click any customer order below to open its dedicated live fulfillment tracker and update its status.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

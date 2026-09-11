@@ -101,10 +101,7 @@ export default function CategoriesManage() {
   return (
     <div className="max-w-4xl space-y-6">
       <div className="border-b border-gray-200 pb-3">
-        <h1 className="text-2xl font-bold text-[#0f1111]">Departments & Offer Badges</h1>
-        <p className="text-xs text-gray-500">
-          Configure catalog browsing taxonomy and dynamic promotional deal stickers
-        </p>
+        <h1 className="text-2xl font-bold text-[#0f1111]">Categories</h1>
       </div>
 
       {error && (
@@ -114,20 +111,20 @@ export default function CategoriesManage() {
         </div>
       )}
 
-      {/* Add Department & Offer Badge Form */}
+      {/* Add Category Form */}
       <form
         onSubmit={handleAdd}
         className="p-4 rounded-xl border border-gray-300 bg-[#fbfbfb] shadow-xs space-y-3"
       >
         <div className="flex items-center gap-2 pb-1 border-b border-gray-200 text-xs font-bold text-gray-800">
           <Tag className="w-4 h-4 text-amazon-orange" />
-          <span>Add New Department & Offer Sticker Badge</span>
+          <span>Add Category</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-[11px] font-bold text-gray-700 mb-1">
-              Department Name *
+              Category Name *
             </label>
             <input
               type="text"
@@ -141,39 +138,35 @@ export default function CategoriesManage() {
 
           <div>
             <label className="block text-[11px] font-bold text-gray-700 mb-1">
-              Offer Badge Prefix / Key
+              Badge Prefix
             </label>
             <input
               type="text"
-              placeholder="e.g. Starting, Up to, Flat"
+              placeholder="Starting"
               value={newCatPrefix}
               onChange={(e) => setNewCatPrefix(e.target.value)}
               className="w-full px-3 py-1.5 border border-gray-400 rounded-lg text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none bg-white"
             />
-            <span className="text-[10px] text-gray-500">Default: "Starting"</span>
           </div>
 
           <div>
             <label className="block text-[11px] font-bold text-gray-700 mb-1">
-              Offer Badge Value
+              Badge Value
             </label>
             <input
               type="text"
-              placeholder="e.g. ₹7,999 or ₹99"
+              placeholder="Optional"
               value={newCatValue}
               onChange={(e) => setNewCatValue(e.target.value)}
               className="w-full px-3 py-1.5 border border-gray-400 rounded-lg text-xs text-gray-900 focus:border-amazon-orange focus:ring-1 focus:ring-amazon-orange outline-none bg-white"
             />
-            <span className="text-[10px] text-gray-500">
-              Leave blank to auto-calculate lowest product price
-            </span>
           </div>
         </div>
 
         {/* Live Badge Preview in Form */}
         <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] font-semibold text-gray-600">Sticker Badge Preview:</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-gray-600">Preview:</span>
             <OfferBadge
               prefix={newCatPrefix || "Starting"}
               value={newCatValue || "₹99"}
@@ -184,9 +177,9 @@ export default function CategoriesManage() {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex items-center gap-1 py-2 px-5 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] text-xs font-bold text-gray-900 shadow-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 py-1.5 px-4 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] text-xs font-bold text-gray-900 shadow-sm transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Add Department
+            <Plus className="w-4 h-4" /> Add Category
           </button>
         </div>
       </form>
@@ -194,8 +187,8 @@ export default function CategoriesManage() {
       {/* Categories List */}
       <div className="border border-gray-300 rounded-xl overflow-hidden bg-white shadow-sm divide-y divide-gray-200">
         <div className="bg-gray-50 px-4 py-2.5 text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
-          <span>Department Details</span>
-          <span className="hidden sm:inline">Offer Sticker Badge & Actions</span>
+          <span>Categories</span>
+          <span className="hidden sm:inline">Badge &amp; Actions</span>
         </div>
 
         {categories.map((cat) => (

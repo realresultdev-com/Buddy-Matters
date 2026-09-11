@@ -45,17 +45,14 @@ export default function ProductsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-3">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0f1111]">Manage All Inventory</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Track products, pricing, and stock on Cloudflare D1</p>
-        </div>
+      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-3">
+        <h1 className="text-2xl font-bold text-[#0f1111]">Products</h1>
 
         <Link
           to="/admin/products/new"
           className="inline-flex items-center gap-1.5 py-1.5 px-4 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] text-xs font-semibold text-gray-900 shadow-sm transition-colors"
         >
-          <Plus className="w-4 h-4" /> Add a Product
+          <Plus className="w-4 h-4" /> Add Product
         </Link>
       </div>
 
@@ -64,7 +61,7 @@ export default function ProductsList() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Search products by title or category..."
+          placeholder="Search products..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-300 text-xs bg-white text-gray-900 focus:outline-none focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20"
