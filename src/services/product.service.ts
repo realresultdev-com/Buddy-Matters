@@ -27,4 +27,8 @@ export const productService = {
   create: (data: FormData) => api.post("/products", data),   // admin only
   update: (id: string, data: FormData) => api.put(`/products/${id}`, data), // admin only
   remove: (id: string) => api.delete(`/products/${id}`),     // admin only
+  getReviews: (id: string) => api.get(`/products/${id}/reviews`),
+  canReview: (id: string) => api.get(`/products/${id}/can-review`),
+  submitReview: (id: string, data: { rating: number; title?: string; comment: string; images?: string[] }) =>
+    api.post(`/products/${id}/reviews`, data),
 };

@@ -13,6 +13,7 @@ import {
   Flame,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import TrendingSlider from "../../components/product/TrendingSlider";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getCategoryUrl } from "../../utils/urlSecurity";
@@ -184,6 +185,9 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* 2.5. Trending Products Banner Slider */}
+      <TrendingSlider products={products} />
 
       {/* 3. Category Filter Navigation (Clean White Bar with Cyan Active Pills) */}
       <div className="bg-white p-3.5 rounded-xl border border-gray-200 shadow-xs flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">

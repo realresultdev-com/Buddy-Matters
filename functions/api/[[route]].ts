@@ -88,12 +88,22 @@ const authMiddleware = async (c: any, next: any) => {
   }
 };
 
-// Middleware: Admin Role
+// Middleware: Admin Role (Dynamic from D1 database)
 const adminMiddleware = async (c: any, next: any) => {
   const user = c.get("user") as UserPayload | undefined;
-  if (!user || user.role !== "ADMIN") {
+  if (!user?.userId) {
     return c.json({ message: "Forbidden: Admin access required" }, 403);
   }
+
+  // Always query database directly to ensure role is dynamically managed in D1
+  const dbUser: any = await c.env.DB.prepare(
+    "SELECT role FROM users WHERE id = ?"
+  ).bind(user.userId).first();
+
+  if (!dbUser || dbUser.role !== "ADMIN") {
+    return c.json({ message: "Forbidden: Admin access required" }, 403);
+  }
+
   await next();
 };
 
@@ -142,7 +152,7 @@ app.post("/auth/login", async (c) => {
   }
 
   const user: any = await c.env.DB.prepare(
-    "SELECT id, name, email, password, role FROM users WHERE email = ?"
+    "SELECT id, name, email, password, role, avatar_url FROM users WHERE email = ?"
   ).bind(email.toLowerCase()).first();
 
   if (!user) {
@@ -160,7 +170,7 @@ app.post("/auth/login", async (c) => {
   );
 
   return c.json({
-    user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar_url: user.avatar_url },
     token,
   });
 });
@@ -185,13 +195,14 @@ app.post("/auth/google", async (c) => {
 
   const email = (googleUser.email || "").toLowerCase();
   const name = googleUser.name || googleUser.given_name || "Google User";
+  const picture = googleUser.picture || "";
   if (!email) {
     return c.json({ message: "Email not provided by Google account" }, 400);
   }
 
   // Look up existing user in D1
   let user: any = await c.env.DB.prepare(
-    "SELECT id, name, email, role FROM users WHERE email = ?"
+    "SELECT id, name, email, role, avatar_url FROM users WHERE email = ?"
   ).bind(email).first();
 
   if (!user) {
@@ -200,10 +211,16 @@ app.post("/auth/google", async (c) => {
     const dummyPassword = await bcrypt.hash(crypto.randomUUID(), 10);
 
     await c.env.DB.prepare(
-      "INSERT INTO users (id, name, email, password, role) VALUES (?, ?, ?, ?, ?)"
-    ).bind(userId, name, email, dummyPassword, role).run();
+      "INSERT INTO users (id, name, email, password, role, avatar_url) VALUES (?, ?, ?, ?, ?, ?)"
+    ).bind(userId, name, email, dummyPassword, role, picture).run();
 
-    user = { id: userId, name, email, role };
+    user = { id: userId, name, email, role, avatar_url: picture };
+  } else if (picture && user.avatar_url !== picture) {
+    // Dynamically store/update Google profile picture in D1 database
+    await c.env.DB.prepare(
+      "UPDATE users SET avatar_url = ? WHERE id = ?"
+    ).bind(picture, user.id).run();
+    user.avatar_url = picture;
   }
 
   const token = await sign(
@@ -217,7 +234,7 @@ app.post("/auth/google", async (c) => {
 app.get("/auth/me", authMiddleware, async (c) => {
   const userPayload = c.get("user")!;
   const user: any = await c.env.DB.prepare(
-    "SELECT id, name, email, role, created_at FROM users WHERE id = ?"
+    "SELECT id, name, email, role, avatar_url, created_at FROM users WHERE id = ?"
   ).bind(userPayload.userId).first();
 
   if (!user) {
@@ -258,16 +275,27 @@ app.delete("/categories/:id", authMiddleware, adminMiddleware, async (c) => {
 
 app.get("/products", async (c) => {
   const categoryId = c.req.query("categoryId");
+  const trending = c.req.query("trending");
   let query = `
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
+           (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
     JOIN categories c ON p.category_id = c.id
   `;
-  const params: string[] = [];
+  const whereClauses: string[] = [];
+  const params: any[] = [];
   if (categoryId) {
-    query += ` WHERE p.category_id = ?`;
+    whereClauses.push("p.category_id = ?");
     params.push(categoryId);
+  }
+  if (trending !== undefined) {
+    whereClauses.push("p.is_trending = ?");
+    params.push(trending === "true" || trending === "1" ? 1 : 0);
+  }
+  if (whereClauses.length > 0) {
+    query += ` WHERE ` + whereClauses.join(" AND ");
   }
   query += ` ORDER BY p.created_at DESC`;
 
@@ -292,6 +320,9 @@ app.get("/products", async (c) => {
         id: row.cat_id,
         name: row.cat_name,
       },
+      is_trending: Boolean(row.is_trending),
+      rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : 4.5,
+      review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
       createdAt: row.createdAt,
     };
   });
@@ -303,8 +334,10 @@ app.get("/products/:id", async (c) => {
   const rawId = c.req.param("id");
   const id = decryptId(rawId);
   const row: any = await c.env.DB.prepare(`
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
+           (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
     JOIN categories c ON p.category_id = c.id
     WHERE p.id = ?
@@ -333,7 +366,152 @@ app.get("/products/:id", async (c) => {
       id: row.cat_id,
       name: row.cat_name,
     },
+    is_trending: Boolean(row.is_trending),
+    rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : 4.5,
+    review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
     createdAt: row.createdAt,
+  });
+});
+
+// Reviews API
+app.get("/products/:id/reviews", async (c) => {
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
+  const { results } = await c.env.DB.prepare(`
+    SELECT r.id, r.product_id, r.user_id, r.rating, r.title, r.comment, r.images, r.is_verified_purchase, r.created_at,
+           u.name as user_name, u.avatar_url as user_avatar
+    FROM reviews r
+    JOIN users u ON r.user_id = u.id
+    WHERE r.product_id = ?
+    ORDER BY r.created_at DESC
+  `).bind(id).all();
+
+  const formatted = results.map((row: any) => {
+    let images: string[] = [];
+    try {
+      images = typeof row.images === "string" ? JSON.parse(row.images) : row.images || [];
+    } catch {
+      images = row.images ? [row.images] : [];
+    }
+    return {
+      id: row.id,
+      productId: row.product_id,
+      userId: row.user_id,
+      userName: row.user_name || "Verified Customer",
+      userAvatar: row.user_avatar || null,
+      rating: Number(row.rating),
+      title: row.title || "",
+      comment: row.comment,
+      images,
+      isVerifiedPurchase: Boolean(row.is_verified_purchase),
+      createdAt: row.created_at,
+    };
+  });
+
+  return c.json(formatted);
+});
+
+// Check if current user can review (must have purchased the product)
+app.get("/products/:id/can-review", authMiddleware, async (c) => {
+  const user = c.get("user");
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
+
+  // Check if user has an order with this product
+  const purchased: any = await c.env.DB.prepare(`
+    SELECT oi.id
+    FROM orders o
+    JOIN order_items oi ON oi.order_id = o.id
+    WHERE o.user_id = ? AND oi.product_id = ? AND o.status != 'CANCELLED'
+    LIMIT 1
+  `).bind(user.id, id).first();
+
+  // Check if user already reviewed
+  const existingReview: any = await c.env.DB.prepare(`
+    SELECT id FROM reviews WHERE user_id = ? AND product_id = ? LIMIT 1
+  `).bind(user.id, id).first();
+
+  const canReview = Boolean(purchased) || user.role === "ADMIN";
+  const alreadyReviewed = Boolean(existingReview);
+
+  return c.json({
+    canReview,
+    alreadyReviewed,
+    isPurchased: Boolean(purchased),
+    reason: !canReview
+      ? "Only verified purchasers of this item can leave a review."
+      : alreadyReviewed
+      ? "You have already reviewed this product."
+      : null,
+  });
+});
+
+// Post a review (Only verified buyers or admins)
+app.post("/products/:id/reviews", authMiddleware, async (c) => {
+  const user = c.get("user");
+  const rawId = c.req.param("id");
+  const id = decryptId(rawId);
+  const body = await c.req.json();
+
+  const rating = Number(body.rating);
+  if (!rating || rating < 1 || rating > 5) {
+    return c.json({ error: "Rating must be between 1 and 5 stars" }, 400);
+  }
+
+  const comment = (body.comment || "").trim();
+  if (!comment) {
+    return c.json({ error: "Review comment is required" }, 400);
+  }
+
+  // Check verified purchase
+  const purchased: any = await c.env.DB.prepare(`
+    SELECT oi.id
+    FROM orders o
+    JOIN order_items oi ON oi.order_id = o.id
+    WHERE o.user_id = ? AND oi.product_id = ? AND o.status != 'CANCELLED'
+    LIMIT 1
+  `).bind(user.id, id).first();
+
+  if (!purchased && user.role !== "ADMIN") {
+    return c.json({
+      error: "Only verified buyers who purchased this product can submit a review.",
+    }, 403);
+  }
+
+  // Check if already reviewed
+  const existingReview: any = await c.env.DB.prepare(`
+    SELECT id FROM reviews WHERE user_id = ? AND product_id = ? LIMIT 1
+  `).bind(user.id, id).first();
+
+  if (existingReview) {
+    return c.json({ error: "You have already reviewed this product." }, 400);
+  }
+
+  const images = Array.isArray(body.images) ? JSON.stringify(body.images) : "[]";
+  const title = (body.title || "").trim();
+  const reviewId = `rev-${crypto.randomUUID().slice(0, 12)}`;
+
+  await c.env.DB.prepare(`
+    INSERT INTO reviews (id, product_id, user_id, rating, title, comment, images, is_verified_purchase)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+  `).bind(reviewId, id, user.id, rating, title, comment, images).run();
+
+  return c.json({
+    success: true,
+    message: "Review submitted successfully!",
+    review: {
+      id: reviewId,
+      productId: id,
+      userId: user.id,
+      userName: user.name,
+      userAvatar: user.avatar_url,
+      rating,
+      title,
+      comment,
+      images: Array.isArray(body.images) ? body.images : [],
+      isVerifiedPurchase: true,
+      createdAt: new Date().toISOString(),
+    },
   });
 });
 
@@ -376,8 +554,10 @@ const handleProductDetailsQuery = async (c: any) => {
   const offset = payload.page && limit ? (Number(payload.page) - 1) * limit : undefined;
 
   let query = `
-    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
-           c.id as cat_id, c.name as cat_name, p.created_at as createdAt
+    SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
+           c.id as cat_id, c.name as cat_name, p.created_at as createdAt,
+           (SELECT ROUND(AVG(r.rating), 1) FROM reviews r WHERE r.product_id = p.id) as avg_rating,
+           (SELECT COUNT(r.id) FROM reviews r WHERE r.product_id = p.id) as review_count
     FROM products p
     JOIN categories c ON p.category_id = c.id
     WHERE 1=1
@@ -424,7 +604,13 @@ const handleProductDetailsQuery = async (c: any) => {
     query += ` AND p.stock > 0`;
   }
 
-  // 7. Sorting
+  // 7. Trending Filter (optional)
+  if (payload.trending !== undefined) {
+    query += ` AND p.is_trending = ?`;
+    binds.push(payload.trending ? 1 : 0);
+  }
+
+  // 8. Sorting
   switch (sort) {
     case "price_asc":
       query += ` ORDER BY p.price ASC`;
@@ -441,7 +627,7 @@ const handleProductDetailsQuery = async (c: any) => {
       break;
   }
 
-  // 8. Pagination
+  // 9. Pagination
   if (limit) {
     query += ` LIMIT ?`;
     binds.push(limit);
@@ -479,8 +665,10 @@ const handleProductDetailsQuery = async (c: any) => {
         id: row.cat_id,
         name: row.cat_name,
       },
-      rating: 4.8,
-      reviewsCount: 142,
+      is_trending: Boolean(row.is_trending),
+      rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : 4.5,
+      reviewsCount: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
+      review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
       createdAt: row.createdAt,
     };
   };
@@ -496,7 +684,7 @@ const handleProductDetailsQuery = async (c: any) => {
 
     // Fetch related products in the same category
     const { results: related } = await c.env.DB.prepare(`
-      SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId,
+      SELECT p.id, p.name, p.description, p.price, p.stock, p.images, p.category_id as categoryId, p.is_trending,
              c.id as cat_id, c.name as cat_name, p.created_at as createdAt
       FROM products p
       JOIN categories c ON p.category_id = c.id
@@ -536,6 +724,7 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
       price: Number(formData.price),
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
+      is_trending: formData.is_trending === "true" || formData.is_trending === true || formData.is_trending === "1" || formData.is_trending === 1,
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : [],
     };
   } else {
@@ -544,12 +733,13 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
 
   const id = `prod-${crypto.randomUUID()}`;
   const imagesJson = JSON.stringify(Array.isArray(body.images) ? body.images : [body.images || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800"]);
+  const isTrending = body.is_trending ? 1 : 0;
 
   await c.env.DB.prepare(
-    "INSERT INTO products (id, name, description, price, stock, images, category_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId).run();
+    "INSERT INTO products (id, name, description, price, stock, images, category_id, is_trending) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).bind(id, body.name, body.description, Number(body.price), Number(body.stock || 0), imagesJson, body.categoryId, isTrending).run();
 
-  return c.json({ id, ...body, images: JSON.parse(imagesJson) }, 201);
+  return c.json({ id, ...body, is_trending: Boolean(isTrending), images: JSON.parse(imagesJson) }, 201);
 });
 
 app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -565,6 +755,7 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
       price: Number(formData.price),
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
+      is_trending: formData.is_trending !== undefined ? (formData.is_trending === "true" || formData.is_trending === true || formData.is_trending === "1" || formData.is_trending === 1) : undefined,
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : undefined,
     };
   } else {
@@ -580,12 +771,13 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
   const stock = body.stock !== undefined ? Number(body.stock) : existing.stock;
   const categoryId = body.categoryId ?? existing.category_id;
   const images = body.images ? JSON.stringify(body.images) : existing.images;
+  const isTrending = body.is_trending !== undefined ? (body.is_trending ? 1 : 0) : (existing.is_trending || 0);
 
   await c.env.DB.prepare(
-    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ? WHERE id = ?"
-  ).bind(name, description, price, stock, categoryId, images, id).run();
+    "UPDATE products SET name = ?, description = ?, price = ?, stock = ?, category_id = ?, images = ?, is_trending = ? WHERE id = ?"
+  ).bind(name, description, price, stock, categoryId, images, isTrending, id).run();
 
-  return c.json({ id, name, description, price, stock, categoryId, images: JSON.parse(images) });
+  return c.json({ id, name, description, price, stock, categoryId, is_trending: Boolean(isTrending), images: JSON.parse(images) });
 });
 
 app.delete("/products/:id", authMiddleware, adminMiddleware, async (c) => {
@@ -617,8 +809,8 @@ app.get("/images/:key{.+}", async (c) => {
   return new Response(object.body, { headers });
 });
 
-// Admin upload endpoint: accepts multipart/form-data with 'file' or 'files'
-app.post("/upload", authMiddleware, adminMiddleware, async (c) => {
+// Upload endpoint: accepts multipart/form-data with 'file' or 'files' (Admins or authenticated buyers for reviews)
+app.post("/upload", authMiddleware, async (c) => {
   try {
     const formData = await c.req.parseBody({ all: true });
     let files: any = formData["file"] || formData["files"] || formData["image"] || formData["images"];
@@ -967,9 +1159,19 @@ app.get("/admin/dashboard", authMiddleware, adminMiddleware, async (c) => {
 
 app.get("/admin/users", authMiddleware, adminMiddleware, async (c) => {
   const { results } = await c.env.DB.prepare(
-    "SELECT id, name, email, role, created_at as createdAt FROM users ORDER BY created_at DESC"
+    "SELECT id, name, email, role, avatar_url, created_at as createdAt FROM users ORDER BY created_at DESC"
   ).all();
   return c.json(results);
+});
+
+app.patch("/admin/users/:id/role", authMiddleware, adminMiddleware, async (c) => {
+  const targetUserId = c.req.param("id");
+  const { role } = await c.req.json();
+  if (!["USER", "ADMIN"].includes(role)) {
+    return c.json({ message: "Invalid role. Must be 'USER' or 'ADMIN'" }, 400);
+  }
+  await c.env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, targetUserId).run();
+  return c.json({ success: true, message: `User role updated to ${role}` });
 });
 
 export const onRequest = handle(app);

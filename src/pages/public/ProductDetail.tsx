@@ -9,6 +9,7 @@ import ProductBreadcrumbs from "../../components/product/ProductBreadcrumbs";
 import ProductGallery from "../../components/product/ProductGallery";
 import ProductInfo from "../../components/product/ProductInfo";
 import ProductBuyBox from "../../components/product/ProductBuyBox";
+import ProductReviewsSection from "../../components/product/ProductReviewsSection";
 
 export default function ProductDetail() {
   const { id: urlParamId } = useParams<{ id: string }>();
@@ -110,6 +111,9 @@ export default function ProductDetail() {
           />
         </div>
       </div>
+
+      {/* Customer Ratings & Verified Buyer Reviews */}
+      <ProductReviewsSection product={product} />
 
       {/* Sticky Mobile Action Bar (Hidden on desktop, fixed above bottom nav on mobile) */}
       <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">

@@ -4,7 +4,7 @@ import { productService } from "../../services/product.service";
 import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
-import { Plus, Edit, Trash2, Search, ExternalLink } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, ShieldAlert, Package, Flame, ExternalLink } from "lucide-react";
 
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -96,7 +96,14 @@ export default function ProductsList() {
                         className="w-12 h-12 object-contain bg-white border border-gray-200 p-0.5 shrink-0"
                       />
                       <div>
-                        <p className="font-semibold text-gray-900 line-clamp-1">{product.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-semibold text-gray-900 line-clamp-1">{product.name}</p>
+                          {product.is_trending && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">
+                              <Flame className="w-2.5 h-2.5 text-orange-500 fill-orange-500" /> Trending
+                            </span>
+                          )}
+                        </div>
                         <p className="text-[10px] font-mono text-gray-500">ID: {product.id.slice(0, 14)}</p>
                       </div>
                     </td>

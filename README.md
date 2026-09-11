@@ -39,14 +39,16 @@ Open **http://localhost:8788** in your browser to experience the full app with E
 
 ---
 
-## 🔑 Demo Accounts
+## 🔑 Dynamic Admin Access (Cloudflare D1)
 
-| Role | Email | Password |
-| :--- | :--- | :--- |
-| **Admin** | `admin@example.com` | `admin123` |
-| **Customer** | `user@example.com` | `user123` |
+Admin access is **100% dynamic** directly from the Cloudflare D1 database (`users.role = 'ADMIN'`). No static admin accounts or roles are hardcoded in application code.
 
-*(The login screen also features quick 1-click autofill buttons for testing).*
+To grant Admin access to any account:
+```bash
+# Grant Admin access dynamically in D1:
+npx wrangler d1 execute ecommerce-db --remote --command="UPDATE users SET role = 'ADMIN' WHERE email = 'your-email@gmail.com';"
+```
+Admin users can also promote or demote user roles dynamically within the Admin Portal under **Manage Users & Roles**.
 
 ---
 

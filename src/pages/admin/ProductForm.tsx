@@ -6,7 +6,7 @@ import { api } from "../../services/api";
 import type { Category } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
 import R2ImageUploader from "../../components/admin/R2ImageUploader";
-import { ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, AlertCircle, CheckCircle2, Flame } from "lucide-react";
 
 export default function ProductForm() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +24,7 @@ export default function ProductForm() {
     price: 0,
     stock: 10,
     categoryId: "",
+    is_trending: false,
     images: [] as string[],
   });
 
@@ -42,6 +43,7 @@ export default function ProductForm() {
             price: p.price,
             stock: p.stock,
             categoryId: p.categoryId,
+            is_trending: Boolean(p.is_trending),
             images: p.images && p.images.length > 0 ? p.images : [],
           });
         } else if (catRes.data.length > 0) {
@@ -67,6 +69,7 @@ export default function ProductForm() {
       price: Number(formData.price),
       stock: Number(formData.stock),
       categoryId: formData.categoryId,
+      is_trending: formData.is_trending,
       images:
         formData.images.length > 0
           ? formData.images
@@ -191,6 +194,26 @@ export default function ProductForm() {
                 value={formData.stock}
                 onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
                 className="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-xs text-gray-900 focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20 outline-none transition-all"
+              />
+            </div>
+
+            {/* Trending / Featured Toggle */}
+            <div className="md:col-span-2 bg-amber-50/70 border border-amber-200/90 rounded-xl p-3.5 flex items-center justify-between transition-all">
+              <div className="pr-4">
+                <label htmlFor="is_trending" className="text-xs font-bold text-[#191142] flex items-center gap-1.5 cursor-pointer">
+                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                  Trending / Featured for Home Slider
+                </label>
+                <p className="text-[11px] text-gray-600 mt-0.5">
+                  When enabled, this product will be featured in the Home Page Trending Carousel Slider while also displaying normally in the catalog.
+                </p>
+              </div>
+              <input
+                id="is_trending"
+                type="checkbox"
+                checked={formData.is_trending}
+                onChange={(e) => setFormData({ ...formData, is_trending: e.target.checked })}
+                className="w-5 h-5 text-[#0ea9df] rounded-md focus:ring-[#0ea9df] cursor-pointer"
               />
             </div>
           </div>

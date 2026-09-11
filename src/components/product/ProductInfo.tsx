@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import RatingStars from "../common/RatingStars";
+import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 import TrustBadges from "./TrustBadges";
 import { useLanguage } from "../../context/LanguageContext";
@@ -27,11 +28,20 @@ export default function ProductInfo({ product, className = "" }: ProductInfoProp
 
       {/* Ratings & Q&A */}
       <div className="flex items-center gap-3 text-xs text-gray-600 border-b border-gray-100 pb-3 flex-wrap">
-        <RatingStars rating={4.8} count="3,492" size="sm" />
+        <a href="#reviews" className="hover:opacity-90 transition-opacity">
+          <RatingBadge
+            rating={product.rating ?? 4.5}
+            reviewCount={product.review_count ?? 12}
+            size="sm"
+          />
+        </a>
         <span className="text-gray-300">|</span>
-        <span className="text-[#0ea9df] hover:underline cursor-pointer text-[11px] font-medium">
-          142 {t("answeredQuestions")}
-        </span>
+        <a
+          href="#reviews"
+          className="text-[#0ea9df] hover:underline cursor-pointer text-xs font-semibold"
+        >
+          {product.review_count ?? 12} {language === "ta" ? "மதிப்புரைகள்" : "customer reviews"}
+        </a>
       </div>
 
       {/* Choice Badge */}

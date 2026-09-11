@@ -6,6 +6,7 @@ export const translations = {
   en: {
     // Navigation
     searchPlaceholder: "Search mattresses, orthopedic pillows, bedding...",
+    search: "Search",
     allDepartments: "All Departments",
     todaysDeals: "Today's Deals",
     freeDeliveryBadge: "100-Night Trial & Free Delivery",
@@ -119,6 +120,7 @@ export const translations = {
   ta: {
     // Navigation
     searchPlaceholder: "மெத்தைகள், தலையணைகள், படுக்கை விரிப்புகள் தேடுக...",
+    search: "தேடுக",
     allDepartments: "அனைத்து பிரிவுகள்",
     todaysDeals: "இன்றைய சலுகைகள்",
     freeDeliveryBadge: "100-இரவு சோதனை & இலவச டெலிவரி",

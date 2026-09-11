@@ -30,7 +30,6 @@ export default function Navbar() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchCategory, setSearchCategory] = useState("");
   const [accountDropdown, setAccountDropdown] = useState(false);
   const [langDropdown, setLangDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -47,8 +46,7 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
-    const catParam = searchCategory ? `&category=${encodeURIComponent(searchCategory)}` : "";
-    navigate(`/?search=${encodeURIComponent(searchQuery.trim())}${catParam}`);
+    navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
     setMobileMenuOpen(false);
   };
 
@@ -89,56 +87,139 @@ export default function Navbar() {
         {/* Desktop Search Bar (Hidden on Mobile) */}
         <form
           onSubmit={handleSearch}
-          className="hidden md:flex flex-1 max-w-2xl items-center h-10 rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#0ea9df] focus-within:border-[#0ea9df] focus-within:ring-2 focus-within:ring-[#0ea9df]/20 bg-white transition-all shadow-2xs"
+          className="hidden md:flex flex-1 max-w-xl items-center h-10 rounded-full border border-gray-200 hover:border-gray-300 focus-within:border-[#191142] focus-within:ring-2 focus-within:ring-[#191142]/10 bg-gray-50/80 hover:bg-white focus-within:bg-white transition-all shadow-2xs pl-4 pr-1.5"
         >
-          {/* Category dropdown */}
-          <div className="flex items-center bg-gray-50 hover:bg-gray-100 px-3 h-full border-r border-gray-200 text-xs font-semibold text-[#191142] cursor-pointer">
-            <select
-              value={searchCategory}
-              onChange={(e) => setSearchCategory(e.target.value)}
-              className="bg-transparent text-xs text-[#191142] font-medium focus:outline-none cursor-pointer pr-1"
-            >
-              <option value="">{t("allDepartments")}</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
+          <Search className="w-4 h-4 text-gray-400 shrink-0 mr-2.5" />
           <input
             type="text"
             placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-3 py-2 text-sm text-[#191142] placeholder-gray-400 focus:outline-none h-full font-medium"
+            className="flex-1 text-sm text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium py-2"
           />
-
           <button
             type="submit"
-            className="bg-[#0ea9df] hover:bg-[#0c93c4] px-5 h-full flex items-center justify-center transition-colors text-white shrink-0 font-bold shadow-xs cursor-pointer"
+            className="px-4 h-7 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold flex items-center justify-center transition-all shrink-0 cursor-pointer shadow-2xs"
             aria-label="Search"
           >
-            <Search className="w-4 h-4 font-bold" />
+            {t("search") || "Search"}
           </button>
         </form>
 
-        {/* Right Action Icons (Language, Auth, Cart) */}
-        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Language Switcher (Desktop flyout & Mobile quick button) */}
+        {/* Right Action Icons: Reordered properly (Account -> Language -> Cart) */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* 1. User Profile / Sign In */}
+          {!user ? (
+            <Link
+              to="/login"
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-[#191142] text-xs font-semibold transition-all shrink-0"
+            >
+              <User className="w-3.5 h-3.5 text-[#0ea9df]" />
+              <span>{t("signIn")}</span>
+            </Link>
+          ) : (
+            <div
+              className="relative shrink-0"
+              onMouseEnter={() => setAccountDropdown(true)}
+              onMouseLeave={() => setAccountDropdown(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setAccountDropdown((prev) => !prev)}
+                className="flex items-center gap-2 h-9 px-3 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all cursor-pointer text-xs font-semibold text-gray-800"
+                aria-label="User profile"
+              >
+                <div className="w-5.5 h-5.5 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-2xs overflow-hidden">
+                  {user.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.name || user.email}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    user.email.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <span className="hidden sm:inline-block max-w-[90px] lg:max-w-[120px] truncate capitalize font-semibold text-gray-800">
+                  {user.name || user.email.split("@")[0]}
+                </span>
+                <ChevronDown className="w-3 h-3 text-gray-400 hidden sm:inline" />
+              </button>
+
+              {accountDropdown && (
+                <div className="absolute right-0 top-full pt-1.5 z-50 w-56 animate-in fade-in-50 duration-100">
+                  <div className="bg-white text-gray-900 rounded-2xl shadow-xl border border-gray-200 p-3 text-xs">
+                    {/* Display user avatar & mail ID */}
+                    <div className="flex items-center gap-2.5 pb-2 border-b border-gray-100 mb-1.5 px-1">
+                      <div className="w-8 h-8 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                        {user.avatar_url ? (
+                          <img
+                            src={user.avatar_url}
+                            alt={user.name || user.email}
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          user.email.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-gray-900 truncate capitalize">
+                          {user.name || user.email.split("@")[0]}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-medium truncate" title={user.email}>
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Navigation: Your Profile */}
+                    <div className="space-y-1 font-medium">
+                      <Link
+                        to="/profile"
+                        onClick={() => setAccountDropdown(false)}
+                        className="block py-1.5 px-2 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#0ea9df] transition-colors font-semibold"
+                      >
+                        {t("yourProfile")}
+                      </Link>
+
+                      {user?.role === "ADMIN" && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setAccountDropdown(false)}
+                          className="block py-1.5 px-2 rounded-lg text-[#0ea9df] font-bold hover:bg-cyan-50 transition-colors"
+                        >
+                          {t("sellerCentral")}
+                        </Link>
+                      )}
+
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left py-1.5 px-2 rounded-lg text-red-600 hover:bg-red-50 hover:underline font-semibold cursor-pointer border-t border-gray-100 mt-1"
+                      >
+                        {t("signOut")}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 2. Language Switcher (Matching Classic Pill) */}
           <div
-            className="relative hidden sm:flex items-center gap-1 p-1.5 sm:p-2 rounded-md hover:bg-gray-100 cursor-pointer transition-colors text-xs font-bold text-[#191142]"
+            className="relative hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-full border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer transition-all text-xs font-semibold text-gray-700 shrink-0"
             onMouseEnter={() => setLangDropdown(true)}
             onMouseLeave={() => setLangDropdown(false)}
           >
-            <Globe className="w-4 h-4 text-[#0ea9df]" />
+            <Globe className="w-3.5 h-3.5 text-[#0ea9df]" />
             <span>{language === "ta" ? "தமிழ்" : "EN"}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            <ChevronDown className="w-3 h-3 text-gray-400" />
 
             {langDropdown && (
-              <div className="absolute top-full right-0 pt-2 z-50 w-44 animate-in fade-in-50 duration-100">
-                <div className="bg-white text-gray-900 rounded-xl shadow-xl border border-gray-200 py-2 text-xs">
+              <div className="absolute top-full right-0 pt-1.5 z-50 w-44 animate-in fade-in-50 duration-100">
+                <div className="bg-white text-gray-900 rounded-2xl shadow-xl border border-gray-200 py-2 text-xs">
                   <div className="px-3 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 mb-1">
                     {t("selectLanguage")}
                   </div>
@@ -173,137 +254,51 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* User Profile / Sign In */}
-          {!user ? (
-            <Link
-              to="/login"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold transition-all shadow-xs shrink-0"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>{t("signIn")}</span>
-            </Link>
-          ) : (
-            <div
-              className="relative shrink-0"
-              onMouseEnter={() => setAccountDropdown(true)}
-              onMouseLeave={() => setAccountDropdown(false)}
-            >
-              <button
-                type="button"
-                onClick={() => setAccountDropdown((prev) => !prev)}
-                className="flex items-center gap-1.5 p-1 sm:px-2 sm:py-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                aria-label="User profile"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="hidden sm:inline-block font-bold text-[#191142] text-xs max-w-[90px] truncate">
-                  {user.name.split(" ")[0]}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-gray-500 hidden sm:inline" />
-              </button>
-
-              {accountDropdown && (
-                <div className="absolute right-0 top-full pt-2 z-50 w-64 animate-in fade-in-50 duration-100">
-                  <div className="bg-white text-gray-900 rounded-xl shadow-xl border border-gray-200 p-4 text-xs">
-                    <div className="pb-3 border-b border-gray-200 mb-2">
-                      <p className="font-bold text-sm text-[#191142]">{user.name}</p>
-                      <p className="text-[11px] text-gray-500">{user.email}</p>
-                      <span className="inline-block mt-1.5 px-2 py-0.5 text-[10px] font-bold bg-cyan-50 text-[#0ea9df] rounded-full border border-cyan-200">
-                        {user.role === "ADMIN" ? t("storeAdmin") : t("clubMember")}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 pt-1 font-medium">
-                      <Link
-                        to="/profile"
-                        onClick={() => setAccountDropdown(false)}
-                        className="block py-1 text-gray-700 hover:text-[#0ea9df] hover:underline"
-                      >
-                        {t("yourProfile")}
-                      </Link>
-                      <Link
-                        to="/orders"
-                        onClick={() => setAccountDropdown(false)}
-                        className="block py-1 text-gray-700 hover:text-[#0ea9df] hover:underline"
-                      >
-                        {t("returnsAndOrders") || "Returns & Orders"}
-                      </Link>
-                      <Link
-                        to="/addresses"
-                        onClick={() => setAccountDropdown(false)}
-                        className="block py-1 text-gray-700 hover:text-[#0ea9df] hover:underline"
-                      >
-                        {t("savedAddresses")}
-                      </Link>
-                      {user?.role === "ADMIN" && (
-                        <Link
-                          to="/admin"
-                          onClick={() => setAccountDropdown(false)}
-                          className="block py-1 text-[#0ea9df] font-bold hover:underline"
-                        >
-                          {t("sellerCentral")}
-                        </Link>
-                      )}
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left pt-2 border-t border-gray-100 text-red-600 hover:underline font-semibold cursor-pointer"
-                      >
-                        {t("signOut")}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Cart Icon */}
+          {/* 3. Shopping Cart Anchor Button */}
           <Link
             to="/cart"
-            className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-gray-100 transition-colors shrink-0"
+            className="flex items-center gap-2 h-9 px-3.5 rounded-full bg-[#191142] hover:bg-[#261d5e] text-white transition-all shrink-0 shadow-xs group cursor-pointer"
             aria-label="Shopping Cart"
           >
-            <div className="relative flex items-center">
-              <ShoppingCart className="w-6 h-6 text-[#191142]" />
-              <span className="absolute -top-1.5 -right-2 bg-[#0ea9df] text-white text-[10px] font-extrabold w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs">
-                {totalCount}
-              </span>
-            </div>
-            <span className="hidden sm:inline font-bold text-[#191142] text-xs">{t("cart")}</span>
+            <ShoppingCart className="w-4 h-4 text-white group-hover:scale-105 transition-transform" />
+            <span className="hidden sm:inline font-semibold text-xs text-white">{t("cart")}</span>
+            <span className="bg-[#0ea9df] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none shadow-2xs">
+              {totalCount}
+            </span>
           </Link>
         </div>
       </div>
 
       {/* 2. Dedicated Full-Width Search Bar for Mobile Viewports (< md) */}
-      <div className="md:hidden px-3 py-2 bg-gray-50 border-b border-gray-200">
+      <div className="md:hidden px-3.5 py-2 bg-gray-50/80 border-b border-gray-200">
         <form
           onSubmit={handleSearch}
-          className="flex items-center h-10 w-full rounded-xl overflow-hidden border border-gray-300 bg-white shadow-2xs focus-within:border-[#0ea9df] focus-within:ring-2 focus-within:ring-[#0ea9df]/20"
+          className="flex items-center h-10 w-full rounded-full border border-gray-200 bg-white shadow-2xs pl-3.5 pr-1.5 focus-within:border-[#191142] focus-within:ring-2 focus-within:ring-[#191142]/10 transition-all"
         >
+          <Search className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
           <input
             type="text"
             placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-3 text-xs text-[#191142] placeholder-gray-400 focus:outline-none h-full font-medium"
+            className="flex-1 text-xs text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium"
           />
           <button
             type="submit"
-            className="bg-[#0ea9df] hover:bg-[#0c93c4] px-4 h-full flex items-center justify-center text-white shrink-0 cursor-pointer"
+            className="px-3.5 h-7 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold flex items-center justify-center transition-all shrink-0 cursor-pointer"
             aria-label="Search mobile"
           >
-            <Search className="w-4 h-4 font-bold" />
+            {t("search") || "Search"}
           </button>
         </form>
       </div>
 
       {/* 3. Subnav Bar (Categories Row) */}
-      <div className="bg-[#f8fafc] border-b border-gray-200 px-3 sm:px-6 py-1.5 flex items-center justify-between text-xs text-[#191142] overflow-x-auto scrollbar-none h-[38px] sm:h-[42px]">
-        <div className="flex items-center gap-3 sm:gap-6 shrink-0 font-semibold text-[11px] sm:text-xs">
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-1.5 flex items-center justify-between text-xs text-gray-700 overflow-x-auto scrollbar-none h-[40px]">
+        <div className="flex items-center gap-4 sm:gap-6 shrink-0 font-medium text-xs">
           <Link
             to="/#catalog"
-            className="py-1 px-1 text-gray-700 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
+            className="py-1 px-1 text-gray-600 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
           >
             {t("allDepartments")}
           </Link>
@@ -311,7 +306,7 @@ export default function Navbar() {
             <Link
               key={cat.id}
               to={getCategoryUrl(cat.id)}
-              className="py-1 px-1 text-gray-700 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
+              className="py-1 px-1 text-gray-600 hover:text-[#0ea9df] transition-colors whitespace-nowrap"
             >
               {cat.name}
             </Link>
@@ -321,7 +316,7 @@ export default function Navbar() {
         {user?.role === "ADMIN" && (
           <Link
             to="/admin"
-            className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-[#191142] text-white text-[11px] font-bold hover:bg-[#261d5e] whitespace-nowrap shrink-0 shadow-xs ml-3"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#191142] text-white text-[11px] font-semibold hover:bg-[#261d5e] transition-all whitespace-nowrap shrink-0 shadow-xs ml-3"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#0ea9df]" />
             <span className="hidden sm:inline">{t("adminPanel")}</span>
@@ -359,12 +354,25 @@ export default function Navbar() {
               {/* User Greeting Box */}
               {user ? (
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="w-10 h-10 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                    {user.name.charAt(0).toUpperCase()}
+                  <div className="w-10 h-10 rounded-full bg-[#191142] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url}
+                        alt={user.name || user.email}
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      user.email.charAt(0).toUpperCase()
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-sm text-[#191142] truncate">{user.name}</p>
-                    <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
+                    <p className="text-xs font-bold text-[#191142] truncate capitalize">
+                      {user.name || user.email.split("@")[0]}
+                    </p>
+                    <p className="text-[10px] text-gray-500 font-medium truncate" title={user.email}>
+                      {user.email}
+                    </p>
                   </div>
                 </div>
               ) : (

@@ -6,6 +6,7 @@ import { useLanguage } from "../../context/LanguageContext";
 import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import RatingStars from "../common/RatingStars";
+import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -68,9 +69,13 @@ export default function ProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
 
-        {/* Star Ratings */}
-        <div className="mt-1">
-          <RatingStars rating={4.8} count="1.2k" size="xs" />
+        {/* Product Rating Badge */}
+        <div className="mt-1.5 flex items-center">
+          <RatingBadge
+            rating={product.rating ?? 4.5}
+            reviewCount={product.review_count ?? 12}
+            size="xs"
+          />
         </div>
 
         {/* Price & MRP Block */}
