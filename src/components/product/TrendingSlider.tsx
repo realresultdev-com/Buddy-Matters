@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { Product } from "../../types/product.types";
 import { getProductUrl } from "../../utils/urlSecurity";
 import RatingBadge from "../common/RatingBadge";
-import { ChevronLeft, ChevronRight, Flame, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, Flame, Sparkles, ArrowRight } from "lucide-react";
 
 interface TrendingSliderProps {
   products: Product[];
@@ -138,8 +138,6 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
         >
           {trendingProducts.map((product, idx) => {
             const theme = cardThemes[idx % cardThemes.length];
-            const originalMRP = (product as any).originalMRP || Math.round(product.price * 1.35);
-            const discount = (product as any).discountPercent || Math.round(((originalMRP - product.price) / originalMRP) * 100);
             const img = product.images?.[0] || "/logo-transparent.png";
 
             return (
@@ -156,14 +154,16 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
                   {/* Left Column: Product Info & CTA */}
                   <div className="flex-1 space-y-3 sm:space-y-4 z-10 text-center sm:text-left">
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <RatingBadge
-                        rating={product.rating ?? 4.5}
-                        reviewCount={product.review_count ?? 12}
-                        size="xs"
-                        className="bg-white/95 text-gray-900 shadow-sm"
-                      />
-                    </div>
+                    {Boolean(product.rating && (product.review_count ?? 0) > 0) && (
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <RatingBadge
+                          rating={product.rating}
+                          reviewCount={product.review_count}
+                          size="xs"
+                          className="bg-white/95 text-gray-900 shadow-sm"
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <Link
@@ -179,17 +179,11 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       </p>
                     </div>
 
-                    {/* Price & Savings */}
+                    {/* Price */}
                     <div className="flex items-baseline justify-center sm:justify-start gap-3">
                       <div className="text-2xl sm:text-3xl font-black tracking-tight">
                         ₹{product.price.toLocaleString("en-IN")}
                       </div>
-                      <div className="text-xs sm:text-sm text-gray-300 line-through">
-                        ₹{originalMRP.toLocaleString("en-IN")}
-                      </div>
-                      <span className="bg-emerald-500 text-white font-black text-xs px-2 py-0.5 rounded-md shadow-2xs">
-                        {discount}% OFF
-                      </span>
                     </div>
 
                     {/* Action Buttons */}
@@ -201,10 +195,6 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                         <span>Explore Product</span>
                         <ArrowRight className="w-4 h-4" />
                       </Link>
-                      <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-200">
-                        <ShieldCheck className="w-4 h-4 text-emerald-300" />
-                        <span>10-Yr Warranty</span>
-                      </div>
                     </div>
                   </div>
 

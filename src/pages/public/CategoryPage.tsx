@@ -51,7 +51,7 @@ export default function CategoryPage() {
             {category ? category.name : "Sleep Collection"}
           </h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            {products.length} product{products.length === 1 ? "" : "s"} engineered with 100-night trial
+            {products.length} product{products.length === 1 ? "" : "s"}
           </p>
         </div>
       </div>

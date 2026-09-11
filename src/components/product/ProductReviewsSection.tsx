@@ -187,7 +187,7 @@ export default function ProductReviewsSection({
   const avgScore =
     totalReviews > 0
       ? reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-      : product.rating || 4.5;
+      : null;
 
   const starCounts = [5, 4, 3, 2, 1].map((star) => {
     const count = reviews.filter((r) => r.rating === star).length;
@@ -219,14 +219,16 @@ export default function ProductReviewsSection({
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-[#191142] flex items-center gap-2.5">
             <span>Customer Ratings & Reviews</span>
-            <RatingBadge
-              rating={avgScore}
-              reviewCount={totalReviews > 0 ? totalReviews : product.review_count || 12}
-              size="md"
-            />
+            {Boolean(totalReviews > 0 && avgScore) && (
+              <RatingBadge
+                rating={avgScore}
+                reviewCount={totalReviews}
+                size="md"
+              />
+            )}
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Verified authentic sleep feedback from confirmed Buddy Mattress buyers.
+            Verified authentic feedback from confirmed buyers.
           </p>
         </div>
 
@@ -469,72 +471,70 @@ export default function ProductReviewsSection({
         </div>
       )}
 
-      {/* 3. Rating Summary Cards & Star Breakdown (Amazon Style) */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-gray-50/70 p-5 sm:p-6 rounded-2xl border border-gray-200/80">
-        {/* Left: Score Pill & Breakdown */}
-        <div className="md:col-span-4 space-y-3 flex flex-col justify-center">
-          <div className="flex items-baseline gap-3">
-            <span className="text-4xl sm:text-5xl font-black text-[#191142] tracking-tight">
-              {avgScore.toFixed(1)}
-            </span>
-            <div className="space-y-0.5">
-              <div className="flex items-center text-[#038e42] text-lg font-black">
-                {"★★★★★"}
-              </div>
-              <span className="text-xs text-gray-500 font-medium">
-                {totalReviews} verified ratings
+      {/* 3. Rating Summary Cards & Star Breakdown (Only when reviews exist) */}
+      {Boolean(totalReviews > 0 && avgScore) && (
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-gray-50/70 p-5 sm:p-6 rounded-2xl border border-gray-200/80">
+          {/* Left: Score Pill & Breakdown */}
+          <div className="md:col-span-4 space-y-3 flex flex-col justify-center">
+            <div className="flex items-baseline gap-3">
+              <span className="text-4xl sm:text-5xl font-black text-[#191142] tracking-tight">
+                {avgScore != null ? avgScore.toFixed(1) : ""}
               </span>
+              <div className="space-y-0.5">
+                <div className="flex items-center text-[#038e42] text-lg font-black">
+                  {"★★★★★"}
+                </div>
+                <span className="text-xs text-gray-500 font-medium">
+                  {totalReviews} verified ratings
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <RatingBadge
+                rating={avgScore}
+                reviewCount={totalReviews}
+                size="lg"
+              />
             </div>
           </div>
 
-          <div className="pt-2">
-            <RatingBadge
-              rating={avgScore}
-              reviewCount={totalReviews}
-              size="lg"
-            />
+          {/* Right: Star Breakdown Progress Bars */}
+          <div className="md:col-span-8 space-y-2 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6">
+            <span className="text-xs font-bold text-[#191142] block mb-2">
+              Rating Distribution
+            </span>
+            {starCounts.map(({ star, count, percentage }) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setSelectedFilter(selectedFilter === star ? "all" : star)}
+                className={`w-full flex items-center gap-3 text-xs py-1 px-2 rounded-lg transition-colors cursor-pointer text-left ${
+                  selectedFilter === star
+                    ? "bg-cyan-50 font-bold"
+                    : "hover:bg-white"
+                }`}
+              >
+                <span className="w-12 shrink-0 text-gray-700 font-medium">
+                  {star} star
+                </span>
+                <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+                <span className="w-10 text-right text-gray-500 font-semibold shrink-0">
+                  {percentage}%
+                </span>
+                <span className="w-8 text-right text-gray-400 text-[11px] shrink-0">
+                  ({count})
+                </span>
+              </button>
+            ))}
           </div>
-
-          <p className="text-[11px] text-gray-500 leading-relaxed">
-            100% verified buyers from confirmed deliveries. Ratings are dynamically computed from customer sleep trials.
-          </p>
         </div>
-
-        {/* Right: Star Breakdown Progress Bars */}
-        <div className="md:col-span-8 space-y-2 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6">
-          <span className="text-xs font-bold text-[#191142] block mb-2">
-            Rating Distribution
-          </span>
-          {starCounts.map(({ star, count, percentage }) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => setSelectedFilter(selectedFilter === star ? "all" : star)}
-              className={`w-full flex items-center gap-3 text-xs py-1 px-2 rounded-lg transition-colors cursor-pointer text-left ${
-                selectedFilter === star
-                  ? "bg-cyan-50 font-bold"
-                  : "hover:bg-white"
-              }`}
-            >
-              <span className="w-12 shrink-0 text-gray-700 font-medium">
-                {star} star
-              </span>
-              <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-amber-400 rounded-full transition-all duration-500"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-              <span className="w-10 text-right text-gray-500 font-semibold shrink-0">
-                {percentage}%
-              </span>
-              <span className="w-8 text-right text-gray-400 text-[11px] shrink-0">
-                ({count})
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* 4. Customer Photos Gallery Strip */}
       {allCustomerPhotos.length > 0 && (

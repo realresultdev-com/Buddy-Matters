@@ -8,15 +8,19 @@ interface RatingBadgeProps {
 }
 
 export default function RatingBadge({
-  rating = 4.5,
+  rating,
   reviewCount,
   size = "md",
   className = "",
   onClick,
   showCount = true,
 }: RatingBadgeProps) {
-  const displayRating = (rating ?? 4.5).toFixed(1);
   const count = reviewCount ?? 0;
+  if (!rating || count <= 0) {
+    return null;
+  }
+
+  const displayRating = Number(rating).toFixed(1);
 
   const sizeClasses = {
     xs: {

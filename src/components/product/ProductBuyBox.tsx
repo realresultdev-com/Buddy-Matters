@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MapPin, Check, Lock } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Product } from "../../types/product.types";
 
@@ -35,17 +35,6 @@ export default function ProductBuyBox({
         </span>
       </div>
 
-      {/* Delivery Promise */}
-      <div className="space-y-1">
-        <p className="text-xs leading-relaxed font-semibold text-emerald-700">
-          {t("buddyPrimeFree")}
-        </p>
-        <div className="flex items-center gap-1 text-[#0ea9df] hover:underline cursor-pointer text-[11px] font-medium">
-          <MapPin className="w-3.5 h-3.5 shrink-0" />
-          <span>{t("deliverToLocation")}</span>
-        </div>
-      </div>
-
       {/* Stock State */}
       <div>
         {inStock ? (
@@ -57,24 +46,6 @@ export default function ProductBuyBox({
         ) : (
           <p className="text-sm font-bold text-rose-600">{t("currentlyUnavailable")}</p>
         )}
-      </div>
-
-      {/* Seller & Trial Details */}
-      <div className="space-y-1.5 text-[11px] text-gray-600 border-t border-b border-gray-100 py-3">
-        <div className="flex justify-between items-center">
-          <span>{t("shipsFrom")}</span>
-          <span className="font-semibold text-[#191142]">Buddy Logistics</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span>{t("soldBy")}</span>
-          <span className="font-semibold text-[#0ea9df] hover:underline cursor-pointer">
-            Buddy Direct
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span>{t("trialPeriod")}</span>
-          <span className="font-semibold text-emerald-700">{t("trial100Nights")}</span>
-        </div>
       </div>
 
       {/* Actions */}

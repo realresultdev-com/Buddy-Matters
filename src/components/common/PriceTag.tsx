@@ -12,12 +12,13 @@ export default function PriceTag({
   originalMRP: providedMRP,
   size = "md",
   showDiscount = true,
-  showEMI = false,
   className = "",
 }: PriceTagProps) {
-  const originalMRP = providedMRP || Math.round(price * 1.28);
-  const discountPercent = Math.round(((originalMRP - price) / originalMRP) * 100);
-  const emiAmount = Math.round(price / 12);
+  const originalMRP = providedMRP;
+  const discountPercent =
+    originalMRP && originalMRP > price
+      ? Math.round(((originalMRP - price) / originalMRP) * 100)
+      : 0;
 
   const sizeStyles = {
     sm: { symbol: "text-xs", main: "text-lg", mrp: "text-[11px]" },
@@ -40,20 +41,14 @@ export default function PriceTag({
             {price.toLocaleString("en-IN")}
           </span>
         </div>
-        {originalMRP > price && (
+        {originalMRP && originalMRP > price ? (
           <div className={`${sizeStyles.mrp} text-gray-500`}>
             M.R.P.: <span className="line-through">₹{originalMRP.toLocaleString("en-IN")}</span>
           </div>
-        )}
+        ) : null}
       </div>
 
       <p className="text-[11px] text-gray-500 font-medium">Inclusive of all taxes</p>
-
-      {showEMI && (
-        <p className="text-xs text-gray-600 pt-0.5">
-          <span className="font-bold text-[#191142]">EMI</span> starts at ₹{emiAmount.toLocaleString("en-IN")}/mo. No Cost EMI available.
-        </p>
-      )}
     </div>
   );
 }

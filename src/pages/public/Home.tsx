@@ -169,17 +169,6 @@ export default function Home() {
               </Link>
             )}
           </div>
-          <div className="pt-3 border-t border-gray-100 space-y-1">
-            <span className="text-[11px] font-semibold text-gray-600 block flex items-center gap-1">
-              ✓ {t("benefitTrial")}
-            </span>
-            <span className="text-[11px] font-semibold text-gray-600 block flex items-center gap-1">
-              ✓ {t("benefitWarranty")}
-            </span>
-            <span className="text-[11px] font-semibold text-gray-600 block flex items-center gap-1">
-              ✓ {t("benefitDelivery")}
-            </span>
-          </div>
         </div>
       </div>
 

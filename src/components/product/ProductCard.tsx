@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Sparkles, Truck } from "lucide-react";
+import { Check } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useLanguage } from "../../context/LanguageContext";
 import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
-import RatingStars from "../common/RatingStars";
 import RatingBadge from "../common/RatingBadge";
 import PriceTag from "../common/PriceTag";
 
@@ -56,27 +55,20 @@ export default function ProductCard({ product }: { product: Product }) {
           </h3>
         </Link>
 
-        {/* Product Rating Badge */}
-        <div className="mt-1.5 flex items-center">
-          <RatingBadge
-            rating={product.rating ?? 4.5}
-            reviewCount={product.review_count ?? 12}
-            size="xs"
-          />
-        </div>
+        {/* Product Rating Badge - only if reviews exist */}
+        {Boolean(product.rating && (product.review_count ?? 0) > 0) && (
+          <div className="mt-1.5 flex items-center">
+            <RatingBadge
+              rating={product.rating}
+              reviewCount={product.review_count}
+              size="xs"
+            />
+          </div>
+        )}
 
-        {/* Price & MRP Block */}
+        {/* Price Block */}
         <div className="mt-1.5 sm:mt-2.5">
-          <PriceTag price={product.price} size="sm" showDiscount />
-        </div>
-
-        {/* Delivery & Warranty info */}
-        <div className="mt-2 text-xs text-gray-600 space-y-0.5 pt-1.5 border-t border-gray-100 hidden xs:block">
-          <p className="text-[10px] sm:text-[11px] font-bold text-emerald-700 flex items-center gap-1">
-            <Truck className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600 shrink-0" />{" "}
-            <span className="truncate">{t("freeDoorstepDelivery")}</span>
-          </p>
-          <p className="text-[10px] sm:text-[11px] text-gray-500 truncate">{t("trialAndWarranty")}</p>
+          <PriceTag price={product.price} size="sm" />
         </div>
       </div>
 

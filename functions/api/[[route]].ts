@@ -323,7 +323,7 @@ app.get("/products", async (c) => {
         name: row.cat_name,
       },
       is_trending: Boolean(row.is_trending),
-      rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : 4.5,
+      rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
       review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
       createdAt: row.createdAt,
     };
@@ -371,7 +371,7 @@ app.get("/products/:id", async (c) => {
       name: row.cat_name,
     },
     is_trending: Boolean(row.is_trending),
-    rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : 4.5,
+    rating: row.avg_rating !== null && row.avg_rating !== undefined ? Number(row.avg_rating) : null,
     review_count: row.review_count !== null && row.review_count !== undefined ? Number(row.review_count) : 0,
     createdAt: row.createdAt,
   });
