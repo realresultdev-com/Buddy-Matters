@@ -1,3 +1,4 @@
+/// <reference types="@cloudflare/workers-types" />
 import { Hono } from "hono";
 import { handle } from "hono/cloudflare-pages";
 import { cors } from "hono/cors";
@@ -417,6 +418,9 @@ app.get("/products/:id/reviews", async (c) => {
 // Check if current user can review (must have purchased the product)
 app.get("/products/:id/can-review", authMiddleware, async (c) => {
   const user = c.get("user");
+  if (!user?.userId) {
+    return c.json({ canReview: false, alreadyReviewed: false, isPurchased: false, reason: "Login required" }, 401);
+  }
   const rawId = c.req.param("id");
   const id = decryptId(rawId);
 
@@ -427,12 +431,12 @@ app.get("/products/:id/can-review", authMiddleware, async (c) => {
     JOIN order_items oi ON oi.order_id = o.id
     WHERE o.user_id = ? AND oi.product_id = ? AND o.status != 'CANCELLED'
     LIMIT 1
-  `).bind(user.id, id).first();
+  `).bind(user.userId, id).first();
 
   // Check if user already reviewed
   const existingReview: any = await c.env.DB.prepare(`
     SELECT id FROM reviews WHERE user_id = ? AND product_id = ? LIMIT 1
-  `).bind(user.id, id).first();
+  `).bind(user.userId, id).first();
 
   const canReview = Boolean(purchased) || user.role === "ADMIN";
   const alreadyReviewed = Boolean(existingReview);
@@ -452,6 +456,9 @@ app.get("/products/:id/can-review", authMiddleware, async (c) => {
 // Post a review (Only verified buyers or admins)
 app.post("/products/:id/reviews", authMiddleware, async (c) => {
   const user = c.get("user");
+  if (!user?.userId) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
   const rawId = c.req.param("id");
   const id = decryptId(rawId);
   const body = await c.req.json();
@@ -473,7 +480,7 @@ app.post("/products/:id/reviews", authMiddleware, async (c) => {
     JOIN order_items oi ON oi.order_id = o.id
     WHERE o.user_id = ? AND oi.product_id = ? AND o.status != 'CANCELLED'
     LIMIT 1
-  `).bind(user.id, id).first();
+  `).bind(user.userId, id).first();
 
   if (!purchased && user.role !== "ADMIN") {
     return c.json({
@@ -484,11 +491,16 @@ app.post("/products/:id/reviews", authMiddleware, async (c) => {
   // Check if already reviewed
   const existingReview: any = await c.env.DB.prepare(`
     SELECT id FROM reviews WHERE user_id = ? AND product_id = ? LIMIT 1
-  `).bind(user.id, id).first();
+  `).bind(user.userId, id).first();
 
   if (existingReview) {
     return c.json({ error: "You have already reviewed this product." }, 400);
   }
+
+  // Retrieve user name & avatar from database
+  const dbUser: any = await c.env.DB.prepare(
+    "SELECT id, name, avatar_url FROM users WHERE id = ?"
+  ).bind(user.userId).first();
 
   const images = Array.isArray(body.images) ? JSON.stringify(body.images) : "[]";
   const title = (body.title || "").trim();
@@ -497,7 +509,7 @@ app.post("/products/:id/reviews", authMiddleware, async (c) => {
   await c.env.DB.prepare(`
     INSERT INTO reviews (id, product_id, user_id, rating, title, comment, images, is_verified_purchase)
     VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-  `).bind(reviewId, id, user.id, rating, title, comment, images).run();
+  `).bind(reviewId, id, user.userId, rating, title, comment, images).run();
 
   return c.json({
     success: true,
@@ -505,9 +517,9 @@ app.post("/products/:id/reviews", authMiddleware, async (c) => {
     review: {
       id: reviewId,
       productId: id,
-      userId: user.id,
-      userName: user.name,
-      userAvatar: user.avatar_url,
+      userId: user.userId,
+      userName: dbUser?.name || "Customer",
+      userAvatar: dbUser?.avatar_url || null,
       rating,
       title,
       comment,
@@ -727,7 +739,7 @@ app.post("/products", authMiddleware, adminMiddleware, async (c) => {
       price: Number(formData.price),
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
-      is_trending: formData.is_trending === "true" || formData.is_trending === true || formData.is_trending === "1" || formData.is_trending === 1,
+      is_trending: String(formData.is_trending) === "true" || String(formData.is_trending) === "1",
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : [],
     };
   } else {
@@ -758,7 +770,7 @@ app.put("/products/:id", authMiddleware, adminMiddleware, async (c) => {
       price: Number(formData.price),
       stock: Number(formData.stock || 0),
       categoryId: formData.categoryId,
-      is_trending: formData.is_trending !== undefined ? (formData.is_trending === "true" || formData.is_trending === true || formData.is_trending === "1" || formData.is_trending === 1) : undefined,
+      is_trending: formData.is_trending !== undefined ? (String(formData.is_trending) === "true" || String(formData.is_trending) === "1") : undefined,
       images: formData.images ? (Array.isArray(formData.images) ? formData.images : [formData.images]) : undefined,
     };
   } else {
@@ -878,7 +890,7 @@ app.get("/admin/media", authMiddleware, adminMiddleware, async (c) => {
     const listed = await c.env.BUCKET.list({ prefix: "products/", limit: 100 });
     const r2PublicUrl = c.env.R2_PUBLIC_URL || "https://pub-e9f02df81ad34d8da252578b86423390.r2.dev";
     const baseUrl = r2PublicUrl.replace(/\/$/, "");
-    const items = listed.objects.map((obj) => {
+    const items = listed.objects.map((obj: any) => {
       const url = `${baseUrl}/${obj.key}`;
       return {
         key: obj.key,
