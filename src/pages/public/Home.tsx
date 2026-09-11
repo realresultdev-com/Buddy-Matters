@@ -6,11 +6,8 @@ import type { Product, Category } from "../../types/product.types";
 import {
   Truck,
   RotateCcw,
-  ShieldCheck,
   Award,
-  Sparkles,
   ChevronRight,
-  Flame,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import TrendingSlider from "../../components/product/TrendingSlider";
@@ -104,9 +101,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 3. Brand Dynamic Promo Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 px-0.5">
-        {categories.slice(0, 3).map((cat) => {
+      {/* 3. Brand Dynamic Promo Grid - Fully Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 px-0.5">
+        {categories.map((cat) => {
           const sampleProduct = products.find((p) => p.categoryId === cat.id);
           const sampleImage =
             sampleProduct?.images?.[0] ||
@@ -115,7 +112,7 @@ export default function Home() {
           return (
             <div
               key={cat.id}
-              className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow"
+              className="bg-white p-4.5 rounded-2xl shadow-xs border border-gray-200/90 flex flex-col justify-between hover:shadow-md transition-shadow"
             >
               <div>
                 <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
@@ -123,7 +120,7 @@ export default function Home() {
                 </h3>
                 <Link
                   to={getCategoryUrl(cat.id)}
-                  className="block aspect-square bg-gray-50 rounded-lg overflow-hidden mb-2"
+                  className="block aspect-4/3 sm:aspect-square bg-gray-50 rounded-xl overflow-hidden mb-2"
                 >
                   <img
                     src={sampleImage}
@@ -141,35 +138,6 @@ export default function Home() {
             </div>
           );
         })}
-
-        {/* Card 4: Member Sleep Club Box */}
-        <div className="bg-white p-4.5 rounded-xl shadow-xs border border-gray-200 flex flex-col justify-between hover:shadow-md transition-shadow">
-          <div>
-            <h3 className="text-base font-bold text-[#191142] mb-2 leading-snug">
-              {user ? `${t("hello")}, ${user.name}` : t("joinClubTitle")}
-            </h3>
-            <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-              {user
-                ? (language === "ta" ? "உங்கள் நேரடி சோதனை, உத்தரவாதம் மற்றும் ஆர்டர்களை கண்காணிக்கவும்." : "Manage your active trial period, warranty registrations, and track shipments.")
-                : t("joinClubDesc")}
-            </p>
-            {!user ? (
-              <Link
-                to="/login"
-                className="block w-full py-2.5 rounded-lg bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-center text-xs shadow-sm text-white transition-colors"
-              >
-                {t("signInClubBtn")}
-              </Link>
-            ) : (
-              <Link
-                to="/orders"
-                className="block w-full py-2.5 rounded-lg bg-[#191142] hover:bg-[#251b5c] font-bold text-center text-xs shadow-sm text-white transition-colors"
-              >
-                {t("yourOrders")}
-              </Link>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* 3. Category Filter Navigation (Clean White Bar with Cyan Active Pills) */}
@@ -204,8 +172,7 @@ export default function Home() {
       <div id="catalog" className="bg-white p-3.5 sm:p-6 rounded-xl border border-gray-200 shadow-xs space-y-4">
         <div className="flex items-center justify-between border-b border-gray-200 pb-3">
           <div>
-            <h2 className="text-base sm:text-xl font-bold text-[#191142] flex items-center gap-2">
-              <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-[#0ea9df]" />
+            <h2 className="text-base sm:text-xl font-bold text-[#191142] tracking-tight">
               {queryParam ? `${language === "ta" ? "தேடல் முடிவுகள்:" : "Results for"} "${queryParam}"` : t("featuredCollectionTitle")}
             </h2>
             <p className="text-xs text-gray-500 mt-0.5 hidden sm:block">
@@ -229,9 +196,9 @@ export default function Home() {
             ))}
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16 space-y-2">
-            <h3 className="text-base font-bold text-[#191142]">{t("noProductsFound")}</h3>
-            <p className="text-xs text-gray-500">
+          <div className="text-center py-12 space-y-2">
+            <p className="text-sm font-bold text-gray-700">{t("noProductsFound")}</p>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
               {t("noProductsSub")}
             </p>
           </div>
@@ -245,38 +212,44 @@ export default function Home() {
       </div>
 
       {/* 5. Buddy Mattress Guarantees Strip */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-        <div className="flex flex-col items-center space-y-2 p-2">
-          <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center">
-            <Truck className="w-6 h-6 text-[#0ea9df]" />
+      <div className="bg-white border border-gray-200/90 rounded-2xl p-6 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <div className="flex flex-col items-center space-y-1.5 p-2">
+          <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center mb-1">
+            <Truck className="w-5 h-5 text-[#0ea9df]" />
           </div>
-          <h4 className="font-bold text-sm text-[#191142]">
+          <h4 className="font-bold text-sm text-[#191142] tracking-tight">
             {language === "ta" ? "இலவச டெலிவரி & அன்பாக்சிங்" : "Free Delivery & Unboxing"}
           </h4>
-          <p className="text-xs text-gray-500 max-w-xs">
-            {language === "ta" ? "உங்கள் வீட்டு வாசலுக்கே பாதுகாப்பான மற்றும் எளிதில் கையாளக்கூடிய பேக்கேஜிங்குடன் டெலிவரி செய்யப்படுகிறது." : "Directly delivered to your doorstep in vacuum-sealed, easy-to-carry packaging."}
+          <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
+            {language === "ta"
+              ? "பாதுகாப்பான பேக்கேஜிங்குடன் உங்கள் வீட்டு வாசலில் இலவச டெலிவரி."
+              : "Directly delivered to your doorstep in vacuum-sealed, easy-to-carry packaging."}
           </p>
         </div>
-        <div className="flex flex-col items-center space-y-2 p-2">
-          <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center">
-            <RotateCcw className="w-6 h-6 text-[#0ea9df]" />
+        <div className="flex flex-col items-center space-y-1.5 p-2 border-y sm:border-y-0 sm:border-x border-gray-100 py-4 sm:py-2">
+          <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center mb-1">
+            <RotateCcw className="w-5 h-5 text-[#0ea9df]" />
           </div>
-          <h4 className="font-bold text-sm text-[#191142]">
-            {language === "ta" ? "100-இரவு ஆபத்தில்லாத வீட்டு சோதனை" : "100-Night Risk-Free Trial"}
+          <h4 className="font-bold text-sm text-[#191142] tracking-tight">
+            {language === "ta" ? "100-இரவு வீட்டு சோதனை" : "100-Night Risk-Free Trial"}
           </h4>
-          <p className="text-xs text-gray-500 max-w-xs">
-            {language === "ta" ? "உங்கள் வீட்டில் நிம்மதியாக தூங்கி பாருங்கள். திருப்தி இல்லை என்றால் 100% முழு பணம் திரும்பப் பெறலாம்." : "Sleep on it in the comfort of your home. If you don't love it, we'll give you a 100% refund."}
+          <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
+            {language === "ta"
+              ? "உங்கள் வீட்டில் நிம்மதியாக தூங்கி பாருங்கள். திருப்தி இல்லை என்றால் 100% முழு பணம் திரும்பப் பெறலாம்."
+              : "Sleep on it in the comfort of your home. If you don't love it, return it for a 100% full refund."}
           </p>
         </div>
-        <div className="flex flex-col items-center space-y-2 p-2">
-          <div className="w-12 h-12 rounded-full bg-cyan-50 flex items-center justify-center">
-            <Award className="w-6 h-6 text-[#0ea9df]" />
+        <div className="flex flex-col items-center space-y-1.5 p-2">
+          <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center mb-1">
+            <Award className="w-5 h-5 text-[#0ea9df]" />
           </div>
-          <h4 className="font-bold text-sm text-[#191142]">
+          <h4 className="font-bold text-sm text-[#191142] tracking-tight">
             {language === "ta" ? "10-ஆண்டு முழு உத்தரவாதம்" : "10-Year Warranty"}
           </h4>
-          <p className="text-xs text-gray-500 max-w-xs">
-            {language === "ta" ? "உயர்தர நீடித்த மீள் திறன் கொண்ட ஃபோம் மற்றும் ஐரோப்பிய சான்றளிக்கப்பட்ட பொருட்களால் உருவாக்கப்பட்டது." : "Built with ultra-durable high-resilience foam and genuine European certified materials."}
+          <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
+            {language === "ta"
+              ? "உயர்தர நீடித்த மீள் திறன் கொண்ட ஃபோம் பொருட்களால் உருவாக்கப்பட்டது."
+              : "Built with ultra-durable high-resilience foam and certified materials."}
           </p>
         </div>
       </div>

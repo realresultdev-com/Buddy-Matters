@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "../../types/product.types";
 import { getProductUrl } from "../../utils/urlSecurity";
-import RatingBadge from "../common/RatingBadge";
-import { ChevronLeft, ChevronRight, Flame, Sparkles, ArrowRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 
 interface TrendingSliderProps {
   products: Product[];
@@ -12,20 +11,19 @@ interface TrendingSliderProps {
 export default function TrendingSlider({ products }: TrendingSliderProps) {
   const trendingProducts = products.filter((p) => p.is_trending);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Auto-play slider
+  // Auto-play slider with smooth interval
   useEffect(() => {
-    if (trendingProducts.length <= 1 || isPaused) return;
+    if (trendingProducts.length <= 1) return;
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % trendingProducts.length);
-    }, 4500);
+    }, 3800);
 
     return () => clearInterval(timer);
-  }, [trendingProducts.length, isPaused]);
+  }, [trendingProducts.length]);
 
   if (trendingProducts.length === 0) return null;
 
@@ -55,51 +53,33 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
     }
   };
 
-  // Color palettes tailored for mattress luxury branding (like Flipkart/Amazon banner carousels)
+  // Color palettes tailored for mattress luxury branding
   const cardThemes = [
     {
       bg: "bg-gradient-to-r from-[#191142] via-[#241a58] to-[#0ea9df]/90",
-      accent: "text-[#0ea9df]",
-      badgeBg: "bg-[#0ea9df]/20 text-cyan-200 border-[#0ea9df]/40",
       buttonBg: "bg-[#0ea9df] hover:bg-[#0c93c4] text-white",
     },
     {
       bg: "bg-gradient-to-r from-[#0c2340] via-[#1d3d63] to-[#0ea9df]/80",
-      accent: "text-amber-300",
-      badgeBg: "bg-amber-400/20 text-amber-200 border-amber-400/40",
       buttonBg: "bg-white hover:bg-gray-100 text-[#0c2340]",
     },
     {
       bg: "bg-gradient-to-r from-[#1c1836] via-[#2f2759] to-[#6366f1]/80",
-      accent: "text-indigo-300",
-      badgeBg: "bg-indigo-400/20 text-indigo-200 border-indigo-400/40",
       buttonBg: "bg-indigo-500 hover:bg-indigo-600 text-white",
     },
   ];
 
   return (
-    <div
-      className="w-full relative select-none mb-6 mt-1"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
-    >
-      {/* Section Header */}
-      <div className="flex items-center justify-between mb-3.5 px-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center">
-            <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-black text-[#191142] tracking-tight flex items-center gap-2">
-              Trending Deals
-              <span className="text-[11px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                Hot
-              </span>
-            </h2>
-            <p className="text-xs text-gray-500">
-              India&apos;s most loved orthopedic mattresses &amp; sleep essentials
-            </p>
-          </div>
+    <div className="w-full relative select-none mb-6 mt-1">
+      {/* Section Header with Clean iOS Typography */}
+      <div className="flex items-center justify-between mb-3 px-1">
+        <div>
+          <h2 className="text-lg sm:text-xl font-bold text-[#191142] tracking-tight">
+            Trending Deals
+          </h2>
+          <p className="text-xs text-gray-500 mt-0.5">
+            India&apos;s most loved orthopedic mattresses &amp; sleep essentials
+          </p>
         </div>
 
         {/* Desktop Navigation Arrows */}
@@ -154,23 +134,12 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
                   {/* Left Column: Product Info & CTA */}
                   <div className="flex-1 space-y-3 sm:space-y-4 z-10 text-center sm:text-left">
-                    {Boolean(product.rating && (product.review_count ?? 0) > 0) && (
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        <RatingBadge
-                          rating={product.rating}
-                          reviewCount={product.review_count}
-                          size="xs"
-                          className="bg-white/95 text-gray-900 shadow-sm"
-                        />
-                      </div>
-                    )}
-
                     <div>
                       <Link
                         to={getProductUrl(product.id)}
                         className="hover:underline block"
                       >
-                        <h3 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-snug line-clamp-2">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight leading-snug line-clamp-2">
                           {product.name}
                         </h3>
                       </Link>
@@ -181,7 +150,7 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
                     {/* Price */}
                     <div className="flex items-baseline justify-center sm:justify-start gap-3">
-                      <div className="text-2xl sm:text-3xl font-black tracking-tight">
+                      <div className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                         ₹{product.price.toLocaleString("en-IN")}
                       </div>
                     </div>

@@ -5,7 +5,15 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Open Sans"', "-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
+        sans: [
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"SF Pro Display"',
+          '"SF Pro Text"',
+          '"SF Pro"',
+          "system-ui",
+          "sans-serif",
+        ],
       },
       colors: {
         buddy: {

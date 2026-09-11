@@ -10,15 +10,12 @@ import {
   RotateCcw,
   Truck,
   MapPin,
-  ShieldCheck,
   User as UserIcon,
   LogOut,
   ShieldAlert,
   ChevronRight,
   ExternalLink,
   CheckCircle2,
-  Clock,
-  Sparkles,
   ArrowRight,
   X,
   Send,
@@ -111,25 +108,8 @@ export default function Profile() {
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{user.name}</h1>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-xs border border-white/30">
-                  <Sparkles className="w-3 h-3 text-cyan-300" />
-                  {user.role === "ADMIN" ? t("storeAdmin") : t("clubMember")}
-                </span>
-              </div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight">{user.name}</h1>
               <p className="text-white/80 text-xs sm:text-sm mt-1">{user.email}</p>
-
-              <div className="flex flex-wrap items-center gap-3 mt-3 text-xs text-cyan-100">
-                <span className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md border border-white/10">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-                  Google Verified Account
-                </span>
-                <span className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-md border border-white/10">
-                  <Clock className="w-3.5 h-3.5 text-cyan-200" />
-                  100-Night Trial Active
-                </span>
-              </div>
             </div>
           </div>
 
@@ -162,14 +142,9 @@ export default function Profile() {
               <RotateCcw className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-bold text-[#191142]">
-                  {language === "ta" ? "ரிட்டர்ன்ஸ் & ஆர்டர்கள்" : "Returns & Orders"}
-                </h2>
-                <span className="bg-[#0ea9df]/10 text-[#0ea9df] text-xs font-bold px-2 py-0.5 rounded-full">
-                  100-Night Trial
-                </span>
-              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-[#191142]">
+                {language === "ta" ? "ரிட்டர்ன்ஸ் & ஆர்டர்கள்" : "Returns & Orders"}
+              </h2>
               <p className="text-xs text-gray-500 mt-0.5">
                 Track shipments, view invoices, or initiate hassle-free returns & replacements
               </p>
@@ -329,28 +304,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* 100-Night Sleep Trial Guarantee Banner */}
-        <div className="bg-cyan-50/50 border border-cyan-100 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#0ea9df] text-white flex items-center justify-center shrink-0 font-bold shadow-xs">
-              ✓
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#191142]">
-                100-Night Risk-Free Sleep Guarantee
-              </h4>
-              <p className="text-[11px] text-gray-600 mt-0.5">
-                Sleep on your Buddy Mattress for at least 30 nights. If it's not a perfect match, return it for a 100% full refund with free doorstep pickup.
-              </p>
-            </div>
-          </div>
-          <a
-            href="mailto:support@buddymattress.com"
-            className="text-xs font-bold text-[#0ea9df] hover:underline shrink-0 whitespace-nowrap"
-          >
-            Contact Support →
-          </a>
-        </div>
       </section>
 
       {/* 3. Address & Account Details Grid */}
@@ -407,34 +360,22 @@ export default function Profile() {
           </Link>
         </div>
 
-        {/* Sleep Club Membership & Language Card */}
+        {/* Account Preferences Card */}
         <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs flex flex-col justify-between space-y-4">
           <div>
             <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-cyan-50 text-[#0ea9df] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
+                  <UserIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#191142]">Sleep Club Membership</h3>
-                  <p className="text-[11px] text-gray-500">Member benefits and preferences</p>
+                  <h3 className="text-sm font-bold text-[#191142]">Account Preferences</h3>
+                  <p className="text-[11px] text-gray-500">Language and session preferences</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="space-y-1.5 p-3 rounded-xl bg-gray-50 border border-gray-200/80 text-gray-700">
-                <p className="font-semibold text-[#191142] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0ea9df]" /> 100-Night Risk-Free Sleep Trial
-                </p>
-                <p className="font-semibold text-[#191142] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0ea9df]" /> 10-Year Comprehensive Warranty
-                </p>
-                <p className="font-semibold text-[#191142] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[#0ea9df]" /> Free Doorstep Shipping Across India
-                </p>
-              </div>
-
               <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200/80">
                 <div>
                   <span className="font-semibold text-[#191142] block">Language</span>
