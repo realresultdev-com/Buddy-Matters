@@ -158,11 +158,19 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                       </p>
                     </div>
 
-                    {/* Authentic Amazon Price & Savings Formula */}
+                    {/* Authentic Amazon Price & Savings Formula - only if genuine data exists */}
                     {(() => {
-                      const mrp = product.original_price || product.originalMRP || Math.round(product.price * 1.35);
-                      const discount = product.discount_percent || product.discountPercent || (mrp > product.price ? Math.round(((mrp - product.price) / mrp) * 100) : 0);
-                      const savings = mrp > product.price ? mrp - product.price : 0;
+                      const mrp =
+                        (product.original_price && product.original_price > product.price)
+                          ? product.original_price
+                          : (product.originalMRP && product.originalMRP > product.price)
+                          ? product.originalMRP
+                          : null;
+                      const discount =
+                        mrp && mrp > product.price
+                          ? (product.discount_percent || product.discountPercent || Math.round(((mrp - product.price) / mrp) * 100))
+                          : (product.discount_percent || product.discountPercent || 0);
+                      const savings = mrp && mrp > product.price ? mrp - product.price : 0;
 
                       return (
                         <div className="space-y-1 pt-1">
@@ -181,10 +189,10 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
                             </div>
                           </div>
 
-                          {/* M.R.P. & You Save (Amazon style) */}
-                          {mrp > product.price && (
+                          {/* M.R.P. & You Save (Amazon style) - only if genuine MRP exists */}
+                          {Boolean(mrp && mrp > product.price) && (
                             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs sm:text-sm text-gray-300">
-                              <span>M.R.P.: <span className="line-through text-gray-400">₹{mrp.toLocaleString("en-IN")}</span></span>
+                              <span>M.R.P.: <span className="line-through text-gray-400">₹{mrp!.toLocaleString("en-IN")}</span></span>
                               {savings > 0 && (
                                 <>
                                   <span className="text-gray-400">•</span>

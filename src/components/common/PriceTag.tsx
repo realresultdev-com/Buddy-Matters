@@ -19,17 +19,20 @@ export default function PriceTag({
   showInclusiveText = true,
   className = "",
 }: PriceTagProps) {
-  // If originalMRP is passed use it; fallback to reasonable ~35% markup if not specified
+  // Only use genuine originalMRP if provided and greater than price; NEVER fabricate fake markup
   const originalMRP =
-    providedMRP !== undefined && providedMRP !== null && providedMRP > 0
-      ? providedMRP
-      : Math.round(price * 1.35);
+    providedMRP !== undefined && providedMRP !== null && Number(providedMRP) > price
+      ? Number(providedMRP)
+      : null;
 
+  // Only calculate or show discount if genuine originalMRP > price or genuine positive discount provided
   const discountPercent =
-    providedDiscount !== undefined && providedDiscount !== null && providedDiscount > 0
-      ? providedDiscount
-      : originalMRP && originalMRP > price
-      ? Math.round(((originalMRP - price) / originalMRP) * 100)
+    originalMRP && originalMRP > price
+      ? providedDiscount !== undefined && providedDiscount !== null && Number(providedDiscount) > 0
+        ? Number(providedDiscount)
+        : Math.round(((originalMRP - price) / originalMRP) * 100)
+      : providedDiscount !== undefined && providedDiscount !== null && Number(providedDiscount) > 0
+      ? Number(providedDiscount)
       : 0;
 
   const sizeStyles = {

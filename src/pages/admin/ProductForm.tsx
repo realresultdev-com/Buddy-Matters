@@ -116,7 +116,12 @@ export default function ProductForm() {
         if (isEditing && id) {
           const prodRes = await productService.getById(id);
           const p = prodRes.data;
-          const origPrice = p.original_price ?? p.originalMRP ?? Math.round(p.price * 1.35);
+          const origPrice =
+            p.original_price && p.original_price > p.price
+              ? p.original_price
+              : p.originalMRP && p.originalMRP > p.price
+              ? p.originalMRP
+              : 0;
           const discPercent =
             p.discount_percent ??
             p.discountPercent ??
@@ -187,15 +192,11 @@ export default function ProductForm() {
 
   const handleApplyDiscountToPrice = (discountToApply?: number) => {
     const disc = discountToApply !== undefined ? discountToApply : formData.discount_percent;
-    let orig = formData.original_price;
-    if (orig <= 0 && formData.price > 0) {
-      orig = Math.round(formData.price * 1.35);
-    }
+    const orig = formData.original_price;
     if (orig > 0 && disc >= 0 && disc < 100) {
       const calculatedPrice = Math.round(orig * (1 - disc / 100));
       setFormData((prev) => ({
         ...prev,
-        original_price: orig,
         price: calculatedPrice,
         discount_percent: disc,
         offer_badge_value: `${disc}% Off`,
@@ -399,10 +400,8 @@ export default function ProductForm() {
 
   const selectedCategory = categories.find((c) => c.id === formData.categoryId);
   const effectiveMRP =
-    formData.original_price > 0
+    formData.original_price > formData.price
       ? formData.original_price
-      : formData.price > 0
-      ? Math.round(formData.price * 1.35)
       : 0;
   const buyerSavings = Math.max(0, effectiveMRP - formData.price);
 

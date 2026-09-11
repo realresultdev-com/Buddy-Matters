@@ -48,8 +48,8 @@ export default function ProductInfo({
         </h1>
       </div>
 
-      {/* Ratings & Q&A */}
-      {Boolean(product.rating && (product.review_count ?? 0) > 0) ? (
+      {/* Ratings & Q&A - only if real reviews exist */}
+      {Boolean(product.rating && (product.review_count ?? 0) > 0) && (
         <div className="flex items-center gap-3 text-xs text-gray-600 border-b border-gray-100 pb-3 flex-wrap">
           <a href="#reviews" className="hover:opacity-90 transition-opacity">
             <RatingBadge
@@ -64,14 +64,6 @@ export default function ProductInfo({
             className="text-[#0ea9df] hover:underline cursor-pointer text-xs font-semibold"
           >
             {product.review_count} {language === "ta" ? "மதிப்புரைகள்" : "customer reviews"}
-          </a>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 text-xs text-gray-500 border-b border-gray-100 pb-3">
-          <span>No reviews yet</span>
-          <span className="text-gray-300">|</span>
-          <a href="#reviews" className="text-[#0ea9df] hover:underline cursor-pointer font-semibold">
-            Be the first to review
           </a>
         </div>
       )}

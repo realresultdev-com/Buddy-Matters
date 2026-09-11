@@ -115,8 +115,12 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
 
-        {/* Amazon Deal Badge if discounted */}
-        {((product.discount_percent ?? 0) >= 15 || Boolean(product.is_trending)) && (
+        {/* Amazon Deal Badge - only if genuine positive discount & original price > price exist */}
+        {Boolean(
+          (product.original_price ?? product.originalMRP) &&
+          (product.original_price ?? product.originalMRP)! > product.price &&
+          (product.discount_percent ?? product.discountPercent ?? 0) > 0
+        ) && (
           <div className="mt-1.5">
             <span className="bg-[#CC0C39] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-[2px] uppercase tracking-wide inline-block shadow-2xs">
               Limited time deal
