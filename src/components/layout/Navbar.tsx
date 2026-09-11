@@ -95,7 +95,7 @@ export default function Navbar() {
             placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 text-sm text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium py-2"
+            className="flex-1 text-[16px] md:text-sm text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium py-2"
           />
           <button
             type="submit"
@@ -270,7 +270,7 @@ export default function Navbar() {
       </div>
 
       {/* 2. Dedicated Full-Width Search Bar for Mobile Viewports (< md) */}
-      <div className="md:hidden px-3.5 py-2 bg-gray-50/80 border-b border-gray-200">
+      <div className="md:hidden px-3 py-2 bg-gray-50/90 border-b border-gray-200 w-full max-w-full">
         <form
           onSubmit={handleSearch}
           className="flex items-center h-10 w-full rounded-full border border-gray-200 bg-white shadow-2xs pl-3.5 pr-1.5 focus-within:border-[#191142] focus-within:ring-2 focus-within:ring-[#191142]/10 transition-all"
@@ -281,8 +281,18 @@ export default function Navbar() {
             placeholder={t("searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 text-xs text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium"
+            className="flex-1 text-[16px] text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="p-1 text-gray-400 hover:text-gray-600 mr-1 cursor-pointer"
+              aria-label="Clear search"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             type="submit"
             className="px-3.5 h-7 rounded-full bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-semibold flex items-center justify-center transition-all shrink-0 cursor-pointer"
@@ -294,7 +304,7 @@ export default function Navbar() {
       </div>
 
       {/* 3. Subnav Bar (Categories Row) */}
-      <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-1.5 flex items-center justify-between text-xs text-gray-700 overflow-x-auto scrollbar-none h-[40px]">
+      <div className="bg-white border-b border-gray-200 px-3 sm:px-6 py-1.5 flex items-center justify-between text-xs text-gray-700 overflow-x-auto scrollbar-none h-[40px] w-full max-w-full">
         <div className="flex items-center gap-4 sm:gap-6 shrink-0 font-medium text-xs">
           <Link
             to="/#catalog"

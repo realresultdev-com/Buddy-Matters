@@ -19,6 +19,7 @@ export default function ProductGallery({
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== "undefined" && !window.matchMedia("(hover: hover)").matches) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
@@ -26,10 +27,10 @@ export default function ProductGallery({
   };
 
   return (
-    <div className={`w-full max-w-full flex flex-col-reverse sm:flex-row gap-3 lg:gap-4 items-start select-none ${className}`}>
+    <div className={`w-full max-w-full min-w-0 flex flex-col-reverse sm:flex-row gap-3 lg:gap-4 items-start select-none overflow-hidden ${className}`}>
       {/* Thumbnails strip */}
       {imageList.length > 1 && (
-        <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto max-h-[480px] shrink-0 p-0.5 no-scrollbar">
+        <div className="flex sm:flex-col gap-2 overflow-x-auto sm:overflow-y-auto max-w-full w-full sm:w-auto max-h-[480px] shrink-0 p-0.5 no-scrollbar">
           {imageList.map((img, idx) => {
             const isSelected = (selectedImage || imageList[0]) === img;
             return (
@@ -59,8 +60,12 @@ export default function ProductGallery({
 
       {/* Main Viewport */}
       <div
-        className="relative flex-1 min-w-0 w-full aspect-square max-w-full max-h-[480px] bg-white border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-4 cursor-crosshair shadow-xs group"
-        onMouseEnter={() => setIsZoomed(true)}
+        className="relative w-full max-w-full aspect-square sm:max-h-[480px] bg-white border border-gray-200 rounded-xl overflow-hidden flex items-center justify-center p-2 sm:p-4 shadow-xs group"
+        onMouseEnter={() => {
+          if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches) {
+            setIsZoomed(true);
+          }
+        }}
         onMouseLeave={() => setIsZoomed(false)}
         onMouseMove={handleMouseMove}
       >
@@ -79,8 +84,8 @@ export default function ProductGallery({
           }
         />
 
-        {/* Hover zoom pill hint */}
-        <div className="absolute bottom-2 right-2 text-[10px] text-gray-400 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded border border-gray-100 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Hover zoom pill hint (Only on hover devices) */}
+        <div className="hidden sm:block absolute bottom-2 right-2 text-[10px] text-gray-400 bg-white/90 backdrop-blur-xs px-2 py-0.5 rounded border border-gray-100 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
           Roll over image to zoom
         </div>
       </div>

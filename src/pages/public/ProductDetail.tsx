@@ -81,7 +81,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xs space-y-6 pb-28 lg:pb-8">
+    <div className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-6 lg:p-8 shadow-xs space-y-6 pb-28 lg:pb-8 w-full max-w-full overflow-hidden">
       {/* Breadcrumb Navigation */}
       <ProductBreadcrumbs
         categoryName={product.category?.name}
