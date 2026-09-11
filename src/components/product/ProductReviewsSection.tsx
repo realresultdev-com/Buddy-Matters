@@ -10,6 +10,7 @@ import {
   ThumbsUp,
   Image as ImageIcon,
   ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import type { Review, Product } from "../../types/product.types";
 import { productService } from "../../services/product.service";
@@ -38,6 +39,15 @@ export default function ProductReviewsSection({
   const [alreadyReviewed, setAlreadyReviewed] = useState(false);
   const [isPurchased, setIsPurchased] = useState(false);
   const [checkingEligibility, setCheckingEligibility] = useState(false);
+
+  // Collapsible section state (Hidden by default)
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#reviews") {
+      setIsExpanded(true);
+    }
+  }, []);
 
   // Review Form state
   const [showForm, setShowForm] = useState(false);
@@ -213,11 +223,14 @@ export default function ProductReviewsSection({
   };
 
   return (
-    <div id="reviews" className="space-y-8 pt-8 border-t border-gray-200">
-      {/* 1. Header & Verified Buyer Summary Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div id="reviews" className="pt-6 border-t border-gray-200 space-y-4">
+      {/* 1. Collapsible Header Bar with Down Arrow Button */}
+      <div
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between gap-4 cursor-pointer group select-none py-1"
+      >
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#191142] flex items-center gap-2.5">
+          <h2 className="text-lg sm:text-xl font-bold text-[#191142] flex items-center gap-2.5 group-hover:text-[#0ea9df] transition-colors">
             <span>Customer Ratings & Reviews</span>
             {Boolean(totalReviews > 0 && avgScore) && (
               <RatingBadge
@@ -227,45 +240,65 @@ export default function ProductReviewsSection({
               />
             )}
           </h2>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-0.5">
             Verified authentic feedback from confirmed buyers.
           </p>
         </div>
 
-        {/* Action Button: Write a Review */}
-        <div>
-          {user ? (
-            alreadyReviewed ? (
-              <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>You reviewed this product</span>
-              </div>
-            ) : canReview ? (
-              <button
-                type="button"
-                onClick={() => setShowForm(!showForm)}
-                className="inline-flex items-center gap-2 bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
-              >
-                <Camera className="w-4 h-4" />
-                <span>{showForm ? "Close Review Form" : "Write a Customer Review"}</span>
-              </button>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-gray-50 text-gray-700 border border-gray-200 text-xs font-medium px-3.5 py-2 rounded-xl">
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
-                <span>Verified buyers only</span>
-              </div>
-            )
+        {/* View Reviews / Down Arrow Button */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 group-hover:bg-[#0ea9df] group-hover:text-white text-[#191142] text-xs font-bold transition-colors cursor-pointer shrink-0"
+        >
+          <span>{isExpanded ? "Hide Reviews" : "View Reviews"}</span>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
           ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-[#191142] text-xs font-bold px-4 py-2 rounded-xl transition-colors"
-            >
-              <Lock className="w-3.5 h-3.5 text-gray-500" />
-              <span>Sign in to review</span>
-            </Link>
+            <ChevronDown className="w-4 h-4" />
           )}
-        </div>
+        </button>
       </div>
+
+      {/* 2. Expanded Review Section Contents */}
+      {isExpanded && (
+        <div className="space-y-8 pt-2 animate-in fade-in duration-200">
+          {/* Action Button: Write a Review Row */}
+          <div className="flex justify-end">
+            {user ? (
+              alreadyReviewed ? (
+                <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>You reviewed this product</span>
+                </div>
+              ) : canReview ? (
+                <button
+                  type="button"
+                  onClick={() => setShowForm(!showForm)}
+                  className="inline-flex items-center gap-2 bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>{showForm ? "Close Review Form" : "Write a Customer Review"}</span>
+                </button>
+              ) : (
+                <div className="inline-flex items-center gap-2 bg-gray-50 text-gray-700 border border-gray-200 text-xs font-medium px-3.5 py-2 rounded-xl">
+                  <Lock className="w-3.5 h-3.5 text-gray-400" />
+                  <span>Verified buyers only</span>
+                </div>
+              )
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-[#191142] text-xs font-bold px-4 py-2 rounded-xl transition-colors"
+              >
+                <Lock className="w-3.5 h-3.5 text-gray-500" />
+                <span>Sign in to review</span>
+              </Link>
+            )}
+          </div>
 
       {/* Success Banner */}
       {successMsg && (
@@ -283,17 +316,6 @@ export default function ProductReviewsSection({
         </div>
       )}
 
-      {/* Verified Buyer Info Callout (Amazon-style) */}
-      {!canReview && !alreadyReviewed && user && (
-        <div className="p-3.5 bg-sky-50/60 border border-sky-100 rounded-xl flex items-start gap-3 text-xs text-sky-900">
-          <Lock className="w-4 h-4 text-sky-600 shrink-0 mt-0.5" />
-          <p>
-            <span className="font-bold">Verified Buyer Policy:</span> Only customers
-            who have purchased this product from Buddy Mattress can submit a verified review
-            with photos. Once you order this item, your review form will unlock!
-          </p>
-        </div>
-      )}
 
       {/* 2. Interactive Review Submission Form / Modal */}
       {showForm && (
@@ -471,31 +493,24 @@ export default function ProductReviewsSection({
         </div>
       )}
 
-      {/* 3. Rating Summary Cards & Star Breakdown (Only when reviews exist) */}
+      {/* 3. Rating Summary & Star Breakdown (Boxless) */}
       {Boolean(totalReviews > 0 && avgScore) && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 bg-gray-50/70 p-5 sm:p-6 rounded-2xl border border-gray-200/80">
-          {/* Left: Score Pill & Breakdown */}
-          <div className="md:col-span-4 space-y-3 flex flex-col justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 py-2">
+          {/* Left: Score & Stars */}
+          <div className="md:col-span-4 space-y-1 flex flex-col justify-center">
             <div className="flex items-baseline gap-3">
               <span className="text-4xl sm:text-5xl font-black text-[#191142] tracking-tight">
                 {avgScore != null ? avgScore.toFixed(1) : ""}
               </span>
               <div className="space-y-0.5">
-                <div className="flex items-center text-[#038e42] text-lg font-black">
-                  {"★★★★★"}
+                <div className="flex items-center text-[#0ea9df] text-base sm:text-lg font-black">
+                  {"★".repeat(Math.round(avgScore || 5))}
+                  {"☆".repeat(5 - Math.round(avgScore || 5))}
                 </div>
-                <span className="text-xs text-gray-500 font-medium">
-                  {totalReviews} verified ratings
+                <span className="text-xs text-gray-500 font-medium block">
+                  {totalReviews} {totalReviews === 1 ? "verified rating" : "verified ratings"}
                 </span>
               </div>
-            </div>
-
-            <div className="pt-2">
-              <RatingBadge
-                rating={avgScore}
-                reviewCount={totalReviews}
-                size="lg"
-              />
             </div>
           </div>
 
@@ -622,12 +637,7 @@ export default function ProductReviewsSection({
                       <span className="text-xs font-bold text-gray-900 block leading-tight">
                         {rev.userName}
                       </span>
-                      {rev.isVerifiedPurchase && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#038e42]">
-                          <CheckCircle2 className="w-3 h-3 text-[#038e42]" />
-                          Verified Purchase
-                        </span>
-                      )}
+
                     </div>
                   </div>
                   <span className="text-[11px] text-gray-400">
@@ -678,6 +688,8 @@ export default function ProductReviewsSection({
           </div>
         )}
       </div>
+      </div>
+      )}
 
       {/* Photo Zoom Modal */}
       {selectedImage && (

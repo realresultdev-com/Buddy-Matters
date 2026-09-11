@@ -7,9 +7,10 @@ import {
   Package,
   ShoppingBag,
   Users,
-  PlusCircle,
+  Plus,
   FolderTree,
-  ShieldCheck,
+  ArrowRight,
+  TrendingUp,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -34,103 +35,177 @@ export default function Dashboard() {
 
   const statCards = [
     {
-      title: "Total Sales",
+      title: "Total Revenue",
       value: `₹${(stats?.totalRevenue || 0).toLocaleString("en-IN")}`,
       icon: DollarSign,
+      link: "/admin/orders",
+      linkLabel: "View orders",
     },
     {
       title: "Orders",
       value: (stats?.orderCount || 0).toString(),
       icon: ShoppingBag,
+      link: "/admin/orders",
+      linkLabel: "Manage orders",
     },
     {
       title: "Products",
       value: (stats?.productCount || 0).toString(),
       icon: Package,
+      link: "/admin/products",
+      linkLabel: "View catalog",
     },
     {
-      title: "Users",
+      title: "Registered Users",
       value: (stats?.userCount || 0).toString(),
       icon: Users,
+      link: "/admin/users",
+      linkLabel: "Manage users",
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-gray-200 pb-3">
-        <h1 className="text-xl sm:text-2xl font-black text-[#191142]">Dashboard</h1>
+    <div className="space-y-8 max-w-5xl mx-auto pb-12">
+      {/* Header */}
+      <div className="pb-4 border-b border-gray-200">
+        <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-xs text-gray-500 mt-0.5">
+          Overview of store performance and quick access to management tools.
+        </p>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((card, idx) => {
           const Icon = card.icon;
           return (
-            <div
+            <Link
               key={idx}
-              className="p-3.5 sm:p-5 rounded-xl border border-gray-200/90 bg-white space-y-1.5 shadow-2xs"
+              to={card.link}
+              className="p-4 rounded-lg border border-gray-200 bg-white hover:border-gray-300 transition-colors shadow-2xs flex flex-col justify-between"
             >
-              <div className="flex items-center justify-between text-gray-500">
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider truncate mr-1">
-                  {card.title}
-                </span>
-                <span className="p-1 sm:p-1.5 rounded-lg bg-gray-50 text-gray-700 shrink-0">
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                </span>
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gray-500">
+                    {card.title}
+                  </span>
+                  <Icon className="w-4 h-4 text-gray-400" />
+                </div>
+                <div className="text-2xl font-bold text-gray-900 mt-2">
+                  {card.value}
+                </div>
               </div>
-              <div className="text-lg sm:text-2xl font-black text-[#191142] truncate tracking-tight">
-                {card.value}
+
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 hover:text-gray-900 font-medium">
+                <span>{card.linkLabel}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
 
-      {/* Quick Actions */}
-      <div className="p-4 sm:p-5 rounded-2xl border border-gray-200/90 bg-gray-50/60 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+      {/* Quick Actions Section */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-gray-900">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <Link
             to="/admin/products/new"
-            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+            className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-gray-400 text-xs font-semibold text-gray-900 flex items-center gap-2.5 transition-colors shadow-2xs"
           >
-            <span className="p-2 rounded-lg bg-amber-50 text-amber-600 shrink-0">
-              <PlusCircle className="w-4 h-4" />
-            </span>
-            <p className="font-bold text-xs truncate">Add Product</p>
+            <Plus className="w-4 h-4 text-gray-700 shrink-0" />
+            <span className="truncate">Add Product</span>
           </Link>
 
           <Link
             to="/admin/products"
-            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+            className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-gray-400 text-xs font-semibold text-gray-900 flex items-center gap-2.5 transition-colors shadow-2xs"
           >
-            <span className="p-2 rounded-lg bg-cyan-50 text-[#0ea9df] shrink-0">
-              <Package className="w-4 h-4" />
-            </span>
-            <p className="font-bold text-xs truncate">Products</p>
+            <Package className="w-4 h-4 text-gray-700 shrink-0" />
+            <span className="truncate">Products</span>
           </Link>
 
           <Link
             to="/admin/orders"
-            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+            className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-gray-400 text-xs font-semibold text-gray-900 flex items-center gap-2.5 transition-colors shadow-2xs"
           >
-            <span className="p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
-              <ShoppingBag className="w-4 h-4" />
-            </span>
-            <p className="font-bold text-xs truncate">Orders</p>
+            <ShoppingBag className="w-4 h-4 text-gray-700 shrink-0" />
+            <span className="truncate">Orders</span>
+          </Link>
+
+          <Link
+            to="/admin/users"
+            className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-gray-400 text-xs font-semibold text-gray-900 flex items-center gap-2.5 transition-colors shadow-2xs"
+          >
+            <Users className="w-4 h-4 text-gray-700 shrink-0" />
+            <span className="truncate">Users</span>
           </Link>
 
           <Link
             to="/admin/categories"
-            className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-200 bg-white hover:border-[#0ea9df] text-xs font-bold text-[#191142] shadow-2xs hover:shadow-xs transition-all cursor-pointer"
+            className="p-3.5 rounded-lg border border-gray-200 bg-white hover:border-gray-400 text-xs font-semibold text-gray-900 flex items-center gap-2.5 transition-colors shadow-2xs"
           >
-            <span className="p-2 rounded-lg bg-purple-50 text-purple-600 shrink-0">
-              <FolderTree className="w-4 h-4" />
-            </span>
-            <p className="font-bold text-xs truncate">Categories</p>
+            <FolderTree className="w-4 h-4 text-gray-700 shrink-0" />
+            <span className="truncate">Categories</span>
           </Link>
+        </div>
+      </div>
+
+      {/* Overview Breakdown Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
+        {/* Management Summary */}
+        <div className="border border-gray-200 rounded-lg p-5 bg-white space-y-4 shadow-2xs">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-gray-700" />
+              <span>Store Overview</span>
+            </h3>
+            <span className="text-xs text-gray-500 font-medium">Live Stats</span>
+          </div>
+
+          <div className="space-y-3 text-xs">
+            <div className="flex items-center justify-between py-1.5 border-b border-gray-50">
+              <span className="text-gray-600">Active Products in Catalog</span>
+              <span className="font-semibold text-gray-900">{stats?.productCount || 0}</span>
+            </div>
+            <div className="flex items-center justify-between py-1.5 border-b border-gray-50">
+              <span className="text-gray-600">Registered Customer Accounts</span>
+              <span className="font-semibold text-gray-900">{stats?.userCount || 0}</span>
+            </div>
+            <div className="flex items-center justify-between py-1.5">
+              <span className="text-gray-600">Completed Store Orders</span>
+              <span className="font-semibold text-gray-900">{stats?.orderCount || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Links Summary */}
+        <div className="border border-gray-200 rounded-lg p-5 bg-white space-y-4 shadow-2xs flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 border-b border-gray-100 pb-3">
+              Admin Quick Tips
+            </h3>
+            <p className="text-xs text-gray-600 mt-3 leading-relaxed">
+              Use the sidebar or quick action buttons to manage your inventory, adjust pricing, upload product photos, or update user permissions.
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+            <Link
+              to="/admin/products/new"
+              className="font-semibold text-gray-900 hover:underline flex items-center gap-1"
+            >
+              <span>Create new product</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+
+            <Link
+              to="/"
+              className="text-gray-500 hover:text-gray-900 font-medium"
+            >
+              View storefront →
+            </Link>
+          </div>
         </div>
       </div>
     </div>

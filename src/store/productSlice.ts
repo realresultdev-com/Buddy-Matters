@@ -22,17 +22,17 @@ const initialState: ProductState = {
 // Async Thunk to fetch all products and categories once into Redux
 export const fetchCatalog = createAsyncThunk(
   "catalog/fetchCatalog",
-  async (_, { getState }) => {
+  async (forceRefresh: boolean | void = false, { getState }) => {
     const state = (getState() as { catalog: ProductState }).catalog;
     const now = Date.now();
-    // Use cached in-memory data if fetched within 3 minutes
-    if (state.lastFetched && now - state.lastFetched < 3 * 60 * 1000 && state.products.length > 0) {
+    // Use cached in-memory data in Redux if fetched within 3 minutes
+    if (!forceRefresh && state.lastFetched && now - state.lastFetched < 3 * 60 * 1000 && state.products.length > 0) {
       return { products: state.products, categories: state.categories };
     }
 
     const [prodRes, catRes] = await Promise.all([
-      productService.getAll(),
-      categoryService.getAll(),
+      productService.getAll(undefined, Boolean(forceRefresh)),
+      categoryService.getAll(Boolean(forceRefresh)),
     ]);
 
     return {

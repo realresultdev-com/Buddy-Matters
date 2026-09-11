@@ -362,7 +362,7 @@ app.delete("/user/searches/:id", authMiddleware, async (c) => {
 
 app.get("/categories", async (c) => {
   const { results } = await c.env.DB.prepare("SELECT * FROM categories ORDER BY name ASC").all();
-  c.header("Cache-Control", "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+  c.header("Cache-Control", "no-cache, no-store, must-revalidate");
   return c.json(results);
 });
 
@@ -575,7 +575,7 @@ app.get("/products", async (c) => {
     };
   });
 
-  c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
+  c.header("Cache-Control", "no-cache, no-store, must-revalidate");
   return c.json(formatted);
 });
 
@@ -638,7 +638,7 @@ app.get("/products/:id", async (c) => {
     }
   }
 
-  c.header("Cache-Control", "public, max-age=60, s-maxage=120, stale-while-revalidate=300");
+  c.header("Cache-Control", "no-cache, no-store, must-revalidate");
   return c.json({
     id: encryptId(row.id),
     name: row.name,
@@ -1692,6 +1692,121 @@ app.patch("/admin/users/:id/role", authMiddleware, adminMiddleware, async (c) =>
   }
   await c.env.DB.prepare("UPDATE users SET role = ? WHERE id = ?").bind(role, targetUserId).run();
   return c.json({ success: true, message: `User role updated to ${role}` });
+});
+
+/* ==========================================================================
+   7. HERO VIDEO BANNERS
+   ========================================================================== */
+
+// Public endpoint: Fetch active hero videos for homepage ordered by display_order priority
+app.get("/hero-videos", async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(
+      "SELECT * FROM hero_videos WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC"
+    ).all();
+    return c.json({ success: true, data: results || [] });
+  } catch (err: any) {
+    console.error("Failed to fetch active hero videos:", err);
+    return c.json({ success: true, data: [] });
+  }
+});
+
+// Admin endpoint: List all hero videos (active and inactive)
+app.get("/admin/hero-videos", authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const { results } = await c.env.DB.prepare(
+      "SELECT * FROM hero_videos ORDER BY display_order ASC, created_at DESC"
+    ).all();
+    return c.json({ success: true, data: results || [] });
+  } catch (err: any) {
+    console.error("Failed to fetch admin hero videos:", err);
+    return c.json({ success: false, message: err.message || "Failed to fetch hero videos" }, 500);
+  }
+});
+
+// Admin endpoint: Create a new hero video
+app.post("/admin/hero-videos", authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const body = await c.req.json();
+    const { title, subtitle, video_url, video_url_720p, video_url_360p, poster_url, link_url, display_order, is_active } = body;
+
+    if (!video_url) {
+      return c.json({ message: "video_url is required" }, 400);
+    }
+
+    const id = `hv_${crypto.randomUUID().replace(/-/g, "").substring(0, 10)}`;
+    const orderNum = typeof display_order === "number" ? display_order : parseInt(display_order) || 1;
+    const activeState = is_active === false || is_active === 0 ? 0 : 1;
+
+    await c.env.DB.prepare(
+      `INSERT INTO hero_videos (id, title, subtitle, video_url, video_url_720p, video_url_360p, poster_url, link_url, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      id,
+      title || "",
+      subtitle || "",
+      video_url,
+      video_url_720p || null,
+      video_url_360p || null,
+      poster_url || "",
+      link_url || "/shop",
+      orderNum,
+      activeState
+    ).run();
+
+    const created = await c.env.DB.prepare("SELECT * FROM hero_videos WHERE id = ?").bind(id).first();
+    return c.json({ success: true, data: created }, 201);
+  } catch (err: any) {
+    console.error("Error creating hero video:", err);
+    return c.json({ message: err.message || "Failed to create hero video" }, 500);
+  }
+});
+
+// Admin endpoint: Update a hero video
+app.put("/admin/hero-videos/:id", authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const id = c.req.param("id");
+    const body = await c.req.json();
+    const { title, subtitle, video_url, video_url_720p, video_url_360p, poster_url, link_url, display_order, is_active } = body;
+
+    const orderNum = typeof display_order === "number" ? display_order : parseInt(display_order) || 1;
+    const activeState = is_active === false || is_active === 0 || is_active === "0" ? 0 : 1;
+
+    await c.env.DB.prepare(
+      `UPDATE hero_videos 
+       SET title = ?, subtitle = ?, video_url = ?, video_url_720p = ?, video_url_360p = ?, poster_url = ?, link_url = ?, display_order = ?, is_active = ?
+       WHERE id = ?`
+    ).bind(
+      title || "",
+      subtitle || "",
+      video_url,
+      video_url_720p || null,
+      video_url_360p || null,
+      poster_url || "",
+      link_url || "/shop",
+      orderNum,
+      activeState,
+      id
+    ).run();
+
+    const updated = await c.env.DB.prepare("SELECT * FROM hero_videos WHERE id = ?").bind(id).first();
+    return c.json({ success: true, data: updated });
+  } catch (err: any) {
+    console.error("Error updating hero video:", err);
+    return c.json({ message: err.message || "Failed to update hero video" }, 500);
+  }
+});
+
+// Admin endpoint: Delete a hero video
+app.delete("/admin/hero-videos/:id", authMiddleware, adminMiddleware, async (c) => {
+  try {
+    const id = c.req.param("id");
+    await c.env.DB.prepare("DELETE FROM hero_videos WHERE id = ?").bind(id).run();
+    return c.json({ success: true, message: "Hero video deleted successfully" });
+  } catch (err: any) {
+    console.error("Error deleting hero video:", err);
+    return c.json({ message: err.message || "Failed to delete hero video" }, 500);
+  }
 });
 
 export const onRequest = handle(app);

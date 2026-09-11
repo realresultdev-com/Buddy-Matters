@@ -31,13 +31,17 @@ import Dashboard from "../pages/admin/Dashboard";
 import ProductsList from "../pages/admin/ProductsList";
 import ProductForm from "../pages/admin/ProductForm";
 import CategoriesManage from "../pages/admin/CategoriesManage";
+import HeroVideoManage from "../pages/admin/HeroVideoManage";
 import OrdersManage from "../pages/admin/OrdersManage";
 import UsersManage from "../pages/admin/UsersManage";
+
+import ErrorBoundary from "../components/common/ErrorBoundary";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <ErrorBoundary />,
     children: [
       // Public
       { index: true, element: <Home /> },
@@ -96,6 +100,7 @@ export const router = createBrowserRouter([
               { path: "products/:id/edit", element: <ProductForm /> },
               { path: "media", element: <Navigate to="/admin/products" replace /> },
               { path: "categories", element: <CategoriesManage /> },
+              { path: "hero-videos", element: <HeroVideoManage /> },
               { path: "orders", element: <OrdersManage /> },
               { path: "users", element: <UsersManage /> },
             ],

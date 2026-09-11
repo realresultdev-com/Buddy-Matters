@@ -5,7 +5,7 @@ export type Language = "en" | "ta";
 export const translations = {
   en: {
     // Navigation
-    searchPlaceholder: "Search mattresses, orthopedic pillows, bedding...",
+    searchPlaceholder: "Search",
     search: "Search",
     allDepartments: "All Departments",
     todaysDeals: "Today's Deals",

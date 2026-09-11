@@ -35,29 +35,29 @@ export default function OfferBadge({
     "C 34.74 6.53, 39.46 12.33, 42.39 11.75 C 45.32 11.17, 47.46 4, 50 4 Z";
 
   const sizeStyles = {
-    sm: "w-[58px] h-[58px] sm:w-[68px] sm:h-[68px]",
-    md: "w-[80px] h-[80px] sm:w-[92px] sm:h-[92px]",
-    lg: "w-[96px] h-[96px] sm:w-[110px] sm:h-[110px]",
-    xl: "w-[120px] h-[120px] sm:w-[136px] sm:h-[136px]",
+    sm: "w-[56px] h-[56px] sm:w-[64px] sm:h-[64px]",
+    md: "w-[76px] h-[76px] sm:w-[86px] sm:h-[86px]",
+    lg: "w-[92px] h-[92px] sm:w-[104px] sm:h-[104px]",
+    xl: "w-[112px] h-[112px] sm:w-[128px] sm:h-[128px]",
   }[size];
 
   const prefixSize = {
-    sm: "text-[9px] leading-tight font-extrabold",
-    md: "text-[11px] sm:text-[12px] leading-tight font-black",
-    lg: "text-xs sm:text-sm leading-tight font-black",
-    xl: "text-sm sm:text-base leading-tight font-black",
+    sm: "text-[7.5px] sm:text-[8.5px] font-extrabold leading-none uppercase tracking-tighter text-black/90",
+    md: "text-[9.5px] sm:text-[10.5px] font-extrabold leading-none uppercase tracking-tighter text-black/90",
+    lg: "text-[11px] sm:text-[12px] font-extrabold leading-none uppercase tracking-tighter text-black/90",
+    xl: "text-[13px] sm:text-[14px] font-extrabold leading-none uppercase tracking-tighter text-black/90",
   }[size];
 
   const valueSize = {
-    sm: "text-xs sm:text-sm font-black",
-    md: "text-base sm:text-lg font-black",
-    lg: "text-lg sm:text-xl font-black",
-    xl: "text-2xl sm:text-3xl font-black",
+    sm: "text-[9px] sm:text-[10px] font-black leading-tight text-black uppercase tracking-tight max-w-[42px]",
+    md: "text-[11.5px] sm:text-[12.5px] font-black leading-tight text-black uppercase tracking-tight max-w-[58px]",
+    lg: "text-xs sm:text-sm font-black leading-tight text-black uppercase tracking-tight max-w-[70px]",
+    xl: "text-base sm:text-lg font-black leading-tight text-black uppercase tracking-tight max-w-[88px]",
   }[size];
 
   return (
     <div
-      className={`relative select-none pointer-events-none filter drop-shadow-[0_4px_10px_rgba(0,0,0,0.22)] transition-transform duration-200 ${sizeStyles} ${className}`}
+      className={`relative select-none pointer-events-none filter drop-shadow-[0_2px_6px_rgba(0,0,0,0.18)] transition-transform duration-200 ${sizeStyles} ${className}`}
       aria-label={`${prefix || ""} ${value || ""}`}
     >
       {/* 16-lobe Yellow Scalloped Starburst SVG matching Amazon & Flipkart sticker */}
@@ -74,19 +74,15 @@ export default function OfferBadge({
         />
       </svg>
 
-      {/* Centered Badge Text */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-1 z-10 -rotate-1">
+      {/* Centered Badge Text strictly constrained inside starburst inner circle */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-3 z-10 -rotate-1 pointer-events-none">
         {prefix && (
-          <span
-            className={`text-black tracking-tight ${prefixSize}`}
-          >
+          <span className={`block text-center whitespace-normal ${prefixSize}`}>
             {prefix}
           </span>
         )}
         {value && (
-          <span
-            className={`text-black tracking-tighter leading-none mt-0.5 ${valueSize}`}
-          >
+          <span className={`block text-center whitespace-normal mt-0.5 ${valueSize}`}>
             {value}
           </span>
         )}

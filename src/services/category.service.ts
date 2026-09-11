@@ -1,20 +1,10 @@
 import { api } from "./api";
 
-// Client-side cache & request deduplication to conserve Cloudflare D1 free quota
-let cachedCategories: any = null;
-let cacheTimestamp = 0;
 let inflightPromise: Promise<any> | null = null;
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
 
 export const categoryService = {
   getAll: async (forceRefresh = false) => {
-    const now = Date.now();
-    // 1. Return memory-cached categories if still fresh
-    if (!forceRefresh && cachedCategories && now - cacheTimestamp < CACHE_TTL_MS) {
-      return { data: cachedCategories };
-    }
-
-    // 2. Deduplicate simultaneous in-flight calls (e.g., Navbar and Home mounting together)
+    // Deduplicate simultaneous in-flight calls (e.g., Navbar and Home mounting together)
     if (!forceRefresh && inflightPromise) {
       return inflightPromise;
     }
@@ -22,8 +12,6 @@ export const categoryService = {
     inflightPromise = api
       .get("/categories")
       .then((res) => {
-        cachedCategories = res.data;
-        cacheTimestamp = Date.now();
         inflightPromise = null;
         return res;
       })
@@ -36,23 +24,19 @@ export const categoryService = {
   },
 
   create: async (data: string | { name: string; offer_badge_prefix?: string; offer_badge_value?: string }) => {
-    cachedCategories = null; // Bust cache on mutation
     const payload = typeof data === "string" ? { name: data } : data;
     return api.post("/categories", payload);
   },
 
   update: async (id: string, data: { name?: string; offer_badge_prefix?: string; offer_badge_value?: string }) => {
-    cachedCategories = null; // Bust cache on mutation
     return api.put(`/categories/${id}`, data);
   },
 
   remove: async (id: string) => {
-    cachedCategories = null; // Bust cache on mutation
     return api.delete(`/categories/${id}`);
   },
 
   clearCache: () => {
-    cachedCategories = null;
-    cacheTimestamp = 0;
+    // No-op: category state stored strictly in Redux
   },
 };

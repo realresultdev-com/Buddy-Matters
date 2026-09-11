@@ -27,7 +27,7 @@ export default function R2ImageUploader({
     }
 
     if (images.length + fileArray.length > maxImages) {
-      setError(`You can upload a maximum of ${maxImages} images per product.`);
+      setError(`You can upload a maxum of ${maxImages} images per product.`);
       return;
     }
 
@@ -115,8 +115,8 @@ export default function R2ImageUploader({
         onClick={() => !uploading && fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
           uploading
-            ? "border-[#0ea9df] bg-cyan-50/50 cursor-wait"
-            : "border-gray-300 hover:border-[#0ea9df] hover:bg-slate-50 bg-white"
+            ? "border-black bg-zinc-50 cursor-wait"
+            : "border-zinc-300 hover:border-black hover:bg-zinc-50 bg-white"
         }`}
       >
         <input
@@ -131,19 +131,19 @@ export default function R2ImageUploader({
 
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-2">
-            <Loader2 className="w-8 h-8 text-[#0ea9df] animate-spin" />
-            <p className="text-xs font-bold text-[#191142]">Uploading to Cloudflare R2 Bucket...</p>
-            <p className="text-[11px] text-gray-500">Optimizing and storing high-resolution assets</p>
+            <Loader2 className="w-8 h-8 text-black animate-spin" />
+            <p className="text-xs font-bold text-black">Uploading to Cloudflare R2 Storage...</p>
+            <p className="text-[11px] text-zinc-500">Optimizing and storing high-resolution assets</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-1.5 py-1">
-            <div className="w-10 h-10 rounded-full bg-cyan-50 flex items-center justify-center text-[#0ea9df]">
+            <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-black">
               <UploadCloud className="w-5 h-5" />
             </div>
-            <p className="text-xs font-bold text-[#191142]">
-              Drag & drop images here, or <span className="text-[#0ea9df] underline">browse</span>
+            <p className="text-xs font-bold text-black">
+              Drag & drop images here, or <span className="text-black underline">browse</span>
             </p>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-zinc-400">
               Supports PNG, JPG, WEBP, AVIF up to 10MB each
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function R2ImageUploader({
         <button
           type="button"
           onClick={() => setShowUrlInput(!showUrlInput)}
-          className="text-[11px] text-[#0ea9df] hover:underline font-semibold flex items-center gap-1"
+          className="text-[11px] text-zinc-700 hover:text-black hover:underline font-semibold flex items-center gap-1"
         >
           <Link2 className="w-3 h-3" />
           {showUrlInput ? "Hide URL input" : "+ Add image via URL"}
@@ -170,12 +170,12 @@ export default function R2ImageUploader({
             value={manualUrl}
             onChange={(e) => setManualUrl(e.target.value)}
             placeholder="https://..."
-            className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-[#0ea9df] focus:ring-1 focus:ring-[#0ea9df]"
+            className="flex-1 px-3 py-1.5 border border-zinc-300 rounded-lg text-xs outline-none focus:border-black focus:ring-1 focus:ring-black"
           />
           <button
             type="button"
             onClick={handleAddManualUrl}
-            className="px-3 py-1.5 bg-[#191142] text-white text-xs font-bold rounded-lg hover:bg-[#261d5e] transition-colors"
+            className="px-3 py-1.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-zinc-800 transition-colors"
           >
             Add
           </button>
@@ -190,11 +190,11 @@ export default function R2ImageUploader({
               key={idx}
               className={`relative group rounded-xl border p-1.5 bg-white shadow-xs overflow-hidden ${
                 idx === 0
-                  ? "border-[#0ea9df] ring-2 ring-[#0ea9df]/20"
-                  : "border-gray-200"
+                  ? "border-black ring-2 ring-black/20"
+                  : "border-zinc-200"
               }`}
             >
-              <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+              <div className="aspect-square w-full rounded-lg overflow-hidden bg-zinc-50 flex items-center justify-center">
                 <img
                   src={url}
                   alt={`Product view ${idx + 1}`}
@@ -204,8 +204,8 @@ export default function R2ImageUploader({
 
               {/* Cover Badge for First Image */}
               {idx === 0 && (
-                <span className="absolute top-2 left-2 bg-[#191142] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
-                  <Star className="w-2.5 h-2.5 fill-[#0ea9df] text-[#0ea9df]" /> Cover
+                <span className="absolute top-2 left-2 bg-black text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-xs flex items-center gap-0.5">
+                  <Star className="w-2.5 h-2.5 fill-white text-white" /> Cover
                 </span>
               )}
 
@@ -216,7 +216,7 @@ export default function R2ImageUploader({
                     type="button"
                     onClick={() => handleSetPrimary(idx)}
                     title="Make Cover Image"
-                    className="p-1.5 bg-white/90 hover:bg-white text-[#191142] rounded-lg shadow-sm text-[10px] font-bold"
+                    className="p-1.5 bg-white hover:bg-zinc-100 text-black rounded-lg shadow-sm text-[10px] font-bold"
                   >
                     Set Cover
                   </button>
@@ -225,7 +225,7 @@ export default function R2ImageUploader({
                   type="button"
                   onClick={() => handleRemove(idx)}
                   title="Remove Image"
-                  className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-sm"
+                  className="p-1.5 bg-zinc-900 hover:bg-black text-white rounded-lg shadow-sm"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>

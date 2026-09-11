@@ -33,31 +33,40 @@ export default function ColorSwatches({
     <div className={`space-y-1.5 ${className}`}>
       {showLabel && (
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="text-gray-500 font-medium">Color:</span>
+          <span className="text-gray-500 font-medium">Option:</span>
           <span className="font-bold text-[#191142]">{activeVariant?.name || "Standard"}</span>
         </div>
       )}
 
       <div className="flex items-center gap-2 flex-wrap" role="radiogroup" aria-label="Product color options">
         {variants.map((v, idx) => {
+          if (!v) return null;
+
+          const colorHex = v.color || v.hex || "#0ea9df";
+          const variantName = v.name || "Option";
+
+          const activeColor = activeVariant?.color || activeVariant?.hex;
+          const activeName = activeVariant?.name;
+
           const isSelected = Boolean(
-            (activeVariant?.color && activeVariant.color.toLowerCase() === v.color.toLowerCase()) ||
-            (activeVariant?.name && activeVariant.name.toLowerCase() === v.name.toLowerCase())
+            (activeColor && colorHex && activeColor.toLowerCase() === colorHex.toLowerCase()) ||
+            (activeName && variantName && activeName.toLowerCase() === variantName.toLowerCase())
           );
 
+          const normalizedColor = (colorHex || "").toLowerCase();
           // Detect very light colors (like white) to ensure proper border visibility
           const isLight =
-            v.color.toLowerCase() === "#ffffff" ||
-            v.color.toLowerCase() === "#fff" ||
-            v.color.toLowerCase() === "white";
+            normalizedColor === "#ffffff" ||
+            normalizedColor === "#fff" ||
+            normalizedColor === "white";
 
           return (
             <button
-              key={`${v.name}-${v.color}-${idx}`}
+              key={`${variantName}-${colorHex}-${idx}`}
               type="button"
               role="radio"
               aria-checked={isSelected}
-              title={v.name}
+              title={variantName}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -74,9 +83,9 @@ export default function ColorSwatches({
                 className={`block rounded-full shadow-2xs border ${sizeClasses} ${
                   isLight ? "border-gray-300" : "border-black/20"
                 }`}
-                style={{ backgroundColor: v.color }}
+                style={{ backgroundColor: colorHex }}
               />
-              <span className="sr-only">{v.name}</span>
+              <span className="sr-only">{variantName}</span>
             </button>
           );
         })}
@@ -84,3 +93,4 @@ export default function ColorSwatches({
     </div>
   );
 }
+

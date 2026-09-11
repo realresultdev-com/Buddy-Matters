@@ -12,8 +12,10 @@ export interface ProductAboutItem {
 
 export interface ProductColorVariant {
   name: string;
-  color: string;
+  color?: string;
+  hex?: string;
   image?: string;
+  images?: string[];
 }
 
 export interface ProductImage {

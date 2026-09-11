@@ -1,2 +1,2 @@
--- Add is_trending column to products table
-ALTER TABLE products ADD COLUMN is_trending INTEGER DEFAULT 0;
+-- Add is_trending column to products table (already in 0001)
+SELECT 1;

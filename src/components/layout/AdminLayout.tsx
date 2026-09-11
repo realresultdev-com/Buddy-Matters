@@ -27,24 +27,24 @@ export default function AdminLayout() {
     ) || ADMIN_NAV_ITEMS[0];
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#eaeded] flex flex-col lg:flex-row border-t border-gray-200">
+    <div className="min-h-[calc(100vh-4rem)] bg-white flex flex-col lg:flex-row border-t border-gray-200">
       {/* 1. Desktop Sidebar (hidden on mobile/tablet) */}
       <AdminSidebar className="hidden lg:flex min-h-[calc(100vh-4rem)]" />
 
       {/* 2. Mobile & Tablet Native App Bar & Scrollable Tabs (hidden on desktop) */}
-      <div className="lg:hidden w-full bg-white shrink-0 sticky top-0 z-30 shadow-xs">
+      <div className="lg:hidden w-full bg-white shrink-0 sticky top-0 z-30 shadow-2xs">
         {/* Native Top App Bar */}
-        <div className="bg-[#191142] text-white px-3.5 py-2.5 flex items-center justify-between shadow-xs">
+        <div className="bg-black text-white px-3.5 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
             <img
               src="/logo-white.png"
               alt="Buddy Mattress"
               className="h-5 w-auto object-contain shrink-0"
             />
-            <span className="text-[10px] font-bold tracking-wider uppercase bg-white/15 px-2 py-0.5 rounded-md border border-white/20 shrink-0">
-              Admin Page
+            <span className="text-[10px] font-semibold tracking-wider uppercase bg-white/10 px-2 py-0.5 rounded border border-white/20 shrink-0">
+              Admin
             </span>
-            <span className="text-xs text-gray-300 truncate font-semibold border-l border-white/20 pl-2 hidden sm:inline">
+            <span className="text-xs text-gray-300 truncate font-medium border-l border-white/20 pl-2 hidden sm:inline">
               {currentItem.label}
             </span>
           </div>
@@ -52,7 +52,7 @@ export default function AdminLayout() {
           <div className="flex items-center gap-1.5 shrink-0">
             <Link
               to="/"
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors"
               title="Return to Store"
             >
               <Store className="w-3.5 h-3.5" />
@@ -62,7 +62,7 @@ export default function AdminLayout() {
             <button
               type="button"
               onClick={() => setMobileDrawerOpen(true)}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               aria-label="Open admin navigation menu"
             >
               <Menu className="w-5 h-5" />
@@ -73,7 +73,7 @@ export default function AdminLayout() {
         {/* Native Horizontal Pill Navigation Bar */}
         <div
           ref={tabsRef}
-          className="overflow-x-auto no-scrollbar py-2 px-3 bg-white border-b border-gray-200/90 flex items-center gap-1.5 shadow-2xs"
+          className="overflow-x-auto no-scrollbar py-2 px-3 bg-white border-b border-gray-200 flex items-center gap-1.5"
           role="tablist"
           aria-label="Admin Page Sections"
         >
@@ -90,10 +90,10 @@ export default function AdminLayout() {
                 to={item.path}
                 end={item.path === "/admin"}
                 data-active={isActive ? "true" : "false"}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all shrink-0 cursor-pointer ${
                   isActive
-                    ? "bg-[#0ea9df] text-white shadow-xs scale-[1.02]"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200/80"
+                    ? "bg-black text-white shadow-2xs"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-black border border-gray-200"
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-white" : "text-gray-500"}`} />

@@ -12,24 +12,29 @@ export default function LegalMetrologyCard({
   className = "",
 }: LegalMetrologyCardProps) {
   // Determine Net Quantity dynamically from specifications or category
-  const aboutNetQty = product.about?.find(
-    (item) =>
-      item.key.toLowerCase().includes("net quantity") ||
-      item.key.toLowerCase().includes("quantity")
-  )?.value;
+  const aboutItems = Array.isArray(product?.about) ? (product.about as any[]) : [];
 
-  const aboutDimensions = product.about?.find(
-    (item) =>
-      item.key.toLowerCase().includes("dimension") ||
-      item.key.toLowerCase().includes("size")
-  )?.value;
+  const aboutNetQtyItem = aboutItems.find((item) => {
+    if (typeof item === "string") return item.toLowerCase().includes("quantity");
+    if (item && typeof item === "object" && typeof item.key === "string") {
+      return item.key.toLowerCase().includes("net quantity") || item.key.toLowerCase().includes("quantity");
+    }
+    return false;
+  });
+  const aboutNetQty = typeof aboutNetQtyItem === "string" ? aboutNetQtyItem : aboutNetQtyItem?.value;
 
-  const isPillow =
-    product.categoryId === "cat_pillows" ||
-    product.name.toLowerCase().includes("pillow");
-  const isProtector =
-    product.categoryId === "cat_bedding" ||
-    product.name.toLowerCase().includes("protector");
+  const aboutDimItem = aboutItems.find((item) => {
+    if (typeof item === "string") return item.toLowerCase().includes("dimension") || item.toLowerCase().includes("size");
+    if (item && typeof item === "object" && typeof item.key === "string") {
+      return item.key.toLowerCase().includes("dimension") || item.key.toLowerCase().includes("size");
+    }
+    return false;
+  });
+  const aboutDimensions = typeof aboutDimItem === "string" ? aboutDimItem : aboutDimItem?.value;
+
+  const productNameLower = (product?.name || "").toLowerCase();
+  const isPillow = product?.categoryId === "cat_pillows" || productNameLower.includes("pillow");
+  const isProtector = product?.categoryId === "cat_bedding" || productNameLower.includes("protector");
 
   const netQuantity =
     aboutNetQty ||

@@ -24,47 +24,47 @@ export default function RatingBadge({
 
   const sizeClasses = {
     xs: {
-      container: "px-1.5 py-0.5 text-[10px] gap-1 rounded-md",
-      star: "w-2.5 h-2.5",
-      starText: "text-[10px]",
+      container: "text-xs gap-1",
+      starText: "text-xs",
+      scoreText: "text-xs font-bold",
     },
     sm: {
-      container: "px-2 py-0.5 text-xs gap-1.5 rounded-md",
-      star: "w-3 h-3",
-      starText: "text-xs",
+      container: "text-xs gap-1.5",
+      starText: "text-sm",
+      scoreText: "text-xs font-bold",
     },
     md: {
-      container: "px-2.5 py-1 text-sm gap-1.5 rounded-lg",
-      star: "w-3.5 h-3.5",
-      starText: "text-sm",
+      container: "text-sm gap-1.5",
+      starText: "text-base",
+      scoreText: "text-sm font-extrabold",
     },
     lg: {
-      container: "px-3.5 py-1.5 text-base gap-2 rounded-xl",
-      star: "w-4 h-4",
-      starText: "text-base",
+      container: "text-base gap-2",
+      starText: "text-lg",
+      scoreText: "text-base font-black",
     },
   }[size];
 
   return (
     <div
       onClick={onClick}
-      className={`inline-flex items-center bg-white border border-gray-200/90 shadow-2xs select-none ${
+      className={`inline-flex items-center gap-1.5 select-none ${
         sizeClasses.container
-      } ${onClick ? "cursor-pointer hover:border-gray-300 hover:shadow-xs transition-all" : ""} ${className}`}
+      } ${onClick ? "cursor-pointer" : ""} ${className}`}
     >
-      {/* Bold Rating Score */}
-      <span className="font-extrabold text-[#111827] tracking-tight leading-none">
+      {/* Rating Score in Normal Text Color */}
+      <span className={`text-[#191142] tracking-tight leading-none ${sizeClasses.scoreText}`}>
         {displayRating}
       </span>
 
-      {/* Solid Green Star Matching E-Commerce Reference */}
-      <span className={`text-[#038e42] leading-none select-none font-black ${sizeClasses.starText}`}>
+      {/* Brand Cyan Star (#0ea9df) */}
+      <span className={`text-[#0ea9df] leading-none select-none font-black ${sizeClasses.starText}`}>
         ★
       </span>
 
       {/* Review Count in Parentheses */}
       {showCount && (
-        <span className="text-gray-500 font-normal leading-none">
+        <span className="text-[#007185] font-normal leading-none">
           ({count.toLocaleString()})
         </span>
       )}

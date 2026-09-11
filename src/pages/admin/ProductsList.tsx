@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productService } from "../../services/product.service";
-import { getProductUrl, decryptId } from "../../utils/urlSecurity";
+import { getProductUrl } from "../../utils/urlSecurity";
 import type { Product } from "../../types/product.types";
 import Loader from "../../components/common/Loader";
-import { Plus, Search, Edit2, Trash2, ShieldAlert, Package, Flame, ExternalLink } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, ExternalLink } from "lucide-react";
 
 export default function ProductsList() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,222 +36,142 @@ export default function ProductsList() {
     }
   };
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category?.name.toLowerCase().includes(search.toLowerCase())
+  const filtered = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.category?.name.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) return <Loader text="Loading products..." />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-200 pb-3">
-        <h1 className="text-2xl font-bold text-[#0f1111]">Products</h1>
-
-        <Link
-          to="/admin/products/new"
-          className="inline-flex items-center gap-1.5 py-1.5 px-4 rounded-lg bg-amazon-btnYellow hover:bg-amazon-btnYellowHover border border-[#a88734] text-xs font-semibold text-gray-900 shadow-sm transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Add Product
-        </Link>
-      </div>
-
-      {/* Filter toolbar */}
-      <div className="relative max-w-md w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-300 text-xs bg-white text-gray-900 focus:outline-none focus:border-[#0ea9df] focus:ring-2 focus:ring-[#0ea9df]/20"
-        />
-      </div>
-
-      {/* 1. Mobile Cards View (Hidden on desktop, visible on mobile/tablet) */}
-      <div className="block md:hidden space-y-3">
-        {filtered.length === 0 ? (
-          <div className="p-8 text-center text-xs text-gray-400 border border-dashed border-gray-200 rounded-xl">
-            No products found matching your search.
+    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-200 gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-gray-900">Products</h1>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+              {products.length}
+            </span>
           </div>
-        ) : (
-          filtered.map((product) => {
-            const img = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
-            return (
-              <div
-                key={product.id}
-                className="p-3.5 bg-white border border-gray-200/90 rounded-2xl shadow-2xs space-y-3"
-              >
-                <div className="flex gap-3 items-start">
-                  <img
-                    src={img}
-                    alt={product.name}
-                    className="w-16 h-16 rounded-xl object-contain bg-gray-50 border border-gray-100 p-1 shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-1">
-                      <h4 className="font-bold text-xs text-[#191142] line-clamp-2 leading-snug">
-                        {product.name}
-                      </h4>
-                      {product.is_trending && (
-                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-orange-100 text-orange-700 shrink-0">
-                          <Flame className="w-2.5 h-2.5 fill-orange-500 text-orange-500" />
-                        </span>
-                      )}
-                    </div>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Manage your product inventory, pricing, and details.
+          </p>
+        </div>
 
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className="text-[10px] font-mono font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
-                        #{decryptId(product.id)}
-                      </span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-100 text-gray-600">
-                        {product.category?.name || "General"}
-                      </span>
-                      {product.stock > 0 ? (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                          {product.stock} in stock
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-md">
-                          Out of stock
-                        </span>
-                      )}
-                    </div>
+        <div className="flex items-center gap-3">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-1.5 border border-gray-200 rounded-md text-xs text-gray-900 focus:border-black focus:ring-0 outline-none bg-white placeholder:text-gray-400 shadow-2xs"
+            />
+          </div>
 
-                    <div className="flex items-baseline gap-2 mt-1.5">
-                      <span className="font-black text-sm text-[#191142]">
-                        ₹{product.price.toLocaleString("en-IN")}
-                      </span>
-                      {(product.original_price || product.originalMRP) && (product.original_price || product.originalMRP)! > product.price && (
-                        <span className="text-[10px] text-gray-400 line-through">
-                          ₹{(product.original_price || product.originalMRP)!.toLocaleString("en-IN")}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
-                  <Link
-                    to={getProductUrl(product.id)}
-                    target="_blank"
-                    className="p-2 rounded-xl text-gray-500 hover:text-[#191142] hover:bg-gray-100 transition-colors"
-                    title="View on Storefront"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
-
-                  <Link
-                    to={`/admin/products/${product.id}/edit`}
-                    className="py-1.5 px-4 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] font-bold text-xs text-white shadow-2xs transition-colors flex items-center gap-1"
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    <span>Edit</span>
-                  </Link>
-
-                  <button
-                    onClick={() => handleDelete(product.id, product.name)}
-                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                    title="Delete product"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        )}
+          {/* Add Product Button */}
+          <Link
+            to="/admin/products/new"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors shrink-0 shadow-2xs"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Product</span>
+          </Link>
+        </div>
       </div>
 
-      {/* 2. Desktop Table View (Hidden on mobile, visible on desktop) */}
-      <div className="hidden md:block border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-xs">
+      {/* Clean Human Table Container */}
+      <div className="border border-gray-200 rounded-lg bg-white overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#f8fafc] border-b border-gray-200 text-gray-700 font-bold uppercase tracking-wider text-[11px]">
+            <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold">
               <tr>
-                <th className="p-3.5">Product Info</th>
-                <th className="p-3.5">Category</th>
-                <th className="p-3.5">Price</th>
-                <th className="p-3.5">Quantity</th>
-                <th className="p-3.5 text-right">Actions</th>
+                <th className="py-3 px-4">Product</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Price</th>
+                <th className="py-3 px-4">Stock</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 text-gray-800">
-              {filtered.map((product) => {
-                const img = product.images?.[0] || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
-                return (
-                  <tr key={product.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="p-3.5 flex items-center gap-3">
-                      <img
-                        src={img}
-                        alt=""
-                        className="w-12 h-12 rounded-lg object-contain bg-white border border-gray-200 p-0.5 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-bold text-gray-900 truncate">{product.name}</p>
+            <tbody className="divide-y divide-gray-100 text-gray-900">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-gray-400">
+                    No products found matching "{search}"
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((product) => {
+                  const img =
+                    product.images?.[0] ||
+                    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
+
+                  return (
+                    <tr key={product.id} className="hover:bg-gray-50/70 transition-colors">
+                      <td className="py-3 px-4 flex items-center gap-3">
+                        <img
+                          src={img}
+                          alt={product.name}
+                          className="w-10 h-10 rounded-md object-cover bg-gray-50 border border-gray-200 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 text-xs truncate">
+                            {product.name}
+                          </p>
                           {product.is_trending && (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200 shrink-0">
-                              <Flame className="w-2.5 h-2.5 text-orange-500 fill-orange-500" /> Trending
+                            <span className="text-[10px] text-gray-500 font-normal">
+                              (Trending)
                             </span>
                           )}
                         </div>
-                        <p className="text-[10px] font-mono font-bold text-gray-500">#{decryptId(product.id)}</p>
-                      </div>
-                    </td>
-                    <td className="p-3.5">
-                      <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 font-semibold text-[11px]">
+                      </td>
+                      <td className="py-3 px-4 text-gray-600 font-normal">
                         {product.category?.name || "General"}
-                      </span>
-                    </td>
-                    <td className="p-3.5">
-                      <div className="font-black text-gray-900 text-sm">
+                      </td>
+                      <td className="py-3 px-4 font-semibold text-gray-900">
                         ₹{product.price.toLocaleString("en-IN")}
-                      </div>
-                      {(product.original_price || product.originalMRP) && (product.original_price || product.originalMRP)! > product.price ? (
-                        <div className="text-[11px] text-gray-400">
-                          <span className="line-through">₹{(product.original_price || product.originalMRP)!.toLocaleString("en-IN")}</span>{" "}
-                          <span className="text-emerald-700 font-bold">
-                            ({product.discount_percent || product.discountPercent || Math.round((((product.original_price || product.originalMRP)! - product.price) / (product.original_price || product.originalMRP)!) * 100)}% off)
-                          </span>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700 font-normal">
+                        {product.stock > 0 ? (
+                          <span>{product.stock} in stock</span>
+                        ) : (
+                          <span className="text-red-600 font-medium">Out of stock</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2 text-xs">
+                          <Link
+                            to={getProductUrl(product.id)}
+                            target="_blank"
+                            className="p-1 text-gray-400 hover:text-gray-900 transition-colors"
+                            title="View on storefront"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                          <Link
+                            to={`/admin/products/${product.id}/edit`}
+                            className="p-1 text-gray-600 hover:text-gray-900 transition-colors"
+                            title="Edit product"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(product.id, product.name)}
+                            className="p-1 text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                            title="Delete product"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
-                      ) : null}
-                    </td>
-                    <td className="p-3.5">
-                      {product.stock > 0 ? (
-                        <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md text-xs">{product.stock} in stock</span>
-                      ) : (
-                        <span className="text-red-700 font-bold bg-red-50 px-2 py-0.5 rounded-md text-xs">Out of stock</span>
-                      )}
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5 text-xs">
-                        <Link
-                          to={getProductUrl(product.id)}
-                          target="_blank"
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-[#191142] hover:bg-gray-100 transition-colors"
-                          title="View on Storefront"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Link>
-                        <Link
-                          to={`/admin/products/${product.id}/edit`}
-                          className="py-1 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 font-bold text-gray-700 transition-colors"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(product.id, product.name)}
-                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete product"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

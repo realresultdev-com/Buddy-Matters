@@ -17,10 +17,8 @@ export interface ProductDetailsPayload {
   [key: string]: any;
 }
 
-// Client-side cache & request deduplication to conserve Cloudflare D1 free quota
-const productCache = new Map<string, { data: any; timestamp: number }>();
+// In-flight request deduplication to prevent redundant parallel HTTP calls
 const inflightProducts = new Map<string, Promise<any>>();
-const PRODUCT_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes cache
 
 export const productService = {
   // Single unified API to fetch product details via payload
@@ -28,61 +26,49 @@ export const productService = {
     api.post("/products/details", payload),
 
   getAll: async (categoryId?: string, forceRefresh = false) => {
-    const cacheKey = categoryId || "__all__";
-    const now = Date.now();
-    const cached = productCache.get(cacheKey);
+    const key = categoryId || "__all__";
 
-    // 1. Return fresh cached products if available
-    if (!forceRefresh && cached && now - cached.timestamp < PRODUCT_CACHE_TTL_MS) {
-      return { data: cached.data };
-    }
-
-    // 2. Deduplicate simultaneous in-flight calls (e.g., StrictMode double mounting)
-    if (!forceRefresh && inflightProducts.has(cacheKey)) {
-      return inflightProducts.get(cacheKey)!;
+    // Deduplicate simultaneous in-flight calls (e.g., StrictMode double mounting)
+    if (!forceRefresh && inflightProducts.has(key)) {
+      return inflightProducts.get(key)!;
     }
 
     const promise = api
       .get("/products", { params: { categoryId } })
       .then((res) => {
-        productCache.set(cacheKey, { data: res.data, timestamp: Date.now() });
-        inflightProducts.delete(cacheKey);
+        inflightProducts.delete(key);
         return res;
       })
       .catch((err) => {
-        inflightProducts.delete(cacheKey);
+        inflightProducts.delete(key);
         throw err;
       });
 
-    inflightProducts.set(cacheKey, promise);
+    inflightProducts.set(key, promise);
     return promise;
   },
 
   getById: (id: string) => api.get(`/products/${id}`),
 
-  create: async (data: FormData) => {
-    productCache.clear(); // Bust cache on mutations
+  create: async (data: FormData | any) => {
     return api.post("/products", data);
   },
 
-  update: async (id: string, data: FormData) => {
-    productCache.clear(); // Bust cache on mutations
+  update: async (id: string, data: FormData | any) => {
     return api.put(`/products/${id}`, data);
   },
 
   remove: async (id: string) => {
-    productCache.clear(); // Bust cache on mutations
     return api.delete(`/products/${id}`);
   },
 
   getReviews: (id: string) => api.get(`/products/${id}/reviews`),
   canReview: (id: string) => api.get(`/products/${id}/can-review`),
   submitReview: (id: string, data: { rating: number; title?: string; comment: string; images?: string[] }) => {
-    productCache.clear(); // Refresh rating aggregates
     return api.post(`/products/${id}/reviews`, data);
   },
 
   clearCache: () => {
-    productCache.clear();
+    // No-op: product state stored strictly in Redux
   },
 };

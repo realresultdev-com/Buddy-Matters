@@ -5,7 +5,7 @@ import { categoryService } from "../../services/category.service";
 import { decryptId } from "../../utils/urlSecurity";
 import type { Product, Category } from "../../types/product.types";
 import ProductCard from "../../components/product/ProductCard";
-import { ChevronRight, Sparkles } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 export default function CategoryPage() {
   const { id: urlParamId } = useParams<{ id: string }>();
@@ -36,54 +36,56 @@ export default function CategoryPage() {
   }, [id]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-3.5 sm:p-6 shadow-xs space-y-4 pb-12">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6 pb-16 bg-white min-h-screen">
+      {/* Breadcrumb Navigation */}
       <nav className="text-xs text-gray-500 flex items-center gap-1.5 overflow-x-auto scrollbar-none whitespace-nowrap">
-        <Link to="/" className="hover:text-[#0ea9df] hover:underline font-medium">
+        <Link to="/" className="hover:text-black hover:underline font-medium">
           Buddy Mattress
         </Link>
         <ChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
-        <span className="text-[#191142] font-bold">{category ? category.name : "Sleep Collection"}</span>
+        <span className="text-gray-900 font-semibold">
+          {category ? category.name : "Sleep Collection"}
+        </span>
       </nav>
 
-      <div className="border-b border-gray-200 pb-3 flex items-center justify-between">
+      {/* Header */}
+      <div className="border-b border-gray-200 pb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-[#191142]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             {category ? category.name : "Sleep Collection"}
           </h1>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-gray-500 mt-1">
             {products.length} product{products.length === 1 ? "" : "s"}
           </p>
         </div>
       </div>
 
+      {/* Products Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="border border-gray-200 p-3 rounded-xl space-y-2 animate-pulse">
-              <div className="aspect-square bg-gray-100 rounded-lg" />
+            <div key={i} className="border border-gray-200 p-3 rounded-lg space-y-2 animate-pulse">
+              <div className="aspect-square bg-gray-100 rounded-md" />
               <div className="h-3.5 bg-gray-100 w-3/4 rounded" />
               <div className="h-3 bg-gray-100 w-1/2 rounded" />
-              <div className="h-8 bg-gray-100 rounded-lg" />
+              <div className="h-8 bg-gray-100 rounded-md" />
             </div>
           ))}
         </div>
       ) : products.length === 0 ? (
         <div className="text-center py-16 space-y-3">
-          <div className="w-12 h-12 rounded-full bg-cyan-50 text-[#0ea9df] flex items-center justify-center mx-auto">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <p className="text-gray-700 font-semibold text-sm">
+          <p className="text-gray-600 font-medium text-sm">
             No products currently available in this category.
           </p>
           <Link
-            to="/"
-            className="inline-block py-2 px-4 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold transition-colors"
+            to="/shop"
+            className="inline-block py-2 px-4 rounded-md bg-black text-white text-xs font-semibold hover:bg-gray-800 transition-colors"
           >
             Explore All Collections
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

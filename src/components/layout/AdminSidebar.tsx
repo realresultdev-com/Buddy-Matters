@@ -6,6 +6,7 @@ import {
   FolderTree,
   ShoppingBag,
   Users,
+  Video,
   ArrowLeft,
   X,
 } from "lucide-react";
@@ -15,6 +16,7 @@ export const ADMIN_NAV_ITEMS = [
   { path: "/admin/products", label: "Products List", shortLabel: "Products", icon: Package },
   { path: "/admin/products/new", label: "Add a Product", shortLabel: "Add Product", icon: PlusCircle },
   { path: "/admin/categories", label: "Categories", shortLabel: "Categories", icon: FolderTree },
+  { path: "/admin/hero-videos", label: "Hero Videos", shortLabel: "Hero Videos", icon: Video },
   { path: "/admin/orders", label: "Manage Orders", shortLabel: "Orders", icon: ShoppingBag },
   { path: "/admin/users", label: "Users List", shortLabel: "Users", icon: Users },
 ];
@@ -26,20 +28,20 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ onClose, className = "" }: AdminSidebarProps) {
   return (
-    <aside className={`w-64 shrink-0 border-r border-gray-200 bg-white p-4 flex flex-col justify-between shadow-xs ${className}`}>
+    <aside className={`w-64 shrink-0 border-r border-gray-200 bg-white p-4 flex flex-col justify-between ${className}`}>
       <div>
-        <div className="flex items-center justify-between px-3 py-2.5 mb-6 rounded-xl bg-[#191142] text-white shadow-xs">
+        <div className="flex items-center justify-between px-3 py-2.5 mb-6 rounded-lg bg-black text-white shadow-2xs">
           <div className="flex items-center gap-2 min-w-0">
             <img src="/logo-white.png" alt="Buddy Mattress" className="h-5 w-auto object-contain shrink-0" />
-            <span className="text-[11px] font-bold tracking-wide uppercase border-l border-white/30 pl-2 truncate">
-              Admin Page
+            <span className="text-[11px] font-semibold tracking-wider uppercase border-l border-white/20 pl-2 truncate">
+              Admin
             </span>
           </div>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-white/10 text-gray-300 hover:text-white transition-colors cursor-pointer"
+              className="p-1 rounded-md hover:bg-white/20 text-gray-300 hover:text-white transition-colors cursor-pointer"
               aria-label="Close menu"
             >
               <X className="w-4 h-4" />
@@ -57,10 +59,10 @@ export default function AdminSidebar({ onClose, className = "" }: AdminSidebarPr
                 end={item.path === "/admin"}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  `flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                     isActive
-                      ? "bg-cyan-50 text-[#0ea9df] border border-cyan-200 shadow-2xs"
-                      : "text-gray-700 hover:bg-gray-100 hover:text-[#191142]"
+                      ? "bg-black text-white shadow-2xs"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-black"
                   }`
                 }
               >
@@ -72,11 +74,11 @@ export default function AdminSidebar({ onClose, className = "" }: AdminSidebarPr
         </nav>
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-100">
         <Link
           to="/"
           onClick={onClose}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-600 hover:text-[#0ea9df] hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-black hover:bg-gray-100 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Store

@@ -6,7 +6,7 @@ import {
   Clock,
   ArrowRight,
   Star,
-  Tag,
+  ChevronDown,
   ShoppingBag,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -42,11 +42,21 @@ export default function SearchBar({
   const recentSearches = useAppSelector((state) => state.search.recentSearches);
 
   const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isLoggedIn = Boolean(user);
+
+  // Extract unique categories for dropdown
+  const categoriesList = React.useMemo(() => {
+    const names = new Set<string>();
+    products.forEach((p) => {
+      if (p.category?.name) names.add(p.category.name);
+    });
+    return Array.from(names);
+  }, [products]);
 
   // Lazy load searches ONLY when user focuses/clicks the search bar
   const handleFocus = () => {
@@ -77,7 +87,7 @@ export default function SearchBar({
     };
   }, []);
 
-  // Filter products in-memory from Redux (ZERO API calls while typing!)
+  // Filter products in-memory from Redux
   const trimmedQuery = query.trim().toLowerCase();
   const matchingProducts = React.useMemo(() => {
     if (!trimmedQuery) return [];
@@ -86,11 +96,13 @@ export default function SearchBar({
         const name = (p.name || "").toLowerCase();
         const desc = (p.description || "").toLowerCase();
         const cat = (p.category?.name || "").toLowerCase();
-        return (
+        const matchesCategory =
+          selectedCategory === "All" || cat === selectedCategory.toLowerCase();
+        const matchesText =
           name.includes(trimmedQuery) ||
           desc.includes(trimmedQuery) ||
-          cat.includes(trimmedQuery)
-        );
+          cat.includes(trimmedQuery);
+        return matchesCategory && matchesText;
       })
       .sort((a, b) => {
         const aNameStarts = (a.name || "").toLowerCase().startsWith(trimmedQuery) ? 1 : 0;
@@ -104,7 +116,7 @@ export default function SearchBar({
         return 0;
       })
       .slice(0, 6);
-  }, [products, trimmedQuery]);
+  }, [products, trimmedQuery, selectedCategory]);
 
   const executeSearch = (searchTerm: string) => {
     const finalQuery = searchTerm.trim();
@@ -116,7 +128,8 @@ export default function SearchBar({
     setIsOpen(false);
     if (onSearchComplete) onSearchComplete();
 
-    navigate(`/shop?search=${encodeURIComponent(finalQuery)}`);
+    const catQuery = selectedCategory !== "All" ? `&category=${encodeURIComponent(selectedCategory)}` : "";
+    navigate(`/shop?search=${encodeURIComponent(finalQuery)}${catQuery}`);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -126,7 +139,6 @@ export default function SearchBar({
   };
 
   const handleProductSelect = (product: Product) => {
-    // Save search context
     dispatch(saveSearchQuery({ query: product.name, isLoggedIn }));
     setIsOpen(false);
     if (onSearchComplete) onSearchComplete();
@@ -153,17 +165,16 @@ export default function SearchBar({
       ref={containerRef}
       className={`relative w-full ${className}`}
     >
-      {/* Search Input Container - NO SEARCH BUTTON */}
+      {/* Search Form Bar */}
       <form
         onSubmit={handleFormSubmit}
-        className={`flex items-center w-full rounded-full border transition-all duration-200 shadow-2xs ${
+        className={`flex items-center w-full rounded-md border bg-white transition-all duration-200 overflow-hidden shadow-2xs h-10 ${
           isOpen
-            ? "border-[#191142] ring-2 ring-[#191142]/10 bg-white"
-            : "border-gray-200 hover:border-gray-300 bg-gray-50/90 hover:bg-white"
-        } ${isMobile ? "h-10 px-3.5" : "h-10 px-4"}`}
+            ? "border-[#0ea9df] ring-2 ring-[#0ea9df]/20"
+            : "border-gray-300 hover:border-gray-400"
+        }`}
       >
-        <Search className="w-4 h-4 text-gray-400 shrink-0 mr-2.5 pointer-events-none" />
-
+        {/* Input Field */}
         <input
           ref={inputRef}
           type="text"
@@ -180,8 +191,8 @@ export default function SearchBar({
               inputRef.current?.blur();
             }
           }}
-          placeholder={t("searchPlaceholder") || "Search mattresses, pillows, accessories..."}
-          className="flex-1 text-[15px] md:text-sm text-[#191142] placeholder-gray-400 focus:outline-none bg-transparent font-medium py-1.5"
+          placeholder={t("searchPlaceholder") || "Search Buddy Mattress.in"}
+          className="flex-1 px-3.5 text-sm text-[#191142] placeholder-gray-500 focus:outline-none bg-white font-normal h-full min-w-0"
           autoComplete="off"
           aria-label="Search"
         />
@@ -191,22 +202,31 @@ export default function SearchBar({
           <button
             type="button"
             onClick={handleClearInput}
-            className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer shrink-0 ml-1"
+            className="p-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0 mr-1"
             aria-label="Clear search input"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         )}
+
+        {/* Right Search Button (App Cyan Theme) */}
+        <button
+          type="submit"
+          className="h-full px-4 bg-[#0ea9df] hover:bg-[#0c93c4] active:bg-[#0a7fa8] text-white flex items-center justify-center cursor-pointer transition-colors shrink-0 rounded-r-xs"
+          aria-label="Submit Search"
+        >
+          <Search className="w-5 h-5 text-white" />
+        </button>
       </form>
 
       {/* Interactive Live Search Dropdown */}
       {isOpen && (trimmedQuery || recentSearches.length > 0) && (
         <div
-          className={`absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50 overflow-hidden animation-fade-in ${
-            isMobile ? "max-h-[75vh]" : "max-h-[500px]"
+          className={`absolute left-0 right-0 mt-1 bg-white rounded-md shadow-lg border border-gray-200 z-50 overflow-hidden animation-fade-in ${
+            isMobile ? "max-h-[75vh]" : "max-h-[480px]"
           } flex flex-col`}
         >
-          {/* STATE 1: User hasn't typed yet - Show Recent Searches (from DB / Redux) */}
+          {/* STATE 1: User hasn't typed yet - Show Recent Searches */}
           {!trimmedQuery ? (
             recentSearches.length > 0 ? (
               <div className="p-3.5 overflow-y-auto">
@@ -255,16 +275,13 @@ export default function SearchBar({
               </div>
             ) : null
           ) : (
-            /* STATE 2: User is typing - Live In-Memory Redux Products Dropdown */
+            /* STATE 2: User is typing - Live Results */
             <div className="flex flex-col overflow-hidden">
-              <div className="px-4 py-2.5 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs font-semibold text-gray-600">
                 <span>Products ({matchingProducts.length})</span>
-                <span className="text-[11px] text-gray-400 font-normal normal-case">
-                  Instant Live Results
-                </span>
               </div>
 
-              <div className="overflow-y-auto max-h-[340px] divide-y divide-gray-50">
+              <div className="overflow-y-auto max-h-[340px] divide-y divide-gray-100">
                 {matchingProducts.length > 0 ? (
                   matchingProducts.map((product) => {
                     const thumb =
@@ -276,14 +293,14 @@ export default function SearchBar({
                       <div
                         key={product.id}
                         onClick={() => handleProductSelect(product)}
-                        className="group flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50/40 cursor-pointer transition-colors"
+                        className="group flex items-center gap-3 px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors"
                       >
                         {/* Thumbnail */}
-                        <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200/80 overflow-hidden shrink-0 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded bg-gray-50 border border-gray-200 overflow-hidden shrink-0 flex items-center justify-center">
                           <img
                             src={thumb}
                             alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                            className="w-full h-full object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src =
                                 "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=100&auto=format&fit=crop&q=80";
@@ -293,36 +310,13 @@ export default function SearchBar({
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-sm font-semibold text-[#191142] truncate group-hover:text-[#0ea9df] transition-colors">
-                              {product.name}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            {product.category?.name && (
-                              <span className="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px] font-medium">
-                                {product.category.name}
-                              </span>
-                            )}
-                            {product.rating ? (
-                              <span className="flex items-center gap-0.5 text-amber-600 font-bold text-[11px]">
-                                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                                {product.rating}
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        {/* Price & Badge */}
-                        <div className="text-right shrink-0">
-                          <div className="text-sm font-bold text-[#191142]">
-                            ₹{product.price.toLocaleString("en-IN")}
-                          </div>
-                          {product.offer_badge_value && (
-                            <span className="inline-block text-[10px] font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded border border-green-200">
-                              {product.offer_badge_value}
-                            </span>
+                          <h4 className="text-xs sm:text-sm font-medium text-gray-900 group-hover:text-[#0ea5e9] truncate transition-colors">
+                            {product.name || "Untitled Product"}
+                          </h4>
+                          {product.category?.name && (
+                            <p className="text-[11px] text-gray-500 truncate">
+                              {product.category.name}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -330,11 +324,11 @@ export default function SearchBar({
                   })
                 ) : (
                   <div className="py-8 px-4 text-center">
-                    <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                    <p className="text-sm font-semibold text-gray-700">
+                    <ShoppingBag className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-xs font-semibold text-gray-700">
                       No matching products found
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
+                    <p className="text-[11px] text-gray-400 mt-0.5">
                       Try searching with different keywords or check spelling.
                     </p>
                   </div>
@@ -342,16 +336,16 @@ export default function SearchBar({
               </div>
 
               {/* View all results footer link */}
-              <div className="p-2.5 bg-gray-50 border-t border-gray-100">
+              <div className="border-t border-gray-200 bg-gray-50">
                 <button
                   type="button"
                   onClick={() => executeSearch(query)}
-                  className="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#191142] hover:text-white border border-gray-200 text-xs font-semibold text-[#191142] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs group"
+                  className="w-full py-2.5 px-4 text-xs font-semibold text-[#0ea5e9] hover:bg-cyan-50/60 flex items-center justify-between transition-colors cursor-pointer"
                 >
                   <span>
-                    See all results for &quot;<strong className="underline">{query}</strong>&quot;
+                    See all results for &quot;<strong>{query}</strong>&quot;
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#0ea9df] group-hover:text-white group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="w-4 h-4 text-[#0ea5e9]" />
                 </button>
               </div>
             </div>

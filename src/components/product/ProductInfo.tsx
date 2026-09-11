@@ -1,12 +1,10 @@
 import { Link } from "react-router-dom";
-import { Edit3, PhoneCall, Mail } from "lucide-react";
-import RatingBadge from "../common/RatingBadge";
-import PriceTag from "../common/PriceTag";
+import { Edit3 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useLanguage } from "../../context/LanguageContext";
 import type { Product, ProductColorVariant } from "../../types/product.types";
 import ColorSwatches from "../common/ColorSwatches";
-import LegalMetrologyCard from "./LegalMetrologyCard";
+import RatingBadge from "../common/RatingBadge";
 
 interface ProductInfoProps {
   product: Product;
@@ -25,109 +23,72 @@ export default function ProductInfo({
   const { language, t } = useLanguage();
   const isAdmin = user?.role === "ADMIN";
 
-  const isPillow =
-    product.categoryId === "cat_pillows" ||
-    product.name.toLowerCase().includes("pillow");
-  const isProtector =
-    product.categoryId === "cat_bedding" ||
-    product.name.toLowerCase().includes("protector");
-  const netQtyBadge = isPillow ? "1 N (Pillow)" : isProtector ? "1 N (Protector)" : "1 N (Mattress)";
+  const hasMRP = Boolean(
+    (product.original_price && product.original_price > product.price) ||
+    (product.originalMRP && product.originalMRP > product.price)
+  );
+  const originalMRP = product.original_price ?? product.originalMRP ?? product.price;
+  const discountPercent = hasMRP ? Math.round(((originalMRP - product.price) / originalMRP) * 100) : 0;
 
   return (
-    <div className={`space-y-4 ${className}`}>
-      {/* Brand & Title */}
-      <div>
-        <div className="flex items-center justify-between gap-2">
-          <Link to="/" className="text-xs font-bold text-[#0ea9df] hover:underline uppercase tracking-wider">
-            {t("officialStore")}
-          </Link>
-          {isAdmin && (
-            <Link
-              to={`/admin/products/${product.id}/edit`}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#191142] hover:bg-[#0ea9df] text-white text-xs font-bold shadow-xs transition-colors"
-              title="Edit in Admin Page"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Product</span>
-            </Link>
-          )}
-        </div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#191142] leading-snug mt-1">
-          {product.name}
-        </h1>
-      </div>
-
-      {/* Ratings & Q&A - only if real reviews exist */}
-      {Boolean(product.rating && (product.review_count ?? 0) > 0) && (
-        <div className="flex items-center gap-3 text-xs text-gray-600 border-b border-gray-100 pb-3 flex-wrap">
-          <a href="#reviews" className="hover:opacity-90 transition-opacity">
-            <RatingBadge
-              rating={product.rating}
-              reviewCount={product.review_count}
-              size="sm"
-            />
-          </a>
-          <span className="text-gray-300">|</span>
-          <a
-            href="#reviews"
-            className="text-[#0ea9df] hover:underline cursor-pointer text-xs font-semibold"
+    <div className={`space-y-3.5 text-xs select-none pt-1 sm:pt-10 ${className}`}>
+      {/* 1. Admin Edit Button */}
+      {isAdmin && (
+        <div className="flex items-center justify-end">
+          <Link
+            to={`/admin/products/${product.id}/edit`}
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-[#191142] hover:bg-[#0ea9df] text-white text-[11px] font-bold transition-colors"
+            title="Edit in Admin Page"
           >
-            {product.review_count} {language === "ta" ? "மதிப்புரைகள்" : "customer reviews"}
-          </a>
+            <Edit3 className="w-3 h-3" />
+            <span>Edit</span>
+          </Link>
         </div>
       )}
 
-      {/* Price block */}
-      <PriceTag
-        price={product.price}
-        originalMRP={product.original_price ?? product.originalMRP}
-        discountPercent={product.discount_percent ?? product.discountPercent}
-        size="lg"
-      />
+      {/* 2. Product Title & Top-Right Rating Alignment */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-gray-200 pb-2.5">
+        <h1 className="text-[20px] sm:text-[22px] leading-[28px] font-medium text-[#0f1111] tracking-tight flex-1">
+          {product.name}
+        </h1>
 
-      {/* Statutory Quick Indicators (Legal Metrology Rule 6 & 10) */}
-      <div className="flex flex-wrap items-center gap-2 pt-1">
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
-          <span>🇮🇳</span>
-          <span>Country of Origin: <strong className="font-bold text-slate-900">India</strong></span>
-        </span>
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
-          <span>Net Quantity: <strong className="font-bold text-slate-900">{netQtyBadge}</strong></span>
-        </span>
+        {/* Rating in top-right area (No box, Brand Cyan star #0ea9df, normal color number) */}
+        {(Boolean(product.rating) || Boolean(product.review_count)) && (
+          <a href="#reviews" className="shrink-0 sm:pt-1">
+            <RatingBadge
+              rating={product.rating}
+              reviewCount={product.review_count}
+              size="md"
+            />
+          </a>
+        )}
       </div>
 
-      {/* Consumer Care & Queries for this Commodity (Statutory Requirement) */}
-      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-3">
-        <div className="w-7 h-7 rounded-full bg-white text-[#0ea9df] border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-          <PhoneCall className="w-3.5 h-3.5" />
-        </div>
-        <div className="text-xs space-y-1 min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="font-bold text-[#191142]">Customer Support for this Product</span>
-            <span className="text-[10px] text-emerald-700 bg-emerald-50 font-semibold px-2 py-0.2 rounded-full border border-emerald-200">
-              Direct Helpline
+      {/* 4. Price Block (Dynamic from API) */}
+      <div className="space-y-1.5 border-b border-gray-200 pb-3">
+        <div className="flex items-baseline gap-2">
+          {hasMRP && discountPercent > 0 && (
+            <span className="text-2xl font-light text-[#cc0c39]">-{discountPercent}%</span>
+          )}
+          <div className="flex items-baseline text-[#0f1111]">
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight">
+              ₹{product.price.toLocaleString("en-IN")}
             </span>
           </div>
-          <p className="text-gray-500 text-[11px] leading-relaxed">
-            Have questions about size, delivery, or warranty for this item?
-          </p>
-          <div className="flex flex-wrap items-center gap-3 pt-0.5 text-xs font-medium">
-            <a href="tel:+919443300000" className="inline-flex items-center gap-1 text-[#191142] hover:text-[#0ea9df] transition-colors font-bold">
-              <PhoneCall className="w-3 h-3 text-[#0ea9df]" />
-              <span>+91 94433 00000</span>
-            </a>
-            <span className="text-gray-300">•</span>
-            <a href="mailto:support@buddymattress.in" className="inline-flex items-center gap-1 text-[#191142] hover:text-[#0ea9df] transition-colors">
-              <Mail className="w-3 h-3 text-[#0ea9df]" />
-              <span>support@buddymattress.in</span>
-            </a>
-          </div>
+        </div>
+
+        {/* M.R.P and Taxes */}
+        <div className="text-xs text-gray-500 flex items-center gap-2 flex-wrap">
+          {hasMRP && (
+            <span>M.R.P.: <span className="line-through">₹{originalMRP.toLocaleString("en-IN")}</span></span>
+          )}
+          <span className="text-gray-700 font-medium">Inclusive of all taxes</span>
         </div>
       </div>
 
-      {/* Color Selection Swatches */}
+      {/* Color Selection Swatches (Only if color variants exist in API) */}
       {product.color_variants && product.color_variants.length > 0 && (
-        <div className="p-3 bg-gray-50/80 rounded-xl border border-gray-200/80 space-y-2">
+        <div className="py-2 border-b border-gray-200 space-y-2">
           <ColorSwatches
             variants={product.color_variants}
             selectedVariant={selectedVariant}
@@ -138,43 +99,49 @@ export default function ProductInfo({
         </div>
       )}
 
-      {/* Product Description */}
-      {product.description && (
+      {/* 6. About this item (Rendered ONLY if product.description exists in API) */}
+      {product.description && product.description.trim().length > 0 && (
         <div className="space-y-2 pt-2">
-          <h3 className="font-bold text-sm text-[#191142]">{t("aboutThisItem")}</h3>
-          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-            {product.description}
-          </p>
+          <h3 className="font-bold text-[14px] text-[#0f1111]">{t("aboutThisItem")}</h3>
+          <ul className="space-y-1.5 text-xs text-[#0f1111] list-disc pl-4 leading-relaxed">
+            {product.description
+              .split("\n")
+              .filter((line) => line.trim().length > 0)
+              .map((bullet, idx) => (
+                <li key={idx} className="pl-0.5">
+                  {bullet.replace(/^[•\-\*]\s*/, "")}
+                </li>
+              ))}
+          </ul>
         </div>
       )}
 
-      {/* Key & Value Specifications / About this item */}
+      {/* 7. Product Specifications (Borderless 2-column layout matching Amazon) */}
       {product.about && Array.isArray(product.about) && product.about.length > 0 && (
-        <div className="space-y-2 pt-2">
-          <h3 className="font-bold text-sm text-[#191142]">
-            {language === "ta" ? "பொருளின் விவரக்குறிப்புகள்" : "Product Specifications"}
-          </h3>
-          <div className="border border-gray-200/90 rounded-xl overflow-hidden bg-white shadow-2xs">
-            <table className="w-full text-xs text-left">
-              <tbody className="divide-y divide-gray-100">
-                {product.about.map((item, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
-                    <td className="py-2.5 px-3.5 font-bold text-gray-700 w-2/5 sm:w-1/3 border-r border-gray-100">
-                      {item.key}
+        <div className="space-y-1.5 pt-2 border-b border-gray-200 pb-3">
+          <table className="w-full text-xs text-left">
+            <tbody>
+              {product.about.map((item: any, idx) => {
+                const isObj = item && typeof item === "object" && !Array.isArray(item);
+                const keyStr = isObj ? item.key || "Feature" : "Feature";
+                const valStr = isObj ? item.value || "" : String(item);
+                return (
+                  <tr key={idx}>
+                    <td className="py-1 pr-4 font-bold text-[#0f1111] w-36 sm:w-44 align-top">
+                      {keyStr}
                     </td>
-                    <td className="py-2.5 px-3.5 text-gray-900 font-medium">
-                      {item.value}
+                    <td className="py-1 text-[#0f1111] font-normal align-top">
+                      {valStr}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* Mandatory Statutory Declarations (Legal Metrology Rules 6 & 10) */}
-      <LegalMetrologyCard product={product} className="pt-1" />
+      {/* End of ProductInfo */}
     </div>
   );
 }
