@@ -274,7 +274,7 @@ app.get("/auth/me", authMiddleware, async (c) => {
    ========================================================================== */
 
 app.get("/user/searches", authMiddleware, async (c) => {
-  const user = c.get("user");
+  const user = c.get("user")!;
   const { results } = await c.env.DB.prepare(
     "SELECT id, query, created_at FROM user_searches WHERE user_id = ? ORDER BY created_at DESC LIMIT 8"
   ).bind(user.userId).all();
@@ -317,7 +317,7 @@ app.get("/searches/popular", async (c) => {
 });
 
 app.post("/user/searches", authMiddleware, async (c) => {
-  const user = c.get("user");
+  const user = c.get("user")!;
   const { query } = await c.req.json();
   if (!query || typeof query !== "string" || !query.trim()) {
     return c.json({ message: "Query is required" }, 400);
@@ -346,7 +346,7 @@ app.post("/user/searches", authMiddleware, async (c) => {
 });
 
 app.delete("/user/searches/:id", authMiddleware, async (c) => {
-  const user = c.get("user");
+  const user = c.get("user")!;
   const id = c.req.param("id");
   if (id === "all") {
     await c.env.DB.prepare("DELETE FROM user_searches WHERE user_id = ?").bind(user.userId).run();
