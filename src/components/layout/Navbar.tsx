@@ -226,9 +226,11 @@ export default function Navbar() {
               <ShoppingCart className="w-5 h-5 text-slate-100 group-hover:text-[#38bdf8] transition-colors" />
             </div>
             <span className="hidden sm:inline font-bold text-xs text-slate-100 group-hover:text-[#38bdf8]">{t("cart")}</span>
-            <span className="bg-[#0ea5e9] text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full shadow-xs">
-              {totalCount}
-            </span>
+            {totalCount > 0 && (
+              <span className="bg-[#0ea5e9] text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full shadow-xs">
+                {totalCount}
+              </span>
+            )}
           </Link>
         </div>
       </div>
@@ -389,9 +391,11 @@ export default function Navbar() {
                   className="flex items-center justify-between py-2 px-2 rounded-lg hover:bg-slate-800 hover:text-[#38bdf8]"
                 >
                   <span>{t("shoppingCart")}</span>
-                  <span className="bg-[#0ea5e9] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {totalCount}
-                  </span>
+                  {totalCount > 0 && (
+                    <span className="bg-[#0ea5e9] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      {totalCount}
+                    </span>
+                  )}
                 </Link>
                 <Link
                   to={user ? "/profile" : "/login"}

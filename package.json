@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler pages dev --d1 DB=20cbffcc-c554-4004-9483-bc4a2989d59f --r2 BUCKET=buddymatters --compatibility-date=2024-09-01 --proxy 5173 -- npm run dev:vite",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:wrangler\"",
+    "dev:wrangler": "wrangler pages dev --d1 DB=20cbffcc-c554-4004-9483-bc4a2989d59f --r2 BUCKET=buddymatters --compatibility-date=2024-09-01 --proxy 5173",
     "dev:dist": "npm run build && wrangler pages dev dist --d1 DB --r2 BUCKET=buddymatters --compatibility-date=2024-09-01",
     "dev:vite": "vite",
     "build": "tsc && vite build",
@@ -32,16 +33,17 @@
     "react-router-dom": "^6.26.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20240815.0",
+    "@cloudflare/workers-types": "^5.20260911.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^10.0.5",
     "postcss": "^8.4.40",
     "tailwindcss": "^3.4.7",
     "typescript": "^5.5.3",
     "vite": "^5.3.4",
-    "wrangler": "^3.72.0"
+    "wrangler": "^4.131.1"
   }
 }
