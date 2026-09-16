@@ -20,6 +20,10 @@ export default function MobileBottomNav() {
 
   const currentPath = location.pathname;
 
+  if (currentPath === "/cart" || currentPath === "/checkout") {
+    return null;
+  }
+
   const isActive = (path: string) => {
     if (path === "/" && currentPath === "/") return true;
     if (path !== "/" && currentPath.startsWith(path)) return true;

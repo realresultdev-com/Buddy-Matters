@@ -38,38 +38,43 @@ export default function Cart() {
 
         {/* Items list */}
         <div className="divide-y divide-gray-100">
-          {items.map((item) => (
-            <div key={`${item.productId}-${item.color || "default"}`} className="py-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <div className="flex gap-3 items-start flex-1 min-w-0">
-                {/* Product Thumbnail */}
-                <Link
-                  to={getProductUrl(item.productId)}
-                  className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 border border-gray-100 rounded-xl shrink-0 p-1.5 flex items-center justify-center overflow-hidden"
-                >
-                  <img
-                    src={item.image || "/logo-transparent.png"}
-                    alt={item.name}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </Link>
+          {items.map((item) => {
+            const cleanName =
+              item.color && item.name.includes(`(${item.color})`)
+                ? item.name.replace(`(${item.color})`, "").trim()
+                : item.name;
 
-                {/* Item Info */}
-                <div className="flex-1 min-w-0">
+            return (
+              <div key={`${item.productId}-${item.color || "default"}`} className="py-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex gap-3 items-start flex-1 min-w-0">
+                  {/* Product Thumbnail */}
                   <Link
                     to={getProductUrl(item.productId)}
-                    className="text-xs sm:text-sm font-bold text-[#191142] hover:text-[#0ea9df] line-clamp-2 transition-colors leading-snug"
+                    className="w-20 h-20 sm:w-28 sm:h-28 bg-gray-50 border border-gray-100 rounded-xl shrink-0 p-1.5 flex items-center justify-center overflow-hidden"
                   >
-                    {item.name}
+                    <img
+                      src={item.image || "/logo-transparent.png"}
+                      alt={cleanName}
+                      className="max-h-full max-w-full object-contain"
+                    />
                   </Link>
 
-                  {item.color && (
-                    <p className="text-[11px] font-semibold text-gray-700 mt-1 flex items-center gap-1.5">
-                      <span className="text-gray-400">Selected Color:</span>
-                      <span className="bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-md text-[#191142]">
-                        {item.color}
-                      </span>
-                    </p>
-                  )}
+                  {/* Item Info */}
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      to={getProductUrl(item.productId)}
+                      className="text-xs sm:text-sm font-bold text-[#191142] hover:text-[#0ea9df] line-clamp-2 transition-colors leading-snug"
+                    >
+                      {cleanName}
+                    </Link>
+
+                    {item.color && (
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center text-[10px] sm:text-[11px] font-semibold text-gray-800 bg-gray-100 border border-gray-200/90 px-2 py-0.5 rounded-md">
+                          {item.color}
+                        </span>
+                      </div>
+                    )}
 
                   <p className="text-xs font-semibold text-emerald-700 mt-1">In stock</p>
                   <p className="text-[11px] text-gray-500">
@@ -129,7 +134,8 @@ export default function Cart() {
                 </div>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
 
         {/* Subtotal bottom bar */}
@@ -182,8 +188,8 @@ export default function Cart() {
         </Link>
       </div>
 
-      {/* Sticky Mobile Checkout Bar (Fixed above bottom nav on mobile) */}
-      <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+      {/* Sticky Mobile Checkout Bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div>
             <span className="text-[10px] text-gray-500 font-semibold block uppercase tracking-wider">
