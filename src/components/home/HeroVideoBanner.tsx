@@ -151,7 +151,7 @@ export default function HeroVideoBanner() {
           return (
             <div
               key={vid.id}
-              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-[28px] relative group shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12),0_8px_10px_-6px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_35px_-5px_rgba(0,0,0,0.2),0_10px_15px_-5px_rgba(0,0,0,0.1)] transition-all duration-300"
+              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-[28px] relative group shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12),0_8px_10px_-6px_rgba(0,0,0,0.06)] transition-all duration-300"
               style={{ borderRadius: "28px" }}
             >
               <div
