@@ -151,7 +151,7 @@ export default function HeroVideoBanner() {
           return (
             <div
               key={vid.id}
-              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-2xl overflow-hidden border border-gray-800 bg-black relative group shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-2xl overflow-hidden bg-black relative group shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
             >
               {isImage ? (
                 /* Image Display */
