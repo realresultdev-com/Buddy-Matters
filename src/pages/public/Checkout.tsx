@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 import { orderService } from "../../services/order.service";
 import { paymentService } from "../../services/payment.service";
-import { Lock, ShieldCheck, AlertCircle } from "lucide-react";
+import { Lock, AlertCircle } from "lucide-react";
 
 declare global {
   interface Window {
@@ -172,10 +172,6 @@ export default function Checkout() {
             className="h-8 sm:h-9 w-auto object-contain"
           />
         </Link>
-        <div className="flex items-center gap-1.5 text-[#191142] text-xs sm:text-sm font-bold bg-cyan-50 px-3 py-1 rounded-full border border-cyan-200">
-          <ShieldCheck className="w-4 h-4 text-[#0ea9df]" />
-          <span>256-Bit Encrypted Checkout</span>
-        </div>
       </div>
 
       {error && (

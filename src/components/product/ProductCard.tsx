@@ -58,7 +58,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <Link
           to={`/admin/products/${product.id}/edit`}
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1 px-2 py-1 rounded bg-black/80 hover:bg-black text-white text-[10px] font-semibold transition-colors shadow-2xs"
+          className="absolute top-2.5 right-2.5 z-20 flex items-center gap-1 px-2 py-1 rounded bg-black/80 hover:bg-black text-white text-[10px] font-semibold transition-colors shadow-2xs"
           title="Edit Product"
         >
           <Edit2 className="w-3 h-3" />

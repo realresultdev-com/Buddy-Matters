@@ -39,9 +39,6 @@ export default function Profile() {
   const [returnNotes, setReturnNotes] = useState("");
   const [returnSubmitted, setReturnSubmitted] = useState(false);
 
-  // 100-Night Trial Info modal state
-  const [trialModalOpen, setTrialModalOpen] = useState(false);
-
   useEffect(() => {
     // Load user orders
     orderService
@@ -98,13 +95,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24 lg:pb-12">
-      {/* 1. Clean, Minimalist Profile Header */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          {/* User Details */}
-          <div className="flex items-center gap-3.5 sm:gap-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-800 font-bold text-xl sm:text-2xl shadow-2xs shrink-0 overflow-hidden">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24 lg:pb-12">
+      {/* 1. Clean Human Profile Header */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 font-bold text-xl sm:text-2xl shadow-2xs shrink-0 overflow-hidden">
               {user.avatar_url ? (
                 <img
                   src={user.avatar_url}
@@ -119,11 +115,11 @@ export default function Profile() {
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-bold text-[#0f1111] truncate">
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
                   {user.name}
                 </h1>
                 {user.role === "ADMIN" && (
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-gray-900 text-white shrink-0">
                     Admin
                   </span>
                 )}
@@ -132,210 +128,233 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Quick Header Actions */}
-          <div className="flex items-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+          <button
+            type="button"
+            onClick={logout}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 border border-gray-200 hover:border-red-200 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>{t("signOut")}</span>
+          </button>
+        </div>
+
+        {/* Quick Action Shortcuts (Mobile/Desktop strip) */}
+        <div className="grid grid-cols-3 gap-2 pt-5 mt-5 border-t border-gray-100">
+          <Link
+            to="/orders"
+            className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl hover:bg-gray-50 transition-colors text-center group"
+          >
+            <div className="relative">
+              <Package className="w-5 h-5 text-gray-700 group-hover:text-black transition-colors" />
+              {orders.length > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-black text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center">
+                  {orders.length}
+                </span>
+              )}
+            </div>
+            <span className="text-[11px] sm:text-xs font-medium text-gray-700 mt-1.5 group-hover:text-black">
+              Orders
+            </span>
+          </Link>
+
+          <Link
+            to="/cart"
+            className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl hover:bg-gray-50 transition-colors text-center group"
+          >
+            <ShoppingCart className="w-5 h-5 text-gray-700 group-hover:text-black transition-colors" />
+            <span className="text-[11px] sm:text-xs font-medium text-gray-700 mt-1.5 group-hover:text-black">
+              Cart
+            </span>
+          </Link>
+
+          <Link
+            to="/addresses"
+            className="flex flex-col items-center justify-center py-2.5 px-1 rounded-xl hover:bg-gray-50 transition-colors text-center group"
+          >
+            <MapPin className="w-5 h-5 text-gray-700 group-hover:text-black transition-colors" />
+            <span className="text-[11px] sm:text-xs font-medium text-gray-700 mt-1.5 group-hover:text-black">
+              Addresses
+            </span>
+          </Link>
+        </div>
+      </div>
+
+      {/* 2. Grouped Clean Account List (Real Human UI) */}
+      <div className="space-y-4">
+        {/* Orders & Shopping */}
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+          <div className="px-4 pt-3.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            Orders & Shopping
+          </div>
+          <div className="divide-y divide-gray-100">
+            <Link
+              to="/orders"
+              className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-gray-50/80 transition-colors group"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <Package className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-black truncate">
+                    Your Orders
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate">
+                    Track shipments, view invoices, or return items
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
+                  {orders.length} order{orders.length === 1 ? "" : "s"}
+                </span>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0" />
+              </div>
+            </Link>
+
+            <Link
+              to="/cart"
+              className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-gray-50/80 transition-colors group"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <ShoppingCart className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-black truncate">
+                    Shopping Cart
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate">
+                    Review items and proceed to checkout
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0 ml-3" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Account & Settings */}
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+          <div className="px-4 pt-3.5 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+            Account Settings
+          </div>
+          <div className="divide-y divide-gray-100">
+            <Link
+              to="/addresses"
+              className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-gray-50/80 transition-colors group"
+            >
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <MapPin className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-black truncate">
+                    Saved Addresses
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate">
+                    Manage delivery locations and defaults
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0 ml-3" />
+            </Link>
+
+            {/* Language Switcher Row */}
+            <div className="flex items-center justify-between p-3.5 sm:p-4">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">
+                    Language / மொழி
+                  </h3>
+                  <p className="text-xs text-gray-500 truncate">
+                    {language === "ta" ? "தமிழ் தேர்ந்தெடுக்கப்பட்டது" : "English selected"}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center bg-gray-100 p-1 rounded-lg border border-gray-200 shrink-0 ml-2">
+                <button
+                  type="button"
+                  onClick={() => setLanguage("en")}
+                  className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    language === "en"
+                      ? "bg-white text-gray-900 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  EN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage("ta")}
+                  className={`px-2.5 sm:px-3 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer ${
+                    language === "ta"
+                      ? "bg-white text-gray-900 shadow-2xs"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  தமிழ்
+                </button>
+              </div>
+            </div>
+
+            {/* Admin Page Row (if admin) */}
             {user.role === "ADMIN" && (
               <Link
                 to="/admin"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold border border-gray-300 transition-colors"
+                className="flex items-center justify-between p-3.5 sm:p-4 hover:bg-gray-50/80 transition-colors group"
               >
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
-                <span>Admin Page</span>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-9 h-9 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-semibold text-gray-900 group-hover:text-black truncate">
+                      Admin Dashboard
+                    </h3>
+                    <p className="text-xs text-gray-500 truncate">
+                      Manage products, categories & store settings
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors shrink-0 ml-3" />
               </Link>
             )}
-
-            <button
-              type="button"
-              onClick={logout}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition-colors cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>{t("signOut")}</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Amazon "Your Account" Clean Action Tiles */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-        {/* Your Orders */}
-        <Link
-          to="/orders"
-          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
-              <Package className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
-                Your Orders
-              </h2>
-              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                Track shipments, view invoices, or return items
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
-            <span>{orders.length} order(s)</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </div>
-        </Link>
-
-        {/* Your Addresses */}
-        <Link
-          to="/addresses"
-          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 group-hover:scale-105 transition-transform">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
-                Your Addresses
-              </h2>
-              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                Edit shipping destinations for fast checkout
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
-            <span>Manage</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </div>
-        </Link>
-
-        {/* Shopping Cart */}
-        <Link
-          to="/cart"
-          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
-              <ShoppingCart className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
-                Shopping Cart
-              </h2>
-              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                Review items ready for checkout
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
-            <span>View cart</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </div>
-        </Link>
-
-        {/* 100-Night Home Trial */}
-        <button
-          type="button"
-          onClick={() => setTrialModalOpen(true)}
-          className="group p-4 bg-white border border-gray-200 hover:border-[#0ea9df] rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between text-left cursor-pointer"
-        >
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center text-[#0ea9df] group-hover:scale-105 transition-transform">
-              <RotateCcw className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-[#0ea9df] transition-colors">
-                100-Night Trial
-              </h2>
-              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                Zero-risk home sleep trial &amp; warranty details
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 flex items-center text-xs font-semibold text-[#0ea9df] group-hover:translate-x-0.5 transition-transform">
-            <span>Policy info</span>
-            <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </div>
-        </button>
-
-        {/* Language Switcher */}
-        <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-2xs flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-700">
-              <Globe className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-[#0f1111]">Language / மொழி</h2>
-              <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                Choose English or தமிழ்
-              </p>
-            </div>
-          </div>
-          <div className="pt-3 flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setLanguage("en")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                language === "en"
-                  ? "bg-[#191142] text-white shadow-2xs"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
-            >
-              EN
-            </button>
-            <button
-              type="button"
-              onClick={() => setLanguage("ta")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                language === "ta"
-                  ? "bg-[#191142] text-white shadow-2xs"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-              }`}
-            >
-              தமிழ்
-            </button>
           </div>
         </div>
 
-        {/* Admin Portal Tile (Only if user is ADMIN) */}
-        {user.role === "ADMIN" && (
-          <Link
-            to="/admin"
-            className="group p-4 bg-white border border-amber-200 hover:border-amber-400 rounded-2xl shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
+
+        {/* Mobile Sign Out Button */}
+        <div className="sm:hidden pt-2">
+          <button
+            type="button"
+            onClick={logout}
+            className="w-full py-3 rounded-xl border border-gray-300 bg-white text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
           >
-            <div className="space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 group-hover:scale-105 transition-transform">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-sm font-bold text-[#0f1111] group-hover:text-amber-800 transition-colors">
-                  Admin Page
-                </h2>
-                <p className="text-[11px] text-gray-500 line-clamp-2 mt-0.5">
-                  Manage products, orders &amp; categories
-                </p>
-              </div>
-            </div>
-            <div className="pt-3 flex items-center text-xs font-semibold text-amber-700 group-hover:translate-x-0.5 transition-transform">
-              <span>Open admin page</span>
-              <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-            </div>
-          </Link>
-        )}
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out of Buddy Mattress</span>
+          </button>
+        </div>
       </div>
 
       {/* 3. Recent Orders & Tracking Section */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div>
-            <h2 className="text-base font-bold text-[#0f1111]">Your Recent Orders</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Review placed orders, live shipment status, and invoices
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-sm sm:text-base font-bold text-gray-900 truncate">Your Recent Orders</h2>
+            <p className="text-xs text-gray-500 mt-0.5 truncate">
+              Review placed orders, shipment status, and invoices
             </p>
           </div>
           <Link
             to="/orders"
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#0ea9df] hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900 hover:underline shrink-0 whitespace-nowrap ml-2"
           >
-            <span>View all orders</span>
-            <ChevronRight className="w-3.5 h-3.5" />
+            <span>View all</span>
+            <ChevronRight className="w-3.5 h-3.5 shrink-0" />
           </Link>
         </div>
 
@@ -345,18 +364,18 @@ export default function Profile() {
           </div>
         ) : orders.length === 0 ? (
           <div className="py-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center mx-auto text-gray-400">
-              <Package className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto text-gray-400">
+              <Package className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-800">No orders placed yet</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Every purchase comes with our risk-free 100-night home trial.
+              <p className="text-sm font-semibold text-gray-900">No orders placed yet</p>
+              <p className="text-xs text-gray-500 mt-0.5 max-w-sm mx-auto">
+                Every purchase comes with our 100-night risk-free trial and free delivery.
               </p>
             </div>
             <Link
               to="/shop"
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0ea9df] hover:bg-[#0c95c5] text-white text-xs font-bold shadow-xs hover:shadow-md transition-all"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold transition-colors shadow-2xs"
             >
               <span>Explore Mattresses</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -378,11 +397,11 @@ export default function Profile() {
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-[#0f1111]">
+                      <span className="font-mono font-bold text-xs text-gray-900">
                         #{order.id.slice(0, 10).toUpperCase()}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${statusCfg.bg} ${statusCfg.text} ${statusCfg.border}`}
                       >
                         {order.status}
                       </span>
@@ -398,7 +417,7 @@ export default function Profile() {
                     <div className="text-xs text-gray-600">
                       <span>{order.items?.length || 1} item(s)</span>
                       <span className="mx-1.5 text-gray-300">•</span>
-                      <span className="font-bold text-[#0f1111]">
+                      <span className="font-bold text-gray-900">
                         ₹{order.totalAmount.toLocaleString("en-IN")}
                       </span>
                     </div>
@@ -413,7 +432,7 @@ export default function Profile() {
                     <button
                       type="button"
                       onClick={() => handleOpenReturnModal(order)}
-                      className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-xs font-semibold text-gray-700 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors cursor-pointer"
                     >
                       Return / Replace
                     </button>
@@ -433,23 +452,23 @@ export default function Profile() {
       </div>
 
       {/* 4. Default Delivery Address Card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-2xs">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-500" />
-            <h2 className="text-sm font-bold text-[#0f1111]">Default Delivery Address</h2>
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs">
+        <div className="flex items-center justify-between gap-3 border-b border-gray-100 pb-3 mb-3">
+          <div className="flex items-center gap-2 min-w-0 flex-1">
+            <MapPin className="w-4 h-4 text-gray-500 shrink-0" />
+            <h2 className="text-sm sm:text-base font-bold text-gray-900 truncate">Default Delivery Address</h2>
           </div>
           <Link
             to="/addresses"
-            className="text-xs font-bold text-[#0ea9df] hover:underline"
+            className="text-xs font-semibold text-gray-900 hover:underline shrink-0 whitespace-nowrap ml-2"
           >
-            Manage Addresses
+            Manage
           </Link>
         </div>
 
         {defaultAddress ? (
           <div className="text-xs text-gray-700 space-y-0.5">
-            <p className="font-bold text-[#0f1111]">{defaultAddress.name}</p>
+            <p className="font-bold text-gray-900">{defaultAddress.name}</p>
             <p>{defaultAddress.addressLine}</p>
             <p>
               {defaultAddress.city}, {defaultAddress.state} -{" "}
@@ -462,7 +481,7 @@ export default function Profile() {
             <span>No default shipping address configured yet.</span>
             <Link
               to="/addresses"
-              className="text-xs font-semibold text-[#0ea9df] hover:underline"
+              className="text-xs font-semibold text-gray-900 hover:underline"
             >
               + Add Address
             </Link>
@@ -571,52 +590,6 @@ export default function Profile() {
         </div>
       )}
 
-      {/* 6. 100-Night Trial Info Modal */}
-      {trialModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-150 space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div className="flex items-center gap-2">
-                <RotateCcw className="w-4 h-4 text-[#0ea9df]" />
-                <h3 className="text-base font-bold text-[#0f1111]">
-                  100-Night Risk-Free Home Trial
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTrialModalOpen(false)}
-                className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-gray-600 leading-relaxed">
-              <p>
-                We believe your body requires at least 3 to 4 weeks to adjust to the orthopedic support of a high-density memory foam mattress.
-              </p>
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-1.5">
-                <p className="font-bold text-gray-900">How it works:</p>
-                <ul className="list-disc list-inside space-y-1 text-gray-700">
-                  <li>Sleep on your Buddy Mattress for up to 100 nights in your home.</li>
-                  <li>If you are not 100% satisfied with the comfort, initiate a return from your profile.</li>
-                  <li>We provide 100% free doorstep pickup and full refund to your original payment method.</li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setTrialModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-[#0f1111] text-white text-xs font-bold hover:bg-[#232f3e] transition-colors"
-              >
-                Got it
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

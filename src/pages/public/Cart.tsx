@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useCart } from "../../hooks/useCart";
-import { CheckCircle2, Trash2, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Trash2 } from "lucide-react";
 import { getProductUrl } from "../../utils/urlSecurity";
 
 export default function Cart() {
@@ -150,50 +150,48 @@ export default function Cart() {
       </div>
 
       {/* Right Column: Checkout Summary Box on Desktop (4 cols) */}
-      <div className="hidden lg:block lg:col-span-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-xs space-y-4 sticky top-24">
-        <div className="flex items-center gap-2 text-xs text-emerald-700 font-medium bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>Your order qualifies for FREE Express Delivery & 100-Night Trial.</span>
+      <div className="hidden lg:block lg:col-span-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-2xs space-y-4 sticky top-24">
+        {/* Clean Human Delivery Status */}
+        <div className="flex items-start gap-2 text-xs text-gray-600 pb-1">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <span>
+            Your order qualifies for <strong className="text-emerald-700 font-semibold">FREE Delivery</strong> and 100-Night Trial.
+          </span>
         </div>
 
-        <div className="text-sm text-gray-700 space-y-1">
+        <div className="text-sm text-gray-700 space-y-1.5 pt-2 border-t border-gray-100">
           <div className="flex justify-between">
-            <span>Items Subtotal</span>
-            <span className="font-bold text-[#191142]">₹{totalAmount.toLocaleString("en-IN")}</span>
+            <span className="text-gray-500">Items Subtotal</span>
+            <span className="font-semibold text-gray-900">₹{totalAmount.toLocaleString("en-IN")}</span>
           </div>
-          <div className="flex justify-between text-xs text-emerald-700">
-            <span>Doorstep Shipping</span>
-            <span className="font-bold">FREE</span>
+          <div className="flex justify-between text-xs">
+            <span className="text-gray-500">Delivery</span>
+            <span className="font-semibold text-emerald-700">FREE</span>
           </div>
-          <div className="flex justify-between text-base font-extrabold text-[#191142] border-t border-gray-100 pt-2 mt-2">
-            <span>Total Amount</span>
+          <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-100 pt-2.5 mt-2">
+            <span>Total</span>
             <span>₹{totalAmount.toLocaleString("en-IN")}</span>
           </div>
         </div>
 
         <Link
           to="/checkout"
-          className="block w-full py-3 px-4 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-center font-bold text-xs text-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+          className="block w-full py-3 px-4 rounded-xl bg-gray-900 hover:bg-black text-center font-semibold text-xs text-white shadow-2xs transition-colors cursor-pointer"
         >
           Proceed to Buy ({totalCount} {totalCount === 1 ? "item" : "items"})
         </Link>
-
-        <div className="border border-gray-200 rounded-xl p-3 text-[11px] text-gray-600 bg-gray-50 flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>100% Secure Checkout with Razorpay & Bank Encryption.</span>
-        </div>
       </div>
 
       {/* Sticky Mobile Checkout Bar (Fixed above bottom nav on mobile) */}
-      <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="lg:hidden fixed bottom-12 md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
         <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
           <div>
-            <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">
+            <span className="text-[10px] text-gray-500 font-semibold block uppercase tracking-wider">
               Total ({totalCount} {totalCount === 1 ? "item" : "items"})
             </span>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-xs font-bold text-gray-600">₹</span>
-              <span className="text-lg font-black text-[#191142]">
+              <span className="text-xs font-semibold text-gray-600">₹</span>
+              <span className="text-lg font-bold text-gray-900">
                 {totalAmount.toLocaleString("en-IN")}
               </span>
             </div>
@@ -201,7 +199,7 @@ export default function Cart() {
 
           <Link
             to="/checkout"
-            className="py-2.5 px-6 rounded-xl bg-[#0ea9df] hover:bg-[#0c93c4] text-white text-xs font-bold shadow-xs transition-all text-center shrink-0"
+            className="py-2.5 px-6 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors text-center shrink-0"
           >
             Proceed to Buy
           </Link>
