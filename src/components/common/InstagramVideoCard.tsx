@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Volume2, VolumeX, X, ShoppingBag } from "lucide-react";
+import { X, ShoppingBag } from "lucide-react";
 import { heroVideoService, type HeroVideo } from "../../services/heroVideo.service";
 
 const isImageMedia = (url?: string): boolean => {
@@ -12,7 +12,6 @@ export default function InstagramVideoCard() {
   const [heroVideos, setHeroVideos] = useState<HeroVideo[]>([]);
   const [activeAdIndex, setActiveAdIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -50,16 +49,6 @@ export default function InstagramVideoCard() {
     return () => clearInterval(interval);
   }, [heroVideos]);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
-    }
-  }, [isMuted]);
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted((prev) => !prev);
-  };
 
   const togglePlay = () => {
     if (!videoRef.current) return;
@@ -142,22 +131,6 @@ export default function InstagramVideoCard() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {/* Audio Toggle (Videos only) */}
-            {!isImage && (
-              <button
-                type="button"
-                onClick={toggleMute}
-                className="w-6 h-6 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-xs transition-colors cursor-pointer"
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? (
-                  <VolumeX className="w-3 h-3 text-gray-300" />
-                ) : (
-                  <Volume2 className="w-3 h-3 text-emerald-400" />
-                )}
-              </button>
-            )}
-
             {/* Close / Hide Button */}
             <button
               type="button"

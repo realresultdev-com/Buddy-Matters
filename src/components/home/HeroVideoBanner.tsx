@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Volume2, VolumeX, Play, Pause, ChevronLeft, ChevronRight, ArrowRight, Video } from "lucide-react";
+import { Play, Pause, ChevronLeft, ChevronRight, ArrowRight, Video } from "lucide-react";
 import { heroVideoService, type HeroVideo } from "../../services/heroVideo.service";
 import { getNetworkSpeedMode, getAdaptiveVideoUrl } from "../../utils/videoTranscoder";
 
@@ -35,7 +35,6 @@ const interleaveMedia = (items: HeroVideo[]): HeroVideo[] => {
 export default function HeroVideoBanner() {
   const [heroVideos, setHeroVideos] = useState<HeroVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mutedMap, setMutedMap] = useState<{ [key: string]: boolean }>({});
   const [pausedMap, setPausedMap] = useState<{ [key: string]: boolean }>({});
   const [networkSpeed] = useState(() => getNetworkSpeedMode());
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -52,12 +51,6 @@ export default function HeroVideoBanner() {
         if (res.data && res.data.length > 0) {
           const orderedData = interleaveMedia(res.data);
           setHeroVideos(orderedData);
-          // Default all videos to muted
-          const initialMuteState: { [key: string]: boolean } = {};
-          orderedData.forEach((v) => {
-            initialMuteState[v.id] = true;
-          });
-          setMutedMap(initialMuteState);
         }
       } catch (err) {
         console.error("Failed to load homepage hero videos:", err);
@@ -115,16 +108,7 @@ export default function HeroVideoBanner() {
     return null;
   }
 
-  const toggleMute = (e: React.MouseEvent, vidId: string) => {
-    e.stopPropagation();
-    setMutedMap((prev) => {
-      const nextMuted = !prev[vidId];
-      if (videoRefs.current[vidId]) {
-        videoRefs.current[vidId]!.muted = nextMuted;
-      }
-      return { ...prev, [vidId]: nextMuted };
-    });
-  };
+
 
   const togglePlay = (vidId: string) => {
     const el = videoRefs.current[vidId];
@@ -160,7 +144,6 @@ export default function HeroVideoBanner() {
         className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full flex-nowrap"
       >
         {heroVideos.map((vid, idx) => {
-          const isMuted = mutedMap[vid.id] ?? true;
           const isPaused = pausedMap[vid.id] ?? false;
           const activeSrc = getAdaptiveVideoUrl(vid);
           const isImage = isImageMedia(vid.video_url);
@@ -188,28 +171,12 @@ export default function HeroVideoBanner() {
                     poster={vid.poster_url}
                     autoPlay={networkSpeed !== "slow"}
                     loop
-                    muted={isMuted}
+                    muted
                     playsInline
                     preload={networkSpeed === "slow" ? "metadata" : "auto"}
                     onClick={() => togglePlay(vid.id)}
                     className="w-full h-full object-cover absolute inset-0 cursor-pointer group-hover:scale-[1.02] transition-transform duration-300"
                   />
-
-                  {/* Mute Control Button */}
-                  <div className="relative z-10 p-3 flex items-center justify-end pointer-events-none">
-                    <button
-                      type="button"
-                      onClick={(e) => toggleMute(e, vid.id)}
-                      className="w-7.5 h-7.5 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer pointer-events-auto border border-white/20"
-                      title={isMuted ? "Unmute sound" : "Mute sound"}
-                    >
-                      {isMuted ? (
-                        <VolumeX className="w-3.5 h-3.5 text-gray-300" />
-                      ) : (
-                        <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-                      )}
-                    </button>
-                  </div>
 
                   {/* Play Indicator Icon overlay when paused */}
                   {isPaused && (
