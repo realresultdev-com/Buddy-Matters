@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import MobileBottomNav from "./MobileBottomNav";
-import InstagramVideoCard from "../common/InstagramVideoCard";
 
 export default function RootLayout() {
   return (
@@ -13,7 +12,6 @@ export default function RootLayout() {
       </main>
       <Footer />
       <MobileBottomNav />
-      <InstagramVideoCard />
     </div>
   );
 }

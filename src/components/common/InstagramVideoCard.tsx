@@ -62,14 +62,14 @@ export default function InstagramVideoCard() {
   };
 
   const currentAd = heroVideos.length > 0 ? heroVideos[activeAdIndex] : null;
-  const mediaUrl =
-    currentAd?.video_url ||
-    "https://assets.mixkit.co/videos/preview/mixkit-woman-relaxing-in-a-comfortable-bed-41556-large.mp4";
-  const posterUrl =
-    currentAd?.poster_url ||
-    "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600";
-  const adTitle = currentAd?.title || "100% Organic Latex & Orthopedic Mattress";
-  const ctaLink = currentAd?.link_url || "/shop";
+  if (!currentAd || !currentAd.video_url) {
+    return null;
+  }
+
+  const mediaUrl = currentAd.video_url;
+  const posterUrl = currentAd.poster_url || "";
+  const adTitle = currentAd.title || "Buddy Mattress";
+  const ctaLink = currentAd.link_url || "/shop";
   const isImage = isImageMedia(mediaUrl);
 
   return (

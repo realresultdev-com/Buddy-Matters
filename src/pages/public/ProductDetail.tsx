@@ -86,7 +86,7 @@ export default function ProductDetail() {
     selectedVariant?.image ||
     (product.images && product.images.length > 0
       ? product.images[0]
-      : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800");
+      : "/logo-transparent.png");
 
   const inStock = product.stock > 0;
   const maxQty = Math.min(10, Math.max(1, product.stock));

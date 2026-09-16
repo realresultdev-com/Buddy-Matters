@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
     selectedVariant?.image ||
     (product.images && product.images.length > 0
       ? product.images[0]
-      : "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800");
+      : "/logo-transparent.png");
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

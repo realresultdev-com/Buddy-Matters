@@ -303,7 +303,7 @@ export default function SearchBar({
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src =
-                                "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=100&auto=format&fit=crop&q=80";
+                                "/logo-transparent.png";
                             }}
                           />
                         </div>

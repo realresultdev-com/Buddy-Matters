@@ -108,7 +108,7 @@ export default function ProductsList() {
                 filtered.map((product) => {
                   const img =
                     product.images?.[0] ||
-                    "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800";
+                    "/logo-transparent.png";
 
                   return (
                     <tr key={product.id} className="hover:bg-gray-50/70 transition-colors">

@@ -8,7 +8,7 @@ interface ProductGalleryProps {
   featuredImage?: string;
 }
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800";
+const FALLBACK_IMAGE = "/logo-transparent.png";
 
 export default function ProductGallery({
   images = [],

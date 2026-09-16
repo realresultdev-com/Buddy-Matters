@@ -732,7 +732,7 @@ export default function ProductForm() {
         images:
           formData.images.length > 0
             ? formData.images
-            : ["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800"],
+            : ["/logo-transparent.png"],
         color_variants: validColorVariants.map((c) => ({
           name: (c.name || "").trim() || "Variant",
           color: c.color || c.hex || "#1e2238",
