@@ -219,7 +219,7 @@ export default function Navbar() {
           {/* 3. Shopping Cart Anchor Link */}
           <Link
             to="/cart"
-            className="flex items-center h-9 px-2 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 group cursor-pointer"
+            className="flex items-center justify-center h-9 px-2.5 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 group cursor-pointer"
             aria-label="Shopping Cart"
           >
             <div className="relative flex items-center">
@@ -230,9 +230,6 @@ export default function Navbar() {
                 </span>
               )}
             </div>
-            <span className="hidden sm:inline ml-2.5 font-bold text-xs text-slate-100 group-hover:text-[#38bdf8]">
-              {t("cart")}
-            </span>
           </Link>
         </div>
       </div>
