@@ -13,7 +13,6 @@ import {
   Check,
   RotateCcw,
   ArrowUpDown,
-  Tag,
   Star,
 } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
@@ -354,41 +353,6 @@ export default function Shop() {
               ))}
             </div>
           </div>
-
-          {/* Special Offers & Availability */}
-          <div className="space-y-2 pt-2 border-t border-gray-100">
-            <p className="text-xs font-bold text-gray-900 uppercase tracking-wider">
-              Special Options
-            </p>
-            <div className="space-y-2 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700 hover:text-gray-900">
-                <input
-                  type="checkbox"
-                  checked={inStockParam}
-                  onChange={(e) =>
-                    updateParam("inStock", e.target.checked ? "true" : null)
-                  }
-                  className="w-4 h-4 rounded text-[#0ea9df] focus:ring-[#0ea9df]"
-                />
-                <span className="font-medium">In Stock Only</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer select-none text-gray-700 hover:text-gray-900">
-                <input
-                  type="checkbox"
-                  checked={dealsOnlyParam}
-                  onChange={(e) =>
-                    updateParam("dealsOnly", e.target.checked ? "true" : null)
-                  }
-                  className="w-4 h-4 rounded text-[#0ea9df] focus:ring-[#0ea9df]"
-                />
-                <span className="font-medium flex items-center gap-1">
-                  <Tag className="w-3 h-3 text-amber-500" />
-                  Deals & Offers Only
-                </span>
-              </label>
-            </div>
-          </div>
         </aside>
 
         {/* Products Showcase Grid */}
@@ -616,37 +580,6 @@ export default function Shop() {
                       )}
                     </button>
                   ))}
-                </div>
-              </div>
-
-              {/* Special Options */}
-              <div className="space-y-2 pt-2 border-t border-gray-100">
-                <p className="text-xs font-bold text-gray-900 uppercase">Special</p>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-200">
-                    <input
-                      type="checkbox"
-                      checked={inStockParam}
-                      onChange={(e) =>
-                        updateParam("inStock", e.target.checked ? "true" : null)
-                      }
-                      className="w-4 h-4 rounded text-[#0ea9df]"
-                    />
-                    <span className="font-bold text-gray-800">In Stock Only</span>
-                  </label>
-                  <label className="flex items-center gap-2 p-2 rounded-xl bg-gray-50 border border-gray-200">
-                    <input
-                      type="checkbox"
-                      checked={dealsOnlyParam}
-                      onChange={(e) =>
-                        updateParam("dealsOnly", e.target.checked ? "true" : null)
-                      }
-                      className="w-4 h-4 rounded text-[#0ea9df]"
-                    />
-                    <span className="font-bold text-gray-800 flex items-center gap-1">
-                      <Tag className="w-3.5 h-3.5 text-amber-500" /> Deals & Offers Only
-                    </span>
-                  </label>
                 </div>
               </div>
             </div>
