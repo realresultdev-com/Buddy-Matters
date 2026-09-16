@@ -81,7 +81,13 @@ export default function InstagramVideoCard() {
           : "translate-y-12 opacity-0 pointer-events-none"
       }`}
     >
-      <div className="relative w-[210px] h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-black group transition-transform duration-300 hover:scale-[1.02]">
+      <div
+        className="relative w-[210px] h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-black group transition-transform duration-300 hover:scale-[1.02]"
+        style={{
+          borderRadius: "1rem",
+          WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+        }}
+      >
         {/* Media Element (Video or Image) */}
         {isImage ? (
           <img

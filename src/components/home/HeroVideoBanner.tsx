@@ -89,8 +89,8 @@ export default function HeroVideoBanner() {
 
   if (loading) {
     return (
-      <div className="w-full my-6 select-none">
-        <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar py-1 flex-nowrap">
+      <div className="w-full my-4 select-none">
+        <div className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar pt-2 pb-6 px-1 flex-nowrap">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
@@ -123,7 +123,7 @@ export default function HeroVideoBanner() {
   };
 
   return (
-    <section className="w-full select-none mb-6 overflow-hidden">
+    <section className="w-full select-none mb-2 overflow-hidden">
       {/* Pure Video & Image Reel Showcase Container */}
       <div
         ref={scrollContainerRef}
@@ -141,7 +141,7 @@ export default function HeroVideoBanner() {
             isInteracting.current = false;
           }, 3000);
         }}
-        className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full flex-nowrap"
+        className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth pt-2 pb-6 px-1 w-full flex-nowrap"
       >
         {heroVideos.map((vid, idx) => {
           const isPaused = pausedMap[vid.id] ?? false;
@@ -151,46 +151,55 @@ export default function HeroVideoBanner() {
           return (
             <div
               key={vid.id}
-              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-2xl overflow-hidden bg-black relative group shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
+              className="w-[65vw] sm:w-[220px] md:w-[225px] lg:w-[235px] xl:w-[245px] shrink-0 h-[400px] sm:h-[400px] md:h-[420px] lg:h-[430px] rounded-2xl relative group shadow-md hover:shadow-xl transition-all duration-300"
+              style={{ borderRadius: "1rem" }}
             >
-              {isImage ? (
-                /* Image Display */
-                <img
-                  src={vid.video_url}
-                  alt={vid.title || "Banner"}
-                  className="w-full h-full object-cover absolute inset-0 group-hover:scale-[1.02] transition-transform duration-300"
-                />
-              ) : (
-                /* Video Player */
-                <>
-                  <video
-                    ref={(el) => {
-                      videoRefs.current[vid.id] = el;
-                    }}
-                    src={activeSrc}
-                    poster={vid.poster_url}
-                    autoPlay={networkSpeed !== "slow"}
-                    loop
-                    muted
-                    playsInline
-                    preload={networkSpeed === "slow" ? "metadata" : "auto"}
-                    onClick={() => togglePlay(vid.id)}
-                    className="w-full h-full object-cover absolute inset-0 cursor-pointer group-hover:scale-[1.02] transition-transform duration-300"
+              <div
+                className="w-full h-full rounded-2xl overflow-hidden bg-black relative flex flex-col justify-between"
+                style={{
+                  borderRadius: "1rem",
+                  WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+                }}
+              >
+                {isImage ? (
+                  /* Image Display */
+                  <img
+                    src={vid.video_url}
+                    alt={vid.title || "Banner"}
+                    className="w-full h-full object-cover absolute inset-0 group-hover:scale-[1.02] transition-transform duration-300"
                   />
-
-                  {/* Play Indicator Icon overlay when paused */}
-                  {isPaused && (
-                    <div
+                ) : (
+                  /* Video Player */
+                  <>
+                    <video
+                      ref={(el) => {
+                        videoRefs.current[vid.id] = el;
+                      }}
+                      src={activeSrc}
+                      poster={vid.poster_url}
+                      autoPlay={networkSpeed !== "slow"}
+                      loop
+                      muted
+                      playsInline
+                      preload={networkSpeed === "slow" ? "metadata" : "auto"}
                       onClick={() => togglePlay(vid.id)}
-                      className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer z-10"
-                    >
-                      <div className="w-11 h-11 rounded-full bg-black/70 text-white flex items-center justify-center border border-white/30">
-                        <Play className="w-5 h-5 fill-white pl-0.5" />
+                      className="w-full h-full object-cover absolute inset-0 cursor-pointer group-hover:scale-[1.02] transition-transform duration-300"
+                    />
+
+                    {/* Play Indicator Icon overlay when paused */}
+                    {isPaused && (
+                      <div
+                        onClick={() => togglePlay(vid.id)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer z-10"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-black/70 text-white flex items-center justify-center border border-white/30">
+                          <Play className="w-5 h-5 fill-white pl-0.5" />
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </>
-              )}
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
