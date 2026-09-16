@@ -82,9 +82,9 @@ export default function InstagramVideoCard() {
       }`}
     >
       <div
-        className="relative w-[210px] h-[350px] rounded-2xl overflow-hidden shadow-2xl bg-black group transition-transform duration-300 hover:scale-[1.02]"
+        className="relative w-[210px] h-[350px] rounded-[28px] overflow-hidden shadow-2xl bg-black group transition-transform duration-300 hover:scale-[1.02]"
         style={{
-          borderRadius: "1rem",
+          borderRadius: "28px",
           WebkitMaskImage: "-webkit-radial-gradient(white, black)",
         }}
       >
