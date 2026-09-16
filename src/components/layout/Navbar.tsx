@@ -219,18 +219,20 @@ export default function Navbar() {
           {/* 3. Shopping Cart Anchor Link */}
           <Link
             to="/cart"
-            className="flex items-center gap-1.5 h-9 px-2 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 font-bold text-xs group cursor-pointer"
+            className="flex items-center h-9 px-2 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 group cursor-pointer"
             aria-label="Shopping Cart"
           >
             <div className="relative flex items-center">
               <ShoppingCart className="w-5 h-5 text-slate-100 group-hover:text-[#38bdf8] transition-colors" />
+              {totalCount > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 bg-[#0ea5e9] text-white font-extrabold text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 leading-none shadow-xs">
+                  {totalCount > 99 ? "99+" : totalCount}
+                </span>
+              )}
             </div>
-            <span className="hidden sm:inline font-bold text-xs text-slate-100 group-hover:text-[#38bdf8]">{t("cart")}</span>
-            {totalCount > 0 && (
-              <span className="bg-[#0ea5e9] text-white font-extrabold text-[11px] px-2 py-0.5 rounded-full shadow-xs">
-                {totalCount}
-              </span>
-            )}
+            <span className="hidden sm:inline ml-2.5 font-bold text-xs text-slate-100 group-hover:text-[#38bdf8]">
+              {t("cart")}
+            </span>
           </Link>
         </div>
       </div>
