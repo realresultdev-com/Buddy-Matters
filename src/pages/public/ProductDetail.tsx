@@ -127,7 +127,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="w-full max-w-[1480px] mx-auto px-3 sm:px-6 lg:px-8 py-1.5 space-y-3 pb-24 lg:pb-12 relative bg-white">
+    <div className="w-full max-w-[1480px] mx-auto px-3 sm:px-6 lg:px-8 py-1.5 space-y-3 pb-8 lg:pb-12 relative bg-white">
       {/* Amazon-Style Sticky Top Bar on Scroll (Desktop) */}
       {showStickyBar && (
         <div className="hidden lg:flex fixed top-[60px] md:top-[68px] left-0 right-0 z-40 bg-white border-b border-gray-200 px-6 py-2 shadow-xs transition-all animate-in slide-in-from-top duration-200 items-center justify-between">
@@ -281,38 +281,6 @@ export default function ProductDetail() {
 
           {/* Customer Ratings & Verified Buyer Reviews */}
           <ProductReviewsSection product={product} />
-        </div>
-      </div>
-
-      {/* Sticky Mobile Action Bar (Hidden on desktop) */}
-      <div className="lg:hidden fixed bottom-[calc(52px+max(0.375rem,env(safe-area-inset-bottom,0px)))] md:bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-gray-200 px-4 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
-          <div className="shrink-0">
-            <span className="text-[10px] text-gray-500 font-bold block uppercase tracking-wider">Price</span>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-xs font-bold text-gray-600">₹</span>
-              <span className="text-lg font-bold text-gray-900">
-                {product.price.toLocaleString("en-IN")}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <button
-              type="button"
-              onClick={() => handleAddToCart(1)}
-              className="flex-1 max-w-[135px] py-2 px-2 rounded-md bg-black hover:bg-gray-800 text-white text-xs font-semibold transition-all text-center cursor-pointer shadow-2xs active:scale-95"
-            >
-              {added ? "Added!" : "Add to Cart"}
-            </button>
-            <button
-              type="button"
-              onClick={() => handleBuyNow(1)}
-              className="flex-1 max-w-[135px] py-2 px-2 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-900 border border-gray-300 text-xs font-semibold transition-all text-center shadow-2xs cursor-pointer active:scale-95"
-            >
-              Buy Now
-            </button>
-          </div>
         </div>
       </div>
     </div>
