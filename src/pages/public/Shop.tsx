@@ -7,7 +7,6 @@ import ProductCard from "../../components/product/ProductCard";
 import {
   SlidersHorizontal,
   ChevronRight,
-  Sparkles,
   X,
   Search,
   Check,
@@ -465,11 +464,11 @@ export default function Shop() {
             </div>
           ) : sortedProducts.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center space-y-3 shadow-xs">
-              <div className="w-14 h-14 rounded-full bg-cyan-50 text-[#0ea9df] flex items-center justify-center mx-auto">
-                <Sparkles className="w-7 h-7" />
+              <div className="w-14 h-14 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
+                <Search className="w-6 h-6 text-gray-500" />
               </div>
               <h3 className="text-base font-bold text-[#191142]">
-                No matching comfort products found
+                No matching products found
               </h3>
               <p className="text-xs text-gray-500 max-w-sm mx-auto">
                 We couldn't find any products matching your selected filters. Try

@@ -22,7 +22,6 @@ import {
   CreditCard,
   Calendar,
   AlertCircle,
-  Sparkles,
   Table as TableIcon,
   Layers,
 } from "lucide-react";

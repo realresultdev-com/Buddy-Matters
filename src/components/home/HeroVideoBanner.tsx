@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Play, Pause, ChevronLeft, ChevronRight, ArrowRight, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { heroVideoService, type HeroVideo } from "../../services/heroVideo.service";
-import { getNetworkSpeedMode, getAdaptiveVideoUrl } from "../../utils/videoTranscoder";
+import { getAdaptiveVideoUrl } from "../../utils/videoTranscoder";
 
 const isImageMedia = (url?: string): boolean => {
   if (!url) return false;
@@ -35,8 +34,6 @@ const interleaveMedia = (items: HeroVideo[]): HeroVideo[] => {
 export default function HeroVideoBanner() {
   const [heroVideos, setHeroVideos] = useState<HeroVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pausedMap, setPausedMap] = useState<{ [key: string]: boolean }>({});
-  const [networkSpeed] = useState(() => getNetworkSpeedMode());
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const videoRefs = useRef<{ [key: string]: HTMLVideoElement | null }>({});
@@ -60,6 +57,15 @@ export default function HeroVideoBanner() {
     };
     fetchHeroVideos();
   }, []);
+
+  // Ensure all videos play continuously and cannot be stopped
+  useEffect(() => {
+    Object.values(videoRefs.current).forEach((videoEl) => {
+      if (videoEl) {
+        videoEl.play().catch(() => {});
+      }
+    });
+  }, [heroVideos]);
 
   // Auto-shift reel every 5 seconds
   useEffect(() => {
@@ -108,20 +114,6 @@ export default function HeroVideoBanner() {
     return null;
   }
 
-
-
-  const togglePlay = (vidId: string) => {
-    const el = videoRefs.current[vidId];
-    if (!el) return;
-    if (el.paused) {
-      el.play().catch(() => {});
-      setPausedMap((prev) => ({ ...prev, [vidId]: false }));
-    } else {
-      el.pause();
-      setPausedMap((prev) => ({ ...prev, [vidId]: true }));
-    }
-  };
-
   return (
     <section className="w-full select-none mb-2 overflow-hidden">
       {/* Pure Video & Image Reel Showcase Container */}
@@ -143,8 +135,7 @@ export default function HeroVideoBanner() {
         }}
         className="flex items-center gap-3 sm:gap-4 overflow-x-auto no-scrollbar scroll-smooth pt-2 pb-6 px-1 w-full flex-nowrap"
       >
-        {heroVideos.map((vid, idx) => {
-          const isPaused = pausedMap[vid.id] ?? false;
+        {heroVideos.map((vid) => {
           const activeSrc = getAdaptiveVideoUrl(vid);
           const isImage = isImageMedia(vid.video_url);
 
@@ -169,35 +160,27 @@ export default function HeroVideoBanner() {
                     className="w-full h-full object-cover absolute inset-0 group-hover:scale-[1.02] transition-transform duration-300"
                   />
                 ) : (
-                  /* Video Player */
-                  <>
-                    <video
-                      ref={(el) => {
-                        videoRefs.current[vid.id] = el;
-                      }}
-                      src={activeSrc}
-                      poster={vid.poster_url}
-                      autoPlay={networkSpeed !== "slow"}
-                      loop
-                      muted
-                      playsInline
-                      preload={networkSpeed === "slow" ? "metadata" : "auto"}
-                      onClick={() => togglePlay(vid.id)}
-                      className="w-full h-full object-cover absolute inset-0 cursor-pointer group-hover:scale-[1.02] transition-transform duration-300"
-                    />
-
-                    {/* Play Indicator Icon overlay when paused */}
-                    {isPaused && (
-                      <div
-                        onClick={() => togglePlay(vid.id)}
-                        className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer z-10"
-                      >
-                        <div className="w-11 h-11 rounded-full bg-black/70 text-white flex items-center justify-center border border-white/30">
-                          <Play className="w-5 h-5 fill-white pl-0.5" />
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  /* Video Player - Non-pausable, continuous playback */
+                  <video
+                    ref={(el) => {
+                      videoRefs.current[vid.id] = el;
+                      if (el && el.paused) {
+                        el.play().catch(() => {});
+                      }
+                    }}
+                    src={activeSrc}
+                    poster={vid.poster_url}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    onPause={(e) => {
+                      // Prevent stopping: immediately resume playing
+                      e.currentTarget.play().catch(() => {});
+                    }}
+                    className="w-full h-full object-cover absolute inset-0 pointer-events-none group-hover:scale-[1.02] transition-transform duration-300"
+                  />
                 )}
               </div>
             </div>

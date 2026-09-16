@@ -187,30 +187,6 @@ export default function Cart() {
           Proceed to Buy ({totalCount} {totalCount === 1 ? "item" : "items"})
         </Link>
       </div>
-
-      {/* Sticky Mobile Checkout Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200/90 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-between gap-3 max-w-lg mx-auto">
-          <div>
-            <span className="text-[10px] text-gray-500 font-semibold block uppercase tracking-wider">
-              Total ({totalCount} {totalCount === 1 ? "item" : "items"})
-            </span>
-            <div className="flex items-baseline gap-0.5">
-              <span className="text-xs font-semibold text-gray-600">₹</span>
-              <span className="text-lg font-bold text-gray-900">
-                {totalAmount.toLocaleString("en-IN")}
-              </span>
-            </div>
-          </div>
-
-          <Link
-            to="/checkout"
-            className="py-2.5 px-6 rounded-xl bg-gray-900 hover:bg-black text-white text-xs font-semibold shadow-2xs transition-colors text-center shrink-0"
-          >
-            Proceed to Buy
-          </Link>
-        </div>
-      </div>
     </div>
   );
 }

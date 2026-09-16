@@ -1,9 +1,20 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Globe, MapPin, PhoneCall, Mail, ArrowUp } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 
 export default function Footer() {
   const { language, setLanguage, t } = useLanguage();
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      setShowScrollTop(window.scrollY > 120);
+    };
+    window.addEventListener("scroll", checkScroll, { passive: true });
+    checkScroll();
+    return () => window.removeEventListener("scroll", checkScroll);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -16,7 +27,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Col 1: Brand & Bio */}
           <div className="space-y-4">
-            <Link to="/" className="inline-block">
+            <Link to="/" onClick={scrollToTop} className="inline-block">
               <img
                 src="/logo-white.png"
                 alt="Buddy Mattress"
@@ -38,27 +49,27 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5">
               <li>
-                <Link to="/terms" className="hover:text-white transition-colors">
+                <Link to="/terms" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="hover:text-white transition-colors">
+                <Link to="/privacy" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/refund-policy" className="hover:text-white transition-colors">
+                <Link to="/refund-policy" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Refund & Return Policy
                 </Link>
               </li>
               <li>
-                <Link to="/shipping-policy" className="hover:text-white transition-colors">
+                <Link to="/shipping-policy" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Shipping & Delivery Policy
                 </Link>
               </li>
               <li>
-                <Link to="/grievance" className="hover:text-white transition-colors">
+                <Link to="/grievance" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Grievance Redressal
                 </Link>
               </li>
@@ -72,17 +83,17 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5">
               <li>
-                <Link to="/shop" className="hover:text-white transition-colors">
+                <Link to="/shop" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Shop All Mattresses
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-white transition-colors">
+                <Link to="/about" onClick={scrollToTop} className="hover:text-white transition-colors">
                   About Buddy Mattress
                 </Link>
               </li>
               <li>
-                <Link to="/cart" className="hover:text-white transition-colors">
+                <Link to="/cart" onClick={scrollToTop} className="hover:text-white transition-colors">
                   Shopping Cart
                 </Link>
               </li>
@@ -141,17 +152,23 @@ export default function Footer() {
               Country of Origin: India | Manufactured & Marketed by Buddy Mattress, Paramathi Velur, Tamil Nadu.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={scrollToTop}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-medium transition-colors cursor-pointer shrink-0"
-          >
-            <span>Back to top</span>
-            <ArrowUp className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
+
+      {/* Floating Back to Top Button: Displayed on top of all screens in bottom-right corner */}
+      <button
+        type="button"
+        onClick={scrollToTop}
+        aria-label="Back to top"
+        className={`fixed bottom-16 right-4 sm:bottom-20 sm:right-6 md:bottom-6 md:right-6 z-50 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gray-900/95 hover:bg-gray-800 text-gray-200 hover:text-white text-xs font-semibold shadow-2xl border border-gray-700/80 backdrop-blur-md transition-all duration-300 cursor-pointer ${
+          showScrollTop
+            ? "opacity-100 translate-y-0 pointer-events-auto"
+            : "opacity-0 translate-y-3 pointer-events-none"
+        }`}
+      >
+        <span>Back to top</span>
+        <ArrowUp className="w-3.5 h-3.5" />
+      </button>
     </footer>
   );
 }

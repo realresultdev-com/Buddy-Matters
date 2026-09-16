@@ -20,7 +20,6 @@ import {
   ShoppingCart,
   ShieldCheck,
   Globe,
-  Sparkles,
   HelpCircle,
 } from "lucide-react";
 

@@ -16,7 +16,6 @@ import {
   Tag,
   Loader2,
   Check,
-  Sparkles,
   Upload,
   Pipette,
   Image as ImageIcon,
@@ -1214,7 +1213,7 @@ export default function ProductForm() {
                                 className="p-1.5 rounded text-gray-600 hover:text-black hover:bg-gray-100 cursor-pointer transition-colors"
                                 title="Auto Extract Color"
                               >
-                                <Sparkles className="w-3.5 h-3.5" />
+                                <Pipette className="w-3.5 h-3.5" />
                               </button>
 
                               <button

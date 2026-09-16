@@ -137,25 +137,58 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 4. Brand Hero Banner - Simple Human Design */}
-      <div className="relative rounded-2xl overflow-hidden bg-gray-900 text-white p-8 sm:p-12 md:p-16 my-8">
-        <div className="max-w-xl space-y-4 relative z-10">
-          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
-            {t("heroTitle")}
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-            {t("heroSubtitle")}
-          </p>
-          <div className="pt-2 flex flex-wrap items-center gap-3">
+      {/* 4. Brand Hero Banner - Mattress & Orthopedic Pillow Showcase */}
+      <div className="relative rounded-2xl overflow-hidden bg-gray-900 text-white p-6 sm:p-10 md:p-12 my-8">
+        {/* Subtle decorative background gradient */}
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-96 h-96 rounded-full bg-[#0ea5e9]/10 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+          {/* Left Text Content */}
+          <div className="w-full lg:max-w-xl space-y-4">
+            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-white leading-tight">
+              {t("heroTitle")}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              {t("heroSubtitle")}
+            </p>
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <Link
+                to="/shop"
+                className="px-5 py-2.5 rounded-md bg-white text-gray-900 hover:bg-gray-100 font-semibold text-xs transition-colors inline-block"
+              >
+                {t("shopMattresses")}
+              </Link>
+              <span className="px-4 py-2.5 rounded-md border border-gray-700 text-gray-300 font-medium text-xs flex items-center">
+                {t("warrantyButton")}
+              </span>
+            </div>
+          </div>
+
+          {/* Right Side: Normal Indian Sleeping Pillow in 3D Floating Showcase (No Box Background) */}
+          <div className="w-full lg:w-auto shrink-0 flex flex-col items-center justify-center relative py-4 lg:py-0">
             <Link
-              to="/catalog"
-              className="px-5 py-2.5 rounded-md bg-white text-gray-900 hover:bg-gray-100 font-semibold text-xs transition-colors inline-block"
+              to="/category/cat_pillows"
+              aria-label="Explore Buddy Sleeping Pillows"
+              className="relative group flex flex-col items-center cursor-pointer select-none"
             >
-              {t("shopMattresses")}
+              {/* 3D Levitating / Floating Transparent Pillow */}
+              <div className="animate-float-pillow relative z-10 transition-transform duration-500 group-hover:scale-105">
+                <img
+                  src="/pillow-indian-alt.png"
+                  alt="Buddy Luxury Sleeping Pillow"
+                  className="w-72 sm:w-80 md:w-96 lg:w-[380px] xl:w-[420px] h-auto object-contain pointer-events-none drop-shadow-[0_25px_30px_rgba(0,0,0,0.65)]"
+                />
+              </div>
+
+              {/* Dynamic Ground Ambient Floating Shadow */}
+              <div className="w-52 sm:w-64 h-6 bg-black/70 blur-xl rounded-full animate-float-shadow -mt-4 relative z-0" />
+
+              {/* Clean Editorial Caption */}
+              <div className="mt-4 inline-flex items-center gap-1.5 text-xs text-gray-400 group-hover:text-sky-400 transition-colors font-medium">
+                <span>Buddy Microfiber & Cotton Sleeping Pillows</span>
+                <span className="text-xs transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </div>
             </Link>
-            <span className="px-4 py-2.5 rounded-md border border-gray-700 text-gray-300 font-medium text-xs flex items-center">
-              {t("warrantyButton")}
-            </span>
           </div>
         </div>
       </div>

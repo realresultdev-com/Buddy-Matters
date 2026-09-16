@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Search,
   X,
@@ -36,6 +36,8 @@ export default function SearchBar({
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const dispatch = useAppDispatch();
 
   const products = useAppSelector((state) => state.catalog.products);
@@ -48,6 +50,23 @@ export default function SearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isLoggedIn = Boolean(user);
+
+  // Clear search field value when user does anything different from the search result page (e.g. returning to home page)
+  useEffect(() => {
+    const isSearchPage =
+      location.pathname === "/shop" && Boolean(searchParams.get("search"));
+    if (isSearchPage) {
+      setQuery(searchParams.get("search") || "");
+      const cat = searchParams.get("category");
+      if (cat) {
+        setSelectedCategory(cat);
+      }
+    } else {
+      setQuery("");
+      setSelectedCategory("All");
+    }
+    setIsOpen(false);
+  }, [location.pathname, location.search]);
 
   // Extract unique categories for dropdown
   const categoriesList = React.useMemo(() => {

@@ -18,7 +18,6 @@ import {
   Check,
   Globe,
   MapPin,
-  Sparkles,
   LayoutGrid,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
@@ -244,9 +243,8 @@ export default function Navbar() {
         <div className="flex items-center gap-4 sm:gap-6 shrink-0 font-medium text-xs">
           <Link
             to="/shop"
-            className="py-1 px-1 text-[#38bdf8] hover:text-[#7dd3fc] font-bold transition-colors whitespace-nowrap flex items-center gap-1.5"
+            className="py-1 px-1 text-[#38bdf8] hover:text-[#7dd3fc] font-bold transition-colors whitespace-nowrap"
           >
-            <Menu className="w-4 h-4 text-[#38bdf8]" />
             <span>All</span>
           </Link>
           {categories.map((cat) => (

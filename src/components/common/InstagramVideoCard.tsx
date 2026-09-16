@@ -12,7 +12,6 @@ export default function InstagramVideoCard() {
   const [heroVideos, setHeroVideos] = useState<HeroVideo[]>([]);
   const [activeAdIndex, setActiveAdIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
@@ -49,17 +48,12 @@ export default function InstagramVideoCard() {
     return () => clearInterval(interval);
   }, [heroVideos]);
 
-
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    } else {
+  // Ensure video always plays continuously
+  useEffect(() => {
+    if (videoRef.current && videoRef.current.paused) {
       videoRef.current.play().catch(() => {});
-      setIsPlaying(true);
     }
-  };
+  }, [activeAdIndex, heroVideos]);
 
   const currentAd = heroVideos.length > 0 ? heroVideos[activeAdIndex] : null;
   if (!currentAd || !currentAd.video_url) {
@@ -97,15 +91,24 @@ export default function InstagramVideoCard() {
           />
         ) : (
           <video
-            ref={videoRef}
+            ref={(el) => {
+              videoRef.current = el;
+              if (el && el.paused) {
+                el.play().catch(() => {});
+              }
+            }}
             src={mediaUrl}
             poster={posterUrl}
             autoPlay
             loop
             muted
             playsInline
-            onClick={togglePlay}
-            className="w-full h-full object-cover cursor-pointer"
+            preload="auto"
+            onPause={(e) => {
+              // Prevent stopping: immediately resume playing
+              e.currentTarget.play().catch(() => {});
+            }}
+            className="w-full h-full object-cover pointer-events-none"
           />
         )}
 
@@ -149,17 +152,7 @@ export default function InstagramVideoCard() {
           </div>
         </div>
 
-        {/* Center Pause Indicator Overlay if Paused */}
-        {!isImage && !isPlaying && (
-          <div
-            onClick={togglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer z-10"
-          >
-            <div className="w-12 h-12 rounded-full bg-black/70 text-white flex items-center justify-center text-xs font-bold pl-0.5">
-              ▶
-            </div>
-          </div>
-        )}
+
 
         {/* Bottom CTA Overlay */}
         <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent space-y-2 z-10">

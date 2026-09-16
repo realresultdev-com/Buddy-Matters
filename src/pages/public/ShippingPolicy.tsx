@@ -1,151 +1,135 @@
 import { Link } from "react-router-dom";
-import { Truck, ArrowLeft, ShieldCheck, Clock, PhoneCall, Mail, MapPin, PackageCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 export default function ShippingPolicy() {
   return (
-    <div className="bg-white min-h-screen text-[#191142] py-10 px-4 sm:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Top Breadcrumb */}
+    <div className="bg-white min-h-screen text-gray-800 py-10 px-4 sm:px-8">
+      <div className="max-w-3xl mx-auto space-y-8">
+        {/* Top Link */}
         <div>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#0ea9df] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Return to Store</span>
           </Link>
         </div>
 
-        {/* Page Header */}
-        <div className="space-y-2 border-b border-gray-100 pb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold uppercase tracking-wider">
-            <Truck className="w-3.5 h-3.5 text-[#0ea9df]" />
-            <span>Pan-India Doorstep Logistics Policy</span>
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-[#191142] tracking-tight">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
             Shipping & Delivery Policy
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500">
-            Last updated: September 2026 | Free Insured Doorstep Delivery Across India
+          <p className="text-xs text-gray-500 mt-1">
+            Last updated: September 2026
           </p>
         </div>
 
-        {/* Highlight Banner */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-xs sm:text-sm text-[#191142] space-y-2">
-          <div className="flex items-center gap-2 font-bold text-sm">
-            <PackageCheck className="w-4 h-4 text-[#0ea9df]" />
-            <span>100% Free Shipping on Every Order</span>
-          </div>
-          <p className="text-xs text-gray-700 leading-relaxed">
-            Buddy Mattress offers complimentary doorstep shipping to 19,000+ pin codes across India. There are no hidden handling fees, surcharges, or delivery fees at checkout.
+        {/* Content Body */}
+        <div className="space-y-6 text-sm leading-relaxed text-gray-700">
+          <p>
+            At Buddy Mattress, we are committed to delivering your order accurately, in good condition, and always on time. We provide free doorstep delivery for all products to over 19,000 postal codes across India with no minimum order value or hidden handling fees.
           </p>
-        </div>
 
-        {/* Policy Sections */}
-        <div className="space-y-8 text-xs sm:text-sm text-gray-700 leading-relaxed">
-          {/* Section 1 */}
-          <section className="space-y-3">
-            <h2 className="text-base sm:text-lg font-bold text-[#191142] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-cyan-100 text-[#0ea9df] text-xs font-bold flex items-center justify-center shrink-0">1</span>
-              <span>Delivery Timelines & Dispatch SLA</span>
+          <section className="space-y-3 pt-2">
+            <h2 className="text-base font-semibold text-gray-900">
+              1. Order Dispatch & Processing
             </h2>
             <p>
-              All orders are processed and dispatched within <strong>24 to 48 hours</strong> directly from our state-of-the-art manufacturing plant in Paramathi Velur, Tamil Nadu. Estimated transit timelines after dispatch:
+              All orders are processed, packed, and dispatched directly from our manufacturing facility in Paramathi Velur (Namakkal, Tamil Nadu) within <strong>24 to 48 hours</strong> of order confirmation. Orders placed on Sundays or public holidays are processed on the subsequent working day.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-              <div className="p-3.5 rounded-xl border border-gray-200 bg-white">
-                <span className="font-bold text-[#191142] block text-xs">Tamil Nadu & South India</span>
-                <span className="text-[#0ea9df] font-bold text-sm block mt-0.5">2 to 4 Business Days</span>
-                <span className="text-[11px] text-gray-500">Direct factory logistics network</span>
-              </div>
-              <div className="p-3.5 rounded-xl border border-gray-200 bg-white">
-                <span className="font-bold text-[#191142] block text-xs">Metro Hubs (Bengaluru, Chennai, Mumbai, Delhi)</span>
-                <span className="text-[#0ea9df] font-bold text-sm block mt-0.5">3 to 5 Business Days</span>
-                <span className="text-[11px] text-gray-500">Express air / surface express</span>
-              </div>
-              <div className="p-3.5 rounded-xl border border-gray-200 bg-white">
-                <span className="font-bold text-[#191142] block text-xs">Rest of India Tier 2/3 Cities</span>
-                <span className="text-[#0ea9df] font-bold text-sm block mt-0.5">4 to 7 Business Days</span>
-                <span className="text-[11px] text-gray-500">Doorstep delivery via verified cargo courier</span>
-              </div>
-              <div className="p-3.5 rounded-xl border border-gray-200 bg-white">
-                <span className="font-bold text-[#191142] block text-xs">Special Regions (J&K, North-East)</span>
-                <span className="text-[#0ea9df] font-bold text-sm block mt-0.5">7 to 10 Business Days</span>
-                <span className="text-[11px] text-gray-500">Regional logistics partners</span>
-              </div>
-            </div>
           </section>
 
-          {/* Section 2 */}
-          <section className="space-y-3">
-            <h2 className="text-base sm:text-lg font-bold text-[#191142] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-cyan-100 text-[#0ea9df] text-xs font-bold flex items-center justify-center shrink-0">2</span>
-              <span>Packaging & "Bed-in-a-Box" Technology</span>
+          <section className="space-y-3 pt-2">
+            <h2 className="text-base font-semibold text-gray-900">
+              2. Estimated Delivery Timelines
             </h2>
             <p>
-              Your Buddy Mattress is compressed, vacuum-sealed, and machine roll-packed in heavy-duty food-grade protective poly film, placed safely inside a reinforced box.
+              Once your shipment has been dispatched, estimated transit times vary depending on the destination:
             </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-gray-600">
-              <li>Keeps the mattress 100% dust-free, sterile, and moisture-protected during transit.</li>
-              <li>Fits easily into passenger elevators and narrow staircases.</li>
-              <li>Once unboxed, the mattress expands to 90% of its volume within 2 hours, and 100% within 24 to 48 hours.</li>
+
+            <div className="overflow-x-auto my-3 border border-gray-200 rounded">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead className="bg-gray-50 border-b border-gray-200 text-gray-900 font-semibold">
+                  <tr>
+                    <th className="py-2.5 px-3 border-r border-gray-200">Destination Region</th>
+                    <th className="py-2.5 px-3 border-r border-gray-200">Estimated Transit Time</th>
+                    <th className="py-2.5 px-3">Delivery Partner</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 text-gray-700">
+                  <tr>
+                    <td className="py-2.5 px-3 font-medium border-r border-gray-200">Tamil Nadu & South India</td>
+                    <td className="py-2.5 px-3 border-r border-gray-200">2 – 4 business days</td>
+                    <td className="py-2.5 px-3 text-gray-500">Direct factory logistics</td>
+                  </tr>
+                  <tr className="bg-gray-50/50">
+                    <td className="py-2.5 px-3 font-medium border-r border-gray-200">Metro Cities (Bengaluru, Chennai, Mumbai, Delhi, Hyderabad)</td>
+                    <td className="py-2.5 px-3 border-r border-gray-200">3 – 5 business days</td>
+                    <td className="py-2.5 px-3 text-gray-500">Surface & express courier</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2.5 px-3 font-medium border-r border-gray-200">Rest of India (Tier 2 & Tier 3 Cities)</td>
+                    <td className="py-2.5 px-3 border-r border-gray-200">4 – 7 business days</td>
+                    <td className="py-2.5 px-3 text-gray-500">Verified national cargo network</td>
+                  </tr>
+                  <tr className="bg-gray-50/50">
+                    <td className="py-2.5 px-3 font-medium border-r border-gray-200">Special Regions (J&K, North-Eastern States, Island Territories)</td>
+                    <td className="py-2.5 px-3 border-r border-gray-200">7 – 10 business days</td>
+                    <td className="py-2.5 px-3 text-gray-500">Regional logistics network</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-500 italic">
+              * Delivery times are indicative and may occasionally vary due to local transport restrictions, weather anomalies, or remote postal accessibility.
+            </p>
+          </section>
+
+          <section className="space-y-3 pt-2">
+            <h2 className="text-base font-semibold text-gray-900">
+              3. Packaging & Bed-in-a-Box Technology
+            </h2>
+            <p>
+              Your Buddy Mattress is vacuum compressed and machine rolled at our factory using heavy-duty protective food-grade film, then packaged into an easy-to-handle box:
+            </p>
+            <ul className="list-disc pl-5 space-y-1.5 text-gray-700">
+              <li>Protects the mattress against dust, humidity, and transit scuffs.</li>
+              <li>Fits easily into small car trunks, passenger elevators, and narrow stairwells.</li>
+              <li>Once unboxed and plastic is cut, the mattress expands to 90% of its volume within 2 hours, and achieves full structural firmness in 24 to 48 hours.</li>
             </ul>
           </section>
 
-          {/* Section 3 */}
-          <section className="space-y-3">
-            <h2 className="text-base sm:text-lg font-bold text-[#191142] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-cyan-100 text-[#0ea9df] text-xs font-bold flex items-center justify-center shrink-0">3</span>
-              <span>Shipment Tracking & Order Updates</span>
+          <section className="space-y-3 pt-2">
+            <h2 className="text-base font-semibold text-gray-900">
+              4. Order Tracking
             </h2>
             <p>
-              Once your shipment leaves our facility, you will automatically receive an SMS, WhatsApp notification, and email containing the Courier Tracking Number (AWB) and live tracking link.
+              As soon as your consignment is handed over to our courier partner, you will receive an automated dispatch notification via SMS, WhatsApp, and email containing the Air Waybill (AWB) number and direct tracking link to monitor your shipment in real time.
             </p>
           </section>
 
-          {/* Section 4 */}
-          <section className="space-y-3">
-            <h2 className="text-base sm:text-lg font-bold text-[#191142] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-cyan-100 text-[#0ea9df] text-xs font-bold flex items-center justify-center shrink-0">4</span>
-              <span>100% Transit Insurance & Damaged Goods Protection</span>
+          <section className="space-y-3 pt-2">
+            <h2 className="text-base font-semibold text-gray-900">
+              5. Damaged Shipments & Insurance
             </h2>
             <p>
-              All shipments are 100% insured against loss or damage during transit. If the outer box or seal arrives visibly damaged or tampered with, you can refuse delivery or immediately reach out to our customer care team within 48 hours of receipt. We will dispatch an immediate replacement without any red tape.
+              Every shipment is 100% insured against transit damage or loss. If the external carton appears severely damaged or tampered with upon arrival, please take a photograph and write a note on the delivery receipt before accepting, or contact our support team within 48 hours at <a href="mailto:support@buddymattress.in" className="underline text-gray-900 hover:text-sky-600">support@buddymattress.in</a>. We will dispatch an immediate replacement at no cost.
             </p>
           </section>
 
-          {/* Section 5 */}
-          <section className="space-y-3">
-            <h2 className="text-base sm:text-lg font-bold text-[#191142] flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-cyan-100 text-[#0ea9df] text-xs font-bold flex items-center justify-center shrink-0">5</span>
-              <span>Dispatch & Registered Facility Address</span>
+          <section className="space-y-2 pt-4 border-t border-gray-200 text-xs sm:text-sm text-gray-700">
+            <h2 className="text-base font-semibold text-gray-900">
+              6. Factory & Dispatch Office
             </h2>
-            <div className="p-4 rounded-xl border border-gray-200 bg-slate-50 space-y-1 text-xs">
-              <div className="flex items-center gap-2 font-bold text-[#191142]">
-                <MapPin className="w-3.5 h-3.5 text-[#0ea9df]" />
-                <span>Buddy Mattress Manufacturing Plant & Central Fulfillment Center</span>
-              </div>
-              <p className="text-gray-600 pl-5">
-                Near RTO Office, Paramathi, Paramathi Velur, Namakkal District, Tamil Nadu - 637207, India.
-              </p>
-            </div>
+            <p>
+              <strong>Buddy Mattress Private Limited</strong><br />
+              Near RTO Office, Paramathi, Paramathi Velur, Namakkal District, Tamil Nadu – 637207, India.<br />
+              Customer Support Helpline: <a href="tel:+919443300000" className="underline text-gray-900">+91 94433 00000</a> (Mon – Sat, 9:30 AM to 6:30 PM)<br />
+              Email: <a href="mailto:support@buddymattress.in" className="underline text-gray-900">support@buddymattress.in</a>
+            </p>
           </section>
-
-          {/* Contact Box */}
-          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-            <span className="font-bold text-[#191142] block">Questions About Your Delivery or Dispatch Status?</span>
-            <div className="flex flex-wrap items-center gap-4 text-xs">
-              <a href="tel:+919443300000" className="inline-flex items-center gap-1.5 text-[#191142] hover:text-[#0ea9df] font-bold">
-                <PhoneCall className="w-3.5 h-3.5 text-[#0ea9df]" />
-                <span>+91 94433 00000</span>
-              </a>
-              <span className="text-gray-300">•</span>
-              <a href="mailto:support@buddymattress.in" className="inline-flex items-center gap-1.5 text-[#191142] hover:text-[#0ea9df] font-semibold">
-                <Mail className="w-3.5 h-3.5 text-[#0ea9df]" />
-                <span>support@buddymattress.in</span>
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>

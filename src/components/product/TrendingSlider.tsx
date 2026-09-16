@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "../../types/product.types";
 import { getProductUrl } from "../../utils/urlSecurity";
@@ -10,32 +10,89 @@ interface TrendingSliderProps {
 
 export default function TrendingSlider({ products }: TrendingSliderProps) {
   const trendingProducts = products.filter((p) => p.is_trending);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const n = trendingProducts.length;
+
+  // With cloning for infinite loop:
+  // Index 0: clone of last item
+  // Index 1 to n: actual items (index 1 is item 0, index n is item n - 1)
+  // Index n + 1: clone of first item
+  const [currentIndex, setCurrentIndex] = useState(n > 1 ? 1 : 0);
+  const [isTransitioning, setIsTransitioning] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const isJumping = useRef(false);
 
+  // Extended items with clones for smooth continuous loop
+  const extendedProducts = useMemo(() => {
+    if (n <= 1) return trendingProducts;
+    return [trendingProducts[n - 1], ...trendingProducts, trendingProducts[0]];
+  }, [trendingProducts, n]);
+
+  // Handle seamless wrap when animation finishes
+  const handleTransitionEnd = () => {
+    if (n <= 1) return;
+
+    if (currentIndex === n + 1) {
+      // Reached clone of first item -> jump silently to actual first item (index 1)
+      setIsTransitioning(false);
+      setCurrentIndex(1);
+      isJumping.current = true;
+    } else if (currentIndex === 0) {
+      // Reached clone of last item -> jump silently to actual last item (index n)
+      setIsTransitioning(false);
+      setCurrentIndex(n);
+      isJumping.current = true;
+    }
+  };
+
+  // Re-enable transition after silent jump
   useEffect(() => {
-    if (trendingProducts.length <= 1) return;
+    if (isJumping.current) {
+      const raf = requestAnimationFrame(() => {
+        setIsTransitioning(true);
+        isJumping.current = false;
+      });
+      return () => cancelAnimationFrame(raf);
+    }
+  }, [currentIndex]);
+
+  const handleNext = () => {
+    if (n <= 1 || isJumping.current) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev >= n + 1 ? prev : prev + 1));
+  };
+
+  const handlePrev = () => {
+    if (n <= 1 || isJumping.current) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev <= 0 ? prev : prev - 1));
+  };
+
+  const handleDotClick = (dotIdx: number) => {
+    if (isJumping.current) return;
+    setIsTransitioning(true);
+    setCurrentIndex(dotIdx + 1);
+  };
+
+  // Auto-play timer with smooth continuous forward glide
+  useEffect(() => {
+    if (n <= 1 || isPaused) return;
+
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % trendingProducts.length);
+      setIsTransitioning(true);
+      setCurrentIndex((prev) => (prev >= n + 1 ? prev : prev + 1));
     }, 4500);
+
     return () => clearInterval(timer);
-  }, [trendingProducts.length]);
+  }, [n, isPaused]);
 
   if (trendingProducts.length === 0) return null;
 
-  const handlePrev = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? trendingProducts.length - 1 : prev - 1
-    );
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % trendingProducts.length);
-  };
-
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = e.targetTouches[0].clientX;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -43,12 +100,16 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
   };
 
   const handleTouchEnd = () => {
-    if (touchStartX.current - touchEndX.current > 50) {
+    const diff = touchStartX.current - touchEndX.current;
+    if (diff > 50) {
       handleNext();
-    } else if (touchEndX.current - touchStartX.current > 50) {
+    } else if (diff < -50) {
       handlePrev();
     }
   };
+
+  // Current active dot index (0 to n - 1)
+  const activeDot = n > 0 ? (currentIndex - 1 + n) % n : 0;
 
   return (
     <div className="w-full relative select-none mb-6">
@@ -86,15 +147,23 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
       {/* Main Slider Window */}
       <div
         className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-2xs"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         <div
-          className="flex transition-transform duration-500 ease-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          onTransitionEnd={handleTransitionEnd}
+          className="flex will-change-transform"
+          style={{
+            transform: `translateX(-${currentIndex * 100}%)`,
+            transitionProperty: "transform",
+            transitionDuration: isTransitioning ? "650ms" : "0ms",
+            transitionTimingFunction: isTransitioning ? "cubic-bezier(0.25, 1, 0.5, 1)" : "none",
+          }}
         >
-          {trendingProducts.map((product) => {
+          {extendedProducts.map((product, idx) => {
             const img = product.images?.[0] || "/logo-transparent.png";
             const mrp =
               product.original_price && product.original_price > product.price
@@ -110,7 +179,7 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
 
             return (
               <div
-                key={product.id}
+                key={`${product.id}-slide-${idx}`}
                 className="w-full shrink-0 relative overflow-hidden"
               >
                 <div className="p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-10 bg-white">
@@ -195,7 +264,7 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
         </div>
 
         {/* Mobile Navigation Arrows */}
-        {trendingProducts.length > 1 && (
+        {n > 1 && (
           <div className="sm:hidden absolute inset-y-0 inset-x-2 flex items-center justify-between pointer-events-none">
             <button
               type="button"
@@ -218,15 +287,15 @@ export default function TrendingSlider({ products }: TrendingSliderProps) {
       </div>
 
       {/* Pagination Dots */}
-      {trendingProducts.length > 1 && (
+      {n > 1 && (
         <div className="flex items-center justify-center gap-1.5 mt-3">
           {trendingProducts.map((_, dotIdx) => (
             <button
               key={dotIdx}
               type="button"
-              onClick={() => setCurrentIndex(dotIdx)}
+              onClick={() => handleDotClick(dotIdx)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                currentIndex === dotIdx
+                activeDot === dotIdx
                   ? "w-5 bg-black"
                   : "w-1.5 bg-gray-300 hover:bg-gray-400"
               }`}

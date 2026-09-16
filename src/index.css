@@ -175,3 +175,33 @@ html[lang="ta"] textarea {
   background: #94a3b8;
 }
 
+/* 8. 3D Floating Animations */
+@keyframes float-pillow {
+  0%, 100% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(-2deg);
+  }
+}
+
+.animate-float-pillow {
+  animation: float-pillow 5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes float-shadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(0.85);
+    opacity: 0.3;
+  }
+}
+
+.animate-float-shadow {
+  animation: float-shadow 5s ease-in-out infinite;
+}
+

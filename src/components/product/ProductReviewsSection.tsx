@@ -5,7 +5,6 @@ import {
   Camera,
   X,
   Upload,
-  Sparkles,
   Lock,
   ThumbsUp,
   Image as ImageIcon,
@@ -323,7 +322,7 @@ export default function ProductReviewsSection({
           <div className="flex items-center justify-between border-b border-gray-200 pb-3">
             <div>
               <h3 className="text-base font-black text-[#191142] flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#0ea9df]" />
+                <Star className="w-4 h-4 text-amber-500 fill-amber-400" />
                 Create Verified Customer Review
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
