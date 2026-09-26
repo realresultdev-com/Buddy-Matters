@@ -27,8 +27,8 @@ export default function Home() {
           productService.getAll(),
           categoryService.getAll(),
         ]);
-        setProducts(prodRes.data || []);
-        setCategories(catRes.data || []);
+        setProducts(Array.isArray(prodRes?.data) ? prodRes.data : []);
+        setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
       } catch (err) {
         console.error("Failed to fetch home page data:", err);
       } finally {
@@ -42,19 +42,23 @@ export default function Home() {
   const displayCategories = (() => {
     const map = new Map<string, Category>();
 
-    categories.forEach((cat) => {
-      if (cat.name) map.set(cat.name.trim().toLowerCase(), cat);
-    });
+    if (Array.isArray(categories)) {
+      categories.forEach((cat) => {
+        if (cat?.name) map.set(cat.name.trim().toLowerCase(), cat);
+      });
+    }
 
-    products.forEach((p) => {
-      const catName = p.category?.name;
-      if (catName && !map.has(catName.trim().toLowerCase())) {
-        map.set(catName.trim().toLowerCase(), {
-          id: p.categoryId || catName,
-          name: catName,
-        });
-      }
-    });
+    if (Array.isArray(products)) {
+      products.forEach((p) => {
+        const catName = p?.category?.name;
+        if (catName && !map.has(catName.trim().toLowerCase())) {
+          map.set(catName.trim().toLowerCase(), {
+            id: p.categoryId || catName,
+            name: catName,
+          });
+        }
+      });
+    }
 
     return Array.from(map.values());
   })();

@@ -71,9 +71,11 @@ export default function SearchBar({
   // Extract unique categories for dropdown
   const categoriesList = React.useMemo(() => {
     const names = new Set<string>();
-    products.forEach((p) => {
-      if (p.category?.name) names.add(p.category.name);
-    });
+    if (Array.isArray(products)) {
+      products.forEach((p) => {
+        if (p?.category?.name) names.add(p.category.name);
+      });
+    }
     return Array.from(names);
   }, [products]);
 

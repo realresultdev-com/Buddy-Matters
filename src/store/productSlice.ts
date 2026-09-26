@@ -36,8 +36,8 @@ export const fetchCatalog = createAsyncThunk(
     ]);
 
     return {
-      products: prodRes.data || [],
-      categories: catRes.data || [],
+      products: Array.isArray(prodRes?.data) ? prodRes.data : [],
+      categories: Array.isArray(catRes?.data) ? catRes.data : [],
     };
   }
 );
@@ -47,7 +47,7 @@ export const productSlice = createSlice({
   initialState,
   reducers: {
     setProducts: (state, action) => {
-      state.products = action.payload;
+      state.products = Array.isArray(action.payload) ? action.payload : [];
     },
     clearCatalogCache: (state) => {
       state.products = [];
@@ -65,8 +65,8 @@ export const productSlice = createSlice({
       })
       .addCase(fetchCatalog.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.products = action.payload.products;
-        state.categories = action.payload.categories;
+        state.products = Array.isArray(action.payload?.products) ? action.payload.products : [];
+        state.categories = Array.isArray(action.payload?.categories) ? action.payload.categories : [];
         state.lastFetched = Date.now();
       })
       .addCase(fetchCatalog.rejected, (state, action) => {
