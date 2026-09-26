@@ -14,7 +14,7 @@ export default function ProductsList() {
   const loadProducts = async () => {
     try {
       const res = await productService.getAll();
-      setProducts(res.data);
+      setProducts(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to load products:", err);
     } finally {

@@ -48,8 +48,8 @@ export default function Shop() {
           productService.getAll(undefined, true),
           categoryService.getAll(true),
         ]);
-        setProducts(prodRes.data || []);
-        setCategories(catRes.data || []);
+        setProducts(Array.isArray(prodRes?.data) ? prodRes.data : []);
+        setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
       } catch (err) {
         console.error("Failed to load shop products:", err);
       } finally {

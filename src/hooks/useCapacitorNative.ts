@@ -13,10 +13,11 @@ export function useCapacitorNative() {
     // Only run on native Android/iOS
     if (!Capacitor.isNativePlatform()) return;
 
-    // 1. Configure native Status Bar
+    // 1. Configure native Status Bar (prevent overlaying webview, match rich navy theme)
     try {
       StatusBar.setStyle({ style: Style.Dark });
-      StatusBar.setBackgroundColor({ color: "#ffffff" });
+      StatusBar.setBackgroundColor({ color: "#0f172a" });
+      StatusBar.setOverlaysWebView({ overlay: false });
     } catch (e) {
       console.warn("StatusBar setup warning:", e);
     }
@@ -30,6 +31,13 @@ export function useCapacitorNative() {
 
     // 3. Android Hardware Back Button listener
     const backListener = App.addListener("backButton", ({ canGoBack }) => {
+      // Check if any modal or drawer is open
+      const closeBtn = document.querySelector<HTMLButtonElement>("[data-modal-close], button[aria-label='Close']");
+      if (closeBtn) {
+        closeBtn.click();
+        return;
+      }
+
       if (location.pathname !== "/" && location.pathname !== "") {
         navigate(-1);
       } else {
@@ -37,8 +45,29 @@ export function useCapacitorNative() {
       }
     });
 
+    // 4. App lifecycle handling (Pause media decoders when backgrounded, save battery and CPU)
+    const appStateListener = App.addListener("appStateChange", ({ isActive }) => {
+      const videos = Array.from(document.querySelectorAll("video"));
+      if (!isActive) {
+        videos.forEach((v) => {
+          if (!v.paused) {
+            v.setAttribute("data-was-playing", "true");
+            v.pause();
+          }
+        });
+      } else {
+        videos.forEach((v) => {
+          if (v.getAttribute("data-was-playing") === "true") {
+            v.removeAttribute("data-was-playing");
+            v.play().catch(() => {});
+          }
+        });
+      }
+    });
+
     return () => {
       backListener.then((handle) => handle.remove()).catch(() => {});
+      appStateListener.then((handle) => handle.remove()).catch(() => {});
     };
   }, [location.pathname, navigate]);
 }

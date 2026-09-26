@@ -23,8 +23,10 @@ export default function CategoryPage() {
           productService.getAll(id),
           categoryService.getAll(),
         ]);
-        setProducts(prodRes.data);
-        const current = catRes.data.find((c: Category) => c.id === id);
+        const pList = Array.isArray(prodRes?.data) ? prodRes.data : [];
+        setProducts(pList);
+        const cList = Array.isArray(catRes?.data) ? catRes.data : [];
+        const current = cList.find((c: Category) => c.id === id);
         setCategory(current || null);
       } catch (err) {
         console.error("Failed to load category products:", err);

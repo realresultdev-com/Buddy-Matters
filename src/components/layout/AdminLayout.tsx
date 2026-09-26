@@ -1,12 +1,33 @@
 import { useState, useRef, useEffect } from "react";
 import { Outlet, NavLink, Link, useLocation } from "react-router-dom";
 import AdminSidebar, { ADMIN_NAV_ITEMS } from "./AdminSidebar";
-import { Menu, X, ArrowLeft, Store, ShieldCheck } from "lucide-react";
+import { Menu, X, ArrowLeft, Store, ShieldCheck, Bell } from "lucide-react";
+import NotificationCenterModal from "../common/NotificationCenterModal";
+import { notificationService } from "../../services/notification.service";
 
 export default function AdminLayout() {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
   const location = useLocation();
   const tabsRef = useRef<HTMLDivElement>(null);
+
+  const refreshUnread = async () => {
+    try {
+      const data = await notificationService.getNotifications();
+      setUnreadNotifs(data.unreadCount);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    refreshUnread();
+    const unsub = notificationService.subscribe(() => {
+      setUnreadNotifs((prev) => prev + 1);
+    });
+    return unsub;
+  }, []);
 
   // Auto-scroll active tab pill into view on mobile
   useEffect(() => {
@@ -49,7 +70,23 @@ export default function AdminLayout() {
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Notification Bell Button */}
+            <button
+              type="button"
+              onClick={() => setNotifModalOpen(true)}
+              className="relative p-1.5 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Order Notifications"
+              aria-label="Order notifications"
+            >
+              <Bell className="w-4 h-4 text-amber-400" />
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-bold text-[9px] min-w-3.5 h-3.5 px-0.5 rounded-full flex items-center justify-center animate-pulse">
+                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
+                </span>
+              )}
+            </button>
+
             <Link
               to="/"
               className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-colors"
@@ -69,6 +106,7 @@ export default function AdminLayout() {
             </button>
           </div>
         </div>
+
 
         {/* Native Horizontal Pill Navigation Bar */}
         <div
@@ -127,6 +165,14 @@ export default function AdminLayout() {
       <main className="flex-1 w-full min-w-0 bg-white overflow-y-auto p-3 sm:p-4 md:p-6 pb-28 lg:pb-8">
         <Outlet />
       </main>
+
+      {/* iOS-Style Real-time Order Notification Center Modal */}
+      <NotificationCenterModal
+        isOpen={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        onUpdateBadge={refreshUnread}
+      />
     </div>
   );
 }
+

@@ -271,7 +271,7 @@ export default function ProductForm() {
     const init = async () => {
       try {
         const catRes = await categoryService.getAll();
-        setCategories(catRes.data);
+        setCategories(Array.isArray(catRes?.data) ? catRes.data : []);
 
         if (isEditing && id) {
           const prodRes = await productService.getById(id);
@@ -456,7 +456,7 @@ export default function ProductForm() {
     const usedImages = new Set<string>();
 
     updated.forEach((v) => {
-      if (v.images) v.images.forEach((img) => usedImages.add(img));
+      if (Array.isArray(v.images)) v.images.forEach((img) => usedImages.add(img));
       if (v.image) usedImages.add(v.image);
     });
 

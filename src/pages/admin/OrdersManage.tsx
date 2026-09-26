@@ -96,7 +96,8 @@ export default function OrdersManage() {
 
     try {
       const res = await orderService.allOrders();
-      setOrders(res.data || []);
+      const list = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.orders) ? res.data.orders : []);
+      setOrders(list);
     } catch (err) {
       console.error("Failed to load all orders:", err);
     } finally {
@@ -167,17 +168,20 @@ export default function OrdersManage() {
 
   // Counts by status
   const counts = useMemo(() => {
-    const c: Record<string, number> = { ALL: orders.length };
-    orders.forEach((o) => {
-      let st = o.status;
-      if (st === "SHIPPED") st = "DISPATCHED";
-      c[st] = (c[st] || 0) + 1;
-    });
+    const c: Record<string, number> = { ALL: Array.isArray(orders) ? orders.length : 0 };
+    if (Array.isArray(orders)) {
+      orders.forEach((o) => {
+        let st = o.status;
+        if (st === "SHIPPED") st = "DISPATCHED";
+        c[st] = (c[st] || 0) + 1;
+      });
+    }
     return c;
   }, [orders]);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
+    if (!Array.isArray(orders)) return [];
     return orders.filter((o) => {
       let st = o.status;
       if (st === "SHIPPED") st = "DISPATCHED";

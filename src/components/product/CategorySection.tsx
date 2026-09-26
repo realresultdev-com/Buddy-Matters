@@ -14,7 +14,7 @@ export default function CategorySection({
   products,
   maxDisplay = 8,
 }: CategorySectionProps) {
-  if (!products || products.length === 0) return null;
+  if (!Array.isArray(products) || products.length === 0) return null;
 
   const displayProducts = products.slice(0, maxDisplay);
 

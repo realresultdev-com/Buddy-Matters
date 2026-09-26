@@ -186,15 +186,24 @@ export default function SearchBar({
       ref={containerRef}
       className={`relative w-full ${className}`}
     >
-      {/* Search Form Bar */}
+      {/* Search Form Bar - Amazon App Style */}
       <form
         onSubmit={handleFormSubmit}
-        className={`flex items-center w-full rounded-md border bg-white transition-all duration-200 overflow-hidden shadow-2xs h-10 ${
+        className={`flex items-center w-full bg-white transition-all duration-200 overflow-hidden shadow-xs h-10 ${
+          isMobile
+            ? "rounded-xl border border-slate-200 shadow-sm"
+            : "rounded-lg border border-slate-300"
+        } ${
           isOpen
             ? "border-[#0ea9df] ring-2 ring-[#0ea9df]/20"
-            : "border-gray-300 hover:border-gray-400"
+            : "hover:border-slate-400"
         }`}
       >
+        {/* Left Search Icon */}
+        <div className="pl-3.5 pr-1 flex items-center justify-center shrink-0 text-slate-400">
+          <Search className="w-4 h-4" />
+        </div>
+
         {/* Input Field */}
         <input
           ref={inputRef}
@@ -212,8 +221,8 @@ export default function SearchBar({
               inputRef.current?.blur();
             }
           }}
-          placeholder={t("searchPlaceholder") || "Search Buddy Mattress.in"}
-          className="flex-1 px-3.5 text-sm text-[#191142] placeholder-gray-500 focus:outline-none bg-white font-normal h-full min-w-0"
+          placeholder={t("searchPlaceholder") || "Search Buddy Mattress..."}
+          className="flex-1 px-2 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none bg-white font-normal h-full min-w-0"
           autoComplete="off"
           aria-label="Search"
         />
@@ -223,21 +232,31 @@ export default function SearchBar({
           <button
             type="button"
             onClick={handleClearInput}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer shrink-0 mr-1"
+            className="p-1 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer shrink-0 mr-1"
             aria-label="Clear search input"
           >
             <X className="w-4 h-4" />
           </button>
         )}
 
-        {/* Right Search Button (App Cyan Theme) */}
-        <button
-          type="submit"
-          className="h-full px-4 bg-[#0ea9df] hover:bg-[#0c93c4] active:bg-[#0a7fa8] text-white flex items-center justify-center cursor-pointer transition-colors shrink-0 rounded-r-xs"
-          aria-label="Submit Search"
-        >
-          <Search className="w-5 h-5 text-white" />
-        </button>
+        {/* Right Search Button */}
+        {isMobile ? (
+          <button
+            type="submit"
+            className="h-full px-3 text-[#0ea9df] hover:text-[#0c93c4] active:scale-95 flex items-center justify-center cursor-pointer transition-transform shrink-0"
+            aria-label="Submit Search"
+          >
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="h-full px-4 bg-[#0ea9df] hover:bg-[#0c93c4] active:bg-[#0a7fa8] text-white flex items-center justify-center cursor-pointer transition-colors shrink-0"
+            aria-label="Submit Search"
+          >
+            <Search className="w-4 h-4 text-white" />
+          </button>
+        )}
       </form>
 
       {/* Interactive Live Search Dropdown */}

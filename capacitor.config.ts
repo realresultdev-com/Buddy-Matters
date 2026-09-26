@@ -6,20 +6,22 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
+    hostname: 'buddy-mattress-46f.pages.dev',
     cleartext: false,
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 1500,
       launchAutoHide: true,
-      backgroundColor: '#ffffff',
+      backgroundColor: '#0f172a',
       androidSplashResourceName: 'splash',
       androidScaleType: 'CENTER_CROP',
       showSpinner: false,
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#0f172a',
+      overlaysWebView: false,
     },
   },
 };

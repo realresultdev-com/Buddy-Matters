@@ -13,7 +13,7 @@ export default function UsersManage() {
   const loadUsers = async () => {
     try {
       const res = await adminService.getUsers();
-      setUsers(res.data);
+      setUsers(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to load users:", err);
     } finally {

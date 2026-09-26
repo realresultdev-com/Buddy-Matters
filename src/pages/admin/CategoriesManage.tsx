@@ -23,7 +23,7 @@ export default function CategoriesManage() {
   const loadCategories = async () => {
     try {
       const res = await categoryService.getAll(true);
-      setCategories(res.data);
+      setCategories(Array.isArray(res?.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to load categories:", err);
     } finally {

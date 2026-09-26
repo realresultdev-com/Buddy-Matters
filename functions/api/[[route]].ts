@@ -201,19 +201,33 @@ app.post("/auth/login", async (c) => {
 });
 
 app.post("/auth/google", async (c) => {
-  const { credential } = await c.req.json();
-  if (!credential) {
-    return c.json({ message: "Google credential token is required" }, 400);
+  const body = await c.req.json().catch(() => ({}));
+  const credential = body.credential || body.id_token;
+  const accessToken = body.access_token || body.accessToken;
+
+  if (!credential && !accessToken) {
+    return c.json({ message: "Google credential token or access token is required" }, 400);
   }
 
   let googleUser: any;
   try {
-    const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error("Invalid Google token: " + errText);
+    if (credential) {
+      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+      if (res.ok) {
+        googleUser = await res.json();
+      }
     }
-    googleUser = await res.json();
+    if (!googleUser && accessToken) {
+      const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        googleUser = await res.json();
+      }
+    }
+    if (!googleUser) {
+      throw new Error("Failed to verify Google token with Google authorization servers");
+    }
   } catch (err: any) {
     return c.json({ message: err.message || "Failed to verify Google token" }, 401);
   }
@@ -1438,6 +1452,33 @@ app.post("/orders", authMiddleware, async (c) => {
     ).bind(itemId, orderId, resolvedProductId, item.quantity, price).run();
   }
 
+  // Trigger real-time Admin notification for new order
+  try {
+    const customer: any = await c.env.DB.prepare("SELECT name, email FROM users WHERE id = ?").bind(user.userId).first();
+    const customerName = customer?.name || "Customer";
+    const customerEmail = customer?.email || "";
+    const shortOrderId = orderId.slice(-6).toUpperCase();
+    const notifId = `notif-${crypto.randomUUID()}`;
+    const notifTitle = `🛍️ New Order #${shortOrderId}`;
+    const notifMessage = `${customerName} placed an order for ₹${totalAmount.toLocaleString('en-IN')} (${items.length} item${items.length > 1 ? 's' : ''})`;
+    const notifData = JSON.stringify({
+      orderId,
+      shortOrderId,
+      totalAmount,
+      customerName,
+      customerEmail,
+      itemsCount: items.length,
+      firstItemName: pricedItems[0]?.name || "Product",
+      createdAt: now,
+    });
+
+    await c.env.DB.prepare(
+      "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_CREATED', ?, 0, ?)"
+    ).bind(notifId, notifTitle, notifMessage, notifData, now).run();
+  } catch (notifErr) {
+    console.error("Failed to insert order notification:", notifErr);
+  }
+
   return c.json(
     {
       id: orderId,
@@ -1652,7 +1693,33 @@ app.post("/payment/verify", authMiddleware, async (c) => {
     "UPDATE orders SET status = 'PAID', razorpay_order_id = ?, payment_id = ? WHERE id = ?"
   ).bind(razorpay_order_id || null, razorpay_payment_id || null, orderId).run();
 
-  const updatedOrder = await c.env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(orderId).first();
+  const updatedOrder: any = await c.env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(orderId).first();
+
+  // Trigger real-time Admin notification for verified payment
+  try {
+    const customer: any = updatedOrder?.user_id
+      ? await c.env.DB.prepare("SELECT name, email FROM users WHERE id = ?").bind(updatedOrder.user_id).first()
+      : null;
+    const customerName = customer?.name || "Customer";
+    const shortOrderId = orderId.slice(-6).toUpperCase();
+    const notifPaidId = `notif-${crypto.randomUUID()}`;
+    const notifTitle = `💳 Payment Verified #${shortOrderId}`;
+    const notifMessage = `Received ₹${(updatedOrder?.total_amount || 0).toLocaleString('en-IN')} for Order #${shortOrderId} from ${customerName}`;
+    const notifData = JSON.stringify({
+      orderId,
+      shortOrderId,
+      totalAmount: updatedOrder?.total_amount || 0,
+      customerName,
+      paymentId: razorpay_payment_id || null,
+      createdAt: new Date().toISOString(),
+    });
+
+    await c.env.DB.prepare(
+      "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_PAID', ?, 0, datetime('now'))"
+    ).bind(notifPaidId, notifTitle, notifMessage, notifData).run();
+  } catch (notifErr) {
+    console.error("Failed to insert payment notification:", notifErr);
+  }
 
   return c.json({ success: true, order: updatedOrder });
 });
@@ -1704,7 +1771,21 @@ app.get("/hero-videos", async (c) => {
     const { results } = await c.env.DB.prepare(
       "SELECT * FROM hero_videos WHERE is_active = 1 ORDER BY display_order ASC, created_at DESC"
     ).all();
-    return c.json({ success: true, data: results || [] });
+
+    const sanitizedResults = (results || []).map((v: any) => {
+      let vUrl = v.video_url || "";
+      if (vUrl.includes("mixkit-woman-relaxing-in-a-comfortable-bed-41556-large.mp4")) {
+        vUrl = "https://assets.mixkit.co/videos/31411/31411-720.mp4";
+      }
+      return {
+        ...v,
+        video_url: vUrl,
+        video_url_720p: v.video_url_720p || (vUrl.startsWith("https://assets.mixkit.co") ? vUrl : null),
+        video_url_360p: v.video_url_360p || (vUrl.startsWith("https://assets.mixkit.co") ? vUrl.replace("-720.mp4", "-360.mp4") : null),
+      };
+    });
+
+    return c.json({ success: true, data: sanitizedResults });
   } catch (err: any) {
     console.error("Failed to fetch active hero videos:", err);
     return c.json({ success: true, data: [] });
@@ -1809,5 +1890,121 @@ app.delete("/admin/hero-videos/:id", authMiddleware, adminMiddleware, async (c) 
   }
 });
 
+/* ==========================================================================
+   8. PUSH & IN-APP NOTIFICATIONS (MNC / HIGH-END REAL-TIME)
+   ========================================================================== */
+
+// GET /notifications - Fetch notifications for admin or user
+app.get("/notifications", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const dbUser: any = await c.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user.userId).first();
+  const isAdmin = dbUser?.role === "ADMIN";
+
+  const since = c.req.query("since"); // optional timestamp filter
+
+  let notifs: any[] = [];
+  if (isAdmin) {
+    if (since) {
+      const res = await c.env.DB.prepare(
+        "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND created_at > ? ORDER BY created_at DESC LIMIT 50"
+      ).bind(user.userId, since).all();
+      notifs = res.results || [];
+    } else {
+      const res = await c.env.DB.prepare(
+        "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) ORDER BY created_at DESC LIMIT 50"
+      ).bind(user.userId).all();
+      notifs = res.results || [];
+    }
+  } else {
+    if (since) {
+      const res = await c.env.DB.prepare(
+        "SELECT * FROM notifications WHERE user_id = ? AND created_at > ? ORDER BY created_at DESC LIMIT 50"
+      ).bind(user.userId, since).all();
+      notifs = res.results || [];
+    } else {
+      const res = await c.env.DB.prepare(
+        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50"
+      ).bind(user.userId).all();
+      notifs = res.results || [];
+    }
+  }
+
+  // Count unread
+  const unreadCountResult: any = await c.env.DB.prepare(
+    isAdmin
+      ? "SELECT count(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND is_read = 0"
+      : "SELECT count(*) as count FROM notifications WHERE user_id = ? AND is_read = 0"
+  ).bind(user.userId).first();
+
+  return c.json({
+    success: true,
+    notifications: notifs,
+    unreadCount: unreadCountResult?.count || 0,
+  });
+});
+
+// PATCH /notifications/:id/read - Mark single notification as read
+app.patch("/notifications/:id/read", authMiddleware, async (c) => {
+  const id = c.req.param("id");
+  await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE id = ?").bind(id).run();
+  return c.json({ success: true });
+});
+
+// POST /notifications/mark-all-read - Mark all notifications as read
+app.post("/notifications/mark-all-read", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const dbUser: any = await c.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user.userId).first();
+  const isAdmin = dbUser?.role === "ADMIN";
+
+  if (isAdmin) {
+    await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id IS NULL OR user_id = ?").bind(user.userId).run();
+  } else {
+    await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user.userId).run();
+  }
+
+  return c.json({ success: true });
+});
+
+// POST /admin/notifications/test - Trigger an instantaneous test order notification for push notification verification
+app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c) => {
+  const testOrderId = `ord-TEST-${Math.floor(1000 + Math.random() * 9000)}`;
+  const shortOrderId = testOrderId.slice(-4);
+  const sampleAmounts = [12999, 18499, 24999, 34999];
+  const sampleCustomers = ["Vikram Malhotra", "Pooja Hegde", "Arjun Reddy", "Ananya Sharma"];
+  const sampleItems = ["Buddy Royal Pocket Spring Mattress (King)", "Buddy Super Latex Luxury (Queen)", "Buddy Travel Quilt Rollaway"];
+  
+  const amount = sampleAmounts[Math.floor(Math.random() * sampleAmounts.length)];
+  const customerName = sampleCustomers[Math.floor(Math.random() * sampleCustomers.length)];
+  const itemName = sampleItems[Math.floor(Math.random() * sampleItems.length)];
+  const now = new Date().toISOString();
+
+  const notifId = `notif-${crypto.randomUUID()}`;
+  const title = `🛍️ New Order #${shortOrderId}`;
+  const message = `${customerName} placed an order for ₹${amount.toLocaleString('en-IN')} (1 item: ${itemName})`;
+  const data = JSON.stringify({
+    orderId: testOrderId,
+    shortOrderId,
+    totalAmount: amount,
+    customerName,
+    itemsCount: 1,
+    firstItemName: itemName,
+    isTest: true,
+    createdAt: now,
+  });
+
+  await c.env.DB.prepare(
+    "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_CREATED', ?, 0, ?)"
+  ).bind(notifId, title, message, data, now).run();
+
+  const createdNotif = await c.env.DB.prepare("SELECT * FROM notifications WHERE id = ?").bind(notifId).first();
+
+  return c.json({
+    success: true,
+    message: "Test push notification queued successfully",
+    notification: createdNotif,
+  });
+});
+
 export const onRequest = handle(app);
 export default app;
+

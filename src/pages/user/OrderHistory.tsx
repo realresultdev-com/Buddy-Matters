@@ -16,7 +16,7 @@ export default function OrderHistory() {
     const fetchOrders = async () => {
       try {
         const res = await orderService.myOrders();
-        setOrders(res.data || []);
+        setOrders(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Failed to load orders:", err);
       } finally {

@@ -87,7 +87,7 @@ export default function Home() {
         </div>
       ) : (
         displayCategories.map((category) => {
-          const categoryProducts = products.filter(
+          const categoryProducts = (Array.isArray(products) ? products : []).filter(
             (p) =>
               p.categoryId === category.id ||
               (p.category &&

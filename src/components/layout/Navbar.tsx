@@ -19,14 +19,39 @@ import {
   Globe,
   MapPin,
   LayoutGrid,
+  Bell,
 } from "lucide-react";
 import SearchBar from "./SearchBar";
+import NotificationCenterModal from "../common/NotificationCenterModal";
+import { notificationService } from "../../services/notification.service";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { totalCount } = useCart();
   const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
+
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const [notifModalOpen, setNotifModalOpen] = useState(false);
+
+  const refreshUnreadCount = async () => {
+    if (user?.role === "ADMIN") {
+      try {
+        const data = await notificationService.getNotifications();
+        setUnreadNotifs(data.unreadCount);
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  useEffect(() => {
+    refreshUnreadCount();
+    const unsub = notificationService.subscribe(() => {
+      setUnreadNotifs((prev) => prev + 1);
+    });
+    return unsub;
+  }, [user]);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [accountDropdown, setAccountDropdown] = useState(false);
@@ -37,7 +62,7 @@ export default function Navbar() {
     categoryService
       .getAll()
       .then((res) => {
-        if (res.data) setCategories(res.data);
+        if (Array.isArray(res?.data)) setCategories(res.data);
       })
       .catch(console.error);
   }, []);
@@ -50,15 +75,15 @@ export default function Navbar() {
   };
 
   return (
-    <header className="w-full select-none sticky top-0 z-50 shadow-md bg-[#0f172a]">
-      {/* 1. Main Header Bar (Rich Midnight Navy Theme) */}
-      <div className="border-b border-[#1e293b] px-3 sm:px-6 py-2 flex items-center justify-between gap-3 sm:gap-6 min-h-[60px] md:h-[68px]">
+    <header className="w-full select-none sticky top-0 z-50 shadow-md bg-gradient-to-b from-[#0b1728] via-[#0f172a] to-[#0f172a] pt-[env(safe-area-inset-top,0px)]">
+      {/* 1. Main Header Bar (Amazon App Style Midnight Navy Theme) */}
+      <div className="border-b border-slate-800/80 px-3 sm:px-6 py-2 flex items-center justify-between gap-2.5 sm:gap-6 min-h-[56px] md:h-[66px]">
         {/* Left: Mobile Hamburger & Logo */}
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 -ml-1 rounded-lg hover:bg-slate-800 text-slate-100 transition-colors cursor-pointer"
+            className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-slate-800 text-slate-100 transition-colors cursor-pointer active:scale-95"
             aria-label="Open navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5 text-slate-100" /> : <Menu className="w-5 h-5 text-slate-100" />}
@@ -71,7 +96,7 @@ export default function Navbar() {
             <img
               src="/logo-white.png"
               alt="Buddy Mattress"
-              className="h-8 sm:h-11 w-auto object-contain"
+              className="h-7 sm:h-10 w-auto object-contain"
             />
           </Link>
         </div>
@@ -81,34 +106,52 @@ export default function Navbar() {
           <SearchBar />
         </div>
 
-        {/* Right Action Icons: Reordered properly (Account -> Language -> Cart) */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          {/* 1. User Profile / Sign In */}
+        {/* Right Action Icons: (Notification Bell -> User Profile -> Language -> Cart) */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Admin Order Push Notification Bell */}
+          {user?.role === "ADMIN" && (
+            <button
+              type="button"
+              onClick={() => setNotifModalOpen(true)}
+              className="relative p-1.5 sm:p-2 rounded-xl text-slate-200 hover:text-amber-400 hover:bg-slate-800/60 transition-colors"
+              title="Order Push Notifications"
+              aria-label="Order notifications"
+            >
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-rose-500 text-white font-bold text-[9px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center shadow-md animate-pulse">
+                  {unreadNotifs > 9 ? "9+" : unreadNotifs}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* 1. User Profile / Sign In (Visible on both mobile & desktop) */}
           {!user ? (
             <Link
               to="/login"
-              className="hidden md:flex items-center gap-1.5 h-9 px-2.5 hover:text-[#38bdf8] text-slate-100 text-xs font-semibold transition-colors shrink-0"
+              className="flex items-center gap-1 h-8 sm:h-9 px-2 hover:text-[#38bdf8] text-slate-100 text-xs font-semibold transition-colors shrink-0 rounded-lg hover:bg-slate-800/50"
             >
               <User className="w-4 h-4 text-[#38bdf8]" />
-              <span>{t("signIn")}</span>
+              <span className="hidden sm:inline">{t("signIn")}</span>
             </Link>
           ) : (
             <div
-              className="hidden md:block relative shrink-0"
+              className="relative shrink-0"
               onMouseEnter={() => setAccountDropdown(true)}
               onMouseLeave={() => setAccountDropdown(false)}
             >
               <button
                 type="button"
                 onClick={() => setAccountDropdown((prev) => !prev)}
-                className="flex items-center gap-2 h-9 px-2 text-xs font-semibold text-slate-100 hover:text-[#38bdf8] transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 h-8 sm:h-9 px-1.5 sm:px-2 text-xs font-semibold text-slate-100 hover:text-[#38bdf8] transition-colors cursor-pointer rounded-lg hover:bg-slate-800/50"
                 aria-label="User profile"
               >
                 {user.avatar_url ? (
                   <img
                     src={user.avatar_url}
                     alt={user.name || user.email}
-                    className="w-6 h-6 sm:w-7 sm:h-7 object-contain shrink-0 rounded-full"
+                    className="w-6 h-6 sm:w-7 sm:h-7 object-cover shrink-0 rounded-full border border-[#38bdf8]/40"
                     referrerPolicy="no-referrer"
                   />
                 ) : (
@@ -168,7 +211,7 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* 2. Language Switcher */}
+          {/* 2. Language Switcher (Desktop) */}
           <div
             className="relative hidden sm:flex items-center gap-1.5 h-9 px-2 cursor-pointer transition-colors text-xs font-semibold text-slate-100 hover:text-[#38bdf8] shrink-0"
             onMouseEnter={() => setLangDropdown(true)}
@@ -218,13 +261,13 @@ export default function Navbar() {
           {/* 3. Shopping Cart Anchor Link */}
           <Link
             to="/cart"
-            className="flex items-center justify-center h-9 px-2.5 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 group cursor-pointer"
+            className="flex items-center justify-center h-8 sm:h-9 px-2 sm:px-2.5 text-slate-100 hover:text-[#38bdf8] transition-colors shrink-0 group cursor-pointer rounded-lg hover:bg-slate-800/50"
             aria-label="Shopping Cart"
           >
             <div className="relative flex items-center">
               <ShoppingCart className="w-5 h-5 text-slate-100 group-hover:text-[#38bdf8] transition-colors" />
               {totalCount > 0 && (
-                <span className="absolute -top-1.5 -right-2.5 bg-[#0ea5e9] text-white font-extrabold text-[10px] min-w-[16px] h-4 rounded-full flex items-center justify-center px-1 leading-none shadow-xs">
+                <span className="absolute -top-1.5 -right-2.5 bg-[#0ea9df] text-white font-extrabold text-[10px] min-w-[17px] h-4 rounded-full flex items-center justify-center px-1 leading-none shadow-sm">
                   {totalCount > 99 ? "99+" : totalCount}
                 </span>
               )}
@@ -234,31 +277,47 @@ export default function Navbar() {
       </div>
 
       {/* 2. Dedicated Full-Width Search Bar for Mobile Viewports (< md) */}
-      <div className="md:hidden px-3 py-2 bg-[#0f172a] border-b border-[#1e293b] w-full max-w-full">
+      <div className="md:hidden px-3 py-2 bg-[#0f172a] border-b border-slate-800/80 w-full max-w-full">
         <SearchBar isMobile onSearchComplete={() => setMobileMenuOpen(false)} />
       </div>
 
-      {/* 3. Subnav Bar (Categories Row - Slate Navy Theme) */}
-      <div className="bg-[#1e293b] border-b border-[#334155] px-3 sm:px-6 py-1 flex items-center justify-between text-xs text-slate-200 overflow-x-auto scrollbar-none h-[40px] w-full max-w-full">
-        <div className="flex items-center gap-4 sm:gap-6 shrink-0 font-medium text-xs">
+      {/* 3. Subnav Bar (Amazon App Style Pill Categories Row) */}
+      <div className="bg-[#0b1322] border-b border-slate-800/60 px-3 sm:px-6 py-1.5 flex items-center text-xs text-slate-200 overflow-x-auto scrollbar-none h-[42px] w-full max-w-full">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0 font-medium text-xs">
           <Link
             to="/shop"
-            className="py-1 px-1 text-[#38bdf8] hover:text-[#7dd3fc] font-bold transition-colors whitespace-nowrap"
+            className={`py-1 px-3.5 rounded-full transition-all whitespace-nowrap text-xs font-semibold ${
+              location.pathname === "/shop" && !location.search
+                ? "bg-[#0ea9df] text-white shadow-xs"
+                : "bg-slate-800/80 text-slate-200 hover:bg-slate-700/80 border border-slate-700/50"
+            }`}
           >
-            <span>All</span>
+            All
           </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={getCategoryUrl(cat.id)}
-              className="py-1 px-1 text-slate-200 hover:text-[#38bdf8] transition-colors whitespace-nowrap font-medium"
-            >
-              {cat.name}
-            </Link>
-          ))}
+          {Array.isArray(categories) && categories.map((cat) => {
+            const catUrl = getCategoryUrl(cat.id);
+            const isActive = location.pathname === catUrl;
+            return (
+              <Link
+                key={cat.id}
+                to={catUrl}
+                className={`py-1 px-3.5 rounded-full transition-all whitespace-nowrap text-xs font-medium ${
+                  isActive
+                    ? "bg-[#0ea9df] text-white font-semibold shadow-xs"
+                    : "bg-slate-800/80 text-slate-200 hover:bg-slate-700/80 border border-slate-700/50"
+                }`}
+              >
+                {cat.name}
+              </Link>
+            );
+          })}
           <Link
             to="/about"
-            className="py-1 px-1 text-slate-200 hover:text-[#38bdf8] transition-colors whitespace-nowrap font-medium"
+            className={`py-1 px-3.5 rounded-full transition-all whitespace-nowrap text-xs font-medium ${
+              location.pathname === "/about"
+                ? "bg-[#0ea9df] text-white font-semibold shadow-xs"
+                : "bg-slate-800/80 text-slate-200 hover:bg-slate-700/80 border border-slate-700/50"
+            }`}
           >
             About Us
           </Link>
@@ -431,7 +490,7 @@ export default function Navbar() {
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2">
                   Categories
                 </p>
-                {categories.map((cat) => (
+                {Array.isArray(categories) && categories.map((cat) => (
                   <Link
                     key={cat.id}
                     to={getCategoryUrl(cat.id)}
@@ -459,6 +518,13 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* iOS-Style Real-time Order Notification Center Modal */}
+      <NotificationCenterModal
+        isOpen={notifModalOpen}
+        onClose={() => setNotifModalOpen(false)}
+        onUpdateBadge={refreshUnreadCount}
+      />
     </header>
   );
 }

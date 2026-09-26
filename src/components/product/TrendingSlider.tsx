@@ -9,7 +9,8 @@ interface TrendingSliderProps {
 }
 
 export default function TrendingSlider({ products }: TrendingSliderProps) {
-  const trendingProducts = products.filter((p) => p.is_trending);
+  const validProducts = Array.isArray(products) ? products : [];
+  const trendingProducts = validProducts.filter((p) => p && p.is_trending);
   const n = trendingProducts.length;
 
   // With cloning for infinite loop:

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 declare global {
   interface Window {
@@ -26,71 +27,192 @@ export default function GoogleLoginButton({
   onSuccess,
   onError,
   onLoadingChange,
-  theme = "outline",
   shape = "pill",
   width = 300,
 }: GoogleLoginButtonProps) {
   const btnRef = useRef<HTMLDivElement>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [gisRendered, setGisRendered] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleCredentialResponse = async (response: any) => {
-      try {
-        setIsVerifying(true);
-        onLoadingChange?.(true);
-        const res = await authService.googleLogin(response.credential);
-        login(res.data.user, res.data.token);
-        if (onSuccess) {
-          onSuccess(res.data.user);
-        } else {
-          navigate("/", { replace: true });
-        }
-      } catch (err: any) {
-        setIsVerifying(false);
-        onLoadingChange?.(false);
-        const msg =
-          err.response?.data?.message || err.message || "Google authentication failed";
-        if (onError) onError(msg);
+  const handleCredentialResponse = async (response: any) => {
+    try {
+      setIsVerifying(true);
+      onLoadingChange?.(true);
+      const res = await authService.googleLogin(response.credential);
+      login(res.data.user, res.data.token);
+      if (onSuccess) {
+        onSuccess(res.data.user);
+      } else {
+        navigate("/", { replace: true });
       }
-    };
+    } catch (err: any) {
+      setIsVerifying(false);
+      onLoadingChange?.(false);
+      const msg =
+        err.response?.data?.message || err.message || "Google authentication failed";
+      if (onError) onError(msg);
+    }
+  };
 
+  const handleTokenResponse = async (tokenResponse: any) => {
+    try {
+      if (!tokenResponse?.access_token) {
+        throw new Error("No access token returned by Google");
+      }
+      setIsVerifying(true);
+      onLoadingChange?.(true);
+      const res = await authService.googleAccessTokenLogin(tokenResponse.access_token);
+      login(res.data.user, res.data.token);
+      if (onSuccess) {
+        onSuccess(res.data.user);
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (err: any) {
+      setIsVerifying(false);
+      onLoadingChange?.(false);
+      const msg =
+        err.response?.data?.message || err.message || "Google authentication failed";
+      if (onError) onError(msg);
+    }
+  };
+
+  // Try to render official GIS button
+  useEffect(() => {
     let checkCount = 0;
     const interval = setInterval(() => {
       checkCount++;
       if (window.google?.accounts?.id && btnRef.current) {
-        clearInterval(interval);
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-        });
-        window.google.accounts.id.renderButton(btnRef.current, {
-          theme,
-          size: "large",
-          shape,
-          width,
-          text: "continue_with",
-        });
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+            auto_select: false,
+          });
+          window.google.accounts.id.renderButton(btnRef.current, {
+            theme: "outline",
+            size: "large",
+            shape,
+            width,
+            text: "continue_with",
+          });
+          setGisRendered(true);
+          clearInterval(interval);
+        } catch (e) {
+          console.warn("GIS renderButton failed:", e);
+        }
       }
-      if (checkCount > 25) clearInterval(interval);
-    }, 150);
+      if (checkCount > 40) clearInterval(interval);
+    }, 100);
 
     return () => clearInterval(interval);
-  }, [login, navigate, onSuccess, onError, onLoadingChange, theme, shape, width]);
+  }, [shape, width]);
+
+  // Fallback direct trigger if user taps the custom button
+  const handleCustomButtonClick = () => {
+    if (isVerifying) return;
+
+    try {
+      // 1. If GIS tokenClient is available, use it for reliable token flow
+      if (window.google?.accounts?.oauth2) {
+        setIsVerifying(true);
+        onLoadingChange?.(true);
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: GOOGLE_CLIENT_ID,
+          scope: "openid profile email",
+          callback: (res: any) => {
+            if (res.error) {
+              setIsVerifying(false);
+              onLoadingChange?.(false);
+              onError?.(res.error_description || res.error || "Google sign in cancelled");
+            } else {
+              handleTokenResponse(res);
+            }
+          },
+        });
+        tokenClient.requestAccessToken({ prompt: "consent" });
+        return;
+      }
+
+      // 2. If GIS One Tap is available
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            openGoogleOAuthUrl();
+          }
+        });
+        return;
+      }
+
+      // 3. Direct OAuth URL fallback
+      openGoogleOAuthUrl();
+    } catch (e: any) {
+      console.error("Google login trigger error:", e);
+      openGoogleOAuthUrl();
+    }
+  };
+
+  const openGoogleOAuthUrl = () => {
+    const redirectUri = window.location.origin + "/login";
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
+      GOOGLE_CLIENT_ID
+    )}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&response_type=token%20id_token&scope=openid%20profile%20email&nonce=${Math.random().toString(36).substring(2)}`;
+
+    window.open(googleAuthUrl, "_blank");
+  };
 
   return (
-    <div className="w-full flex justify-center py-1 relative">
+    <div className="w-full flex flex-col items-center justify-center py-1 relative">
       {isVerifying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white/95 backdrop-blur-sm rounded-full z-10">
-          <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
-            <div className="w-4 h-4 border-2 border-[#0ea9df]/30 border-t-[#0ea9df] rounded-full animate-spin" />
-            <span>Verifying with Google...</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-white/95 backdrop-blur-xs rounded-full z-20">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+            <Loader2 className="w-4 h-4 animate-spin text-[#0ea9df]" />
+            <span>Connecting with Google...</span>
           </div>
         </div>
       )}
-      <div ref={btnRef} className="min-h-[44px] flex items-center justify-center" />
+
+      {/* Hidden/Mounted official GIS container */}
+      <div
+        ref={btnRef}
+        className={`min-h-[44px] flex items-center justify-center ${
+          gisRendered ? "block" : "hidden"
+        }`}
+      />
+
+      {/* Always-ready fallback Google Button (Displays instantly if GIS is not rendered yet) */}
+      {!gisRendered && (
+        <button
+          type="button"
+          onClick={handleCustomButtonClick}
+          disabled={isVerifying}
+          className="w-full max-w-[300px] h-[44px] px-4 rounded-full border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 shadow-xs flex items-center justify-center gap-3 transition-colors cursor-pointer select-none text-slate-700 font-medium text-xs sm:text-sm"
+        >
+          <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+            />
+          </svg>
+          <span>Continue with Google</span>
+        </button>
+      )}
     </div>
   );
 }
-

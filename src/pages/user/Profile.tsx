@@ -23,7 +23,12 @@ import {
   HelpCircle,
   Trash2,
   AlertTriangle,
+  HardDrive,
+  RefreshCw,
+  Check,
 } from "lucide-react";
+import { videoCacheService } from "../../services/videoCache.service";
+import { nativeFeedback } from "../../utils/haptics";
 
 export default function Profile() {
   const { user, logout } = useAuth();
@@ -44,6 +49,35 @@ export default function Profile() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
+  // Instagram-style video cache & storage state
+  const [cacheStats, setCacheStats] = useState<{ count: number; sizeBytes: number; formattedSize: string }>({
+    count: 0,
+    sizeBytes: 0,
+    formattedSize: "0.0 MB",
+  });
+  const [clearingCache, setClearingCache] = useState(false);
+  const [cacheClearedSuccess, setCacheClearedSuccess] = useState(false);
+
+  useEffect(() => {
+    videoCacheService.getCacheStats().then(setCacheStats).catch(() => {});
+  }, []);
+
+  const handleClearVideoCache = async () => {
+    try {
+      setClearingCache(true);
+      await videoCacheService.clearVideoCache();
+      const updated = await videoCacheService.getCacheStats();
+      setCacheStats(updated);
+      nativeFeedback.success();
+      setCacheClearedSuccess(true);
+      setTimeout(() => setCacheClearedSuccess(false), 2500);
+    } catch (err) {
+      console.error("Failed to clear video cache:", err);
+    } finally {
+      setClearingCache(false);
+    }
+  };
+
   const handleConfirmDeleteAccount = async () => {
     setIsDeletingAccount(true);
     try {
@@ -61,7 +95,7 @@ export default function Profile() {
     orderService
       .myOrders()
       .then((res) => {
-        if (res.data) setOrders(res.data);
+        if (Array.isArray(res?.data)) setOrders(res.data);
       })
       .catch((err) => console.error("Failed to load orders in profile:", err))
       .finally(() => setLoadingOrders(false));
@@ -506,7 +540,66 @@ export default function Profile() {
         )}
       </div>
 
-      {/* 5. Account Security & Privacy (Google Play Compliance) */}
+      {/* 5. Storage & Offline Media Cache (Instagram / Native MNC App Standard) */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div className="flex items-center gap-2">
+            <HardDrive className="w-5 h-5 text-gray-700" />
+            <div>
+              <h2 className="text-sm font-bold text-gray-900">Storage & Video Cache</h2>
+              <p className="text-[11px] text-gray-500">Instagram-style smart local reel & video caching</p>
+            </div>
+          </div>
+          <span className="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-800 rounded-full border border-slate-200">
+            {cacheStats.formattedSize}
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-600">
+          <div>
+            <p className="font-semibold text-gray-900">
+              {cacheStats.count > 0
+                ? `${cacheStats.count} video${cacheStats.count > 1 ? "s" : ""} cached for instant 0ms playback`
+                : "No video cache stored currently"}
+            </p>
+            <p className="text-gray-500 mt-0.5">
+              Reels and showcase videos are automatically cached locally to eliminate buffering and reduce mobile data consumption.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleClearVideoCache}
+            disabled={clearingCache || cacheStats.count === 0}
+            className={`px-3.5 py-2 rounded-xl font-semibold text-xs transition-all shrink-0 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs ${
+              cacheClearedSuccess
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-300"
+                : cacheStats.count === 0
+                ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed opacity-70"
+                : "bg-slate-900 hover:bg-slate-800 text-white"
+            }`}
+          >
+            {clearingCache ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Clearing...</span>
+              </>
+            ) : cacheClearedSuccess ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Cache Cleared!</span>
+              </>
+            ) : (
+              <>
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear Video Cache</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* 6. Account Security & Privacy (Google Play Compliance) */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2">

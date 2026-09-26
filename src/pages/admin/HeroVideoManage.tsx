@@ -56,7 +56,7 @@ export default function HeroVideoManage() {
     try {
       setLoading(true);
       const res = await heroVideoService.getAllAdmin();
-      setVideos(res.data || []);
+      setVideos(Array.isArray(res.data) ? res.data : []);
     } catch (err: any) {
       console.error("Failed to load hero videos:", err);
       setError(err.response?.data?.message || "Failed to load hero video banners.");
