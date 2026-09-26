@@ -5,9 +5,9 @@ const config: CapacitorConfig = {
   appName: 'Buddy Mattress',
   webDir: 'dist',
   server: {
-    androidScheme: 'https',
-    hostname: 'buddy-mattress-46f.pages.dev',
+    url: 'https://buddy-mattress-46f.pages.dev',
     cleartext: false,
+    androidScheme: 'https',
   },
   plugins: {
     SplashScreen: {
