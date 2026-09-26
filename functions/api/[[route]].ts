@@ -1475,6 +1475,15 @@ app.post("/orders", authMiddleware, async (c) => {
     await c.env.DB.prepare(
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_CREATED', ?, 0, ?)"
     ).bind(notifId, notifTitle, notifMessage, notifData, now).run();
+
+    // Dispatch real-time remote FCM push notification to all admin devices
+    sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+      orderId,
+      shortOrderId,
+      type: "ORDER_CREATED",
+      totalAmount: String(totalAmount),
+      customerName,
+    }).catch((err) => console.error("FCM order push error:", err));
   } catch (notifErr) {
     console.error("Failed to insert order notification:", notifErr);
   }
@@ -1717,6 +1726,15 @@ app.post("/payment/verify", authMiddleware, async (c) => {
     await c.env.DB.prepare(
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_PAID', ?, 0, datetime('now'))"
     ).bind(notifPaidId, notifTitle, notifMessage, notifData).run();
+
+    // Dispatch real-time remote FCM push notification to all admin devices
+    sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+      orderId,
+      shortOrderId,
+      type: "ORDER_PAID",
+      totalAmount: String(updatedOrder?.total_amount || 0),
+      customerName,
+    }).catch((err) => console.error("FCM payment push error:", err));
   } catch (notifErr) {
     console.error("Failed to insert payment notification:", notifErr);
   }
@@ -1998,12 +2016,243 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   const createdNotif = await c.env.DB.prepare("SELECT * FROM notifications WHERE id = ?").bind(notifId).first();
 
+  // Dispatch real-time remote FCM push notification to all admin devices
+  sendFcmPushToAdmins(c.env, title, message, {
+    orderId: testOrderId,
+    shortOrderId,
+    type: "ORDER_CREATED",
+    isTest: "true",
+  }).catch((err) => console.error("FCM test push error:", err));
+
   return c.json({
     success: true,
     message: "Test push notification queued successfully",
     notification: createdNotif,
   });
 });
+
+// POST /notifications/fcm-token - Register device FCM token
+app.post("/notifications/fcm-token", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const body = await c.req.json().catch(() => ({}));
+  const token = body.token;
+  const platform = body.platform || "android";
+
+  if (!token || typeof token !== "string") {
+    return c.json({ message: "FCM token is required" }, 400);
+  }
+
+  const tokenId = `fcm-${crypto.randomUUID()}`;
+  const now = new Date().toISOString();
+
+  // Remove existing entry for this token to prevent duplicates
+  await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE token = ?").bind(token).run();
+
+  // Save token for user
+  await c.env.DB.prepare(
+    "INSERT INTO user_fcm_tokens (id, user_id, token, platform, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
+  ).bind(tokenId, user.userId, token, platform, now, now).run();
+
+  return c.json({ success: true, message: "FCM device token registered" });
+});
+
+// DELETE /notifications/fcm-token - Unregister device FCM token
+app.delete("/notifications/fcm-token", authMiddleware, async (c) => {
+  const user = c.get("user")!;
+  const body = await c.req.json().catch(() => ({}));
+  const token = body.token;
+
+  if (token) {
+    await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE token = ?").bind(token).run();
+  } else {
+    await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE user_id = ?").bind(user.userId).run();
+  }
+
+  return c.json({ success: true, message: "FCM token unregistered" });
+});
+
+/* ==========================================================================
+   9. FIREBASE CLOUD MESSAGING (FCM) v1 DISPATCH HELPER
+   ========================================================================== */
+
+function pemToBinary(pem: string): ArrayBuffer {
+  const cleanPem = pem
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\\n/g, "")
+    .replace(/\s+/g, "");
+  const binaryString = atob(cleanPem);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+function base64UrlEncode(data: string | Uint8Array): string {
+  let base64: string;
+  if (typeof data === "string") {
+    base64 = btoa(data);
+  } else {
+    let binary = "";
+    const bytes = new Uint8Array(data);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    base64 = btoa(binary);
+  }
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+let cachedGoogleAccessToken: { token: string; expiresAt: number } | null = null;
+
+async function getGoogleAccessToken(serviceAccount: { client_email: string; private_key: string }): Promise<string> {
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (cachedGoogleAccessToken && cachedGoogleAccessToken.expiresAt > nowSec + 60) {
+    return cachedGoogleAccessToken.token;
+  }
+
+  const header = { alg: "RS256", typ: "JWT" };
+  const claimSet = {
+    iss: serviceAccount.client_email,
+    scope: "https://www.googleapis.com/auth/firebase.messaging",
+    aud: "https://oauth2.googleapis.com/token",
+    exp: nowSec + 3600,
+    iat: nowSec,
+  };
+
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
+  const encodedClaimSet = base64UrlEncode(JSON.stringify(claimSet));
+  const unsignedToken = `${encodedHeader}.${encodedClaimSet}`;
+
+  const binaryKey = pemToBinary(serviceAccount.private_key);
+  const cryptoKey = await crypto.subtle.importKey(
+    "pkcs8",
+    binaryKey,
+    { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signature = await crypto.subtle.sign(
+    "RSASSA-PKCS1-v1_5",
+    cryptoKey,
+    new TextEncoder().encode(unsignedToken)
+  );
+
+  const signedJwt = `${unsignedToken}.${base64UrlEncode(new Uint8Array(signature))}`;
+
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      assertion: signedJwt,
+    }),
+  });
+
+  if (!tokenRes.ok) {
+    const errText = await tokenRes.text();
+    throw new Error(`Failed to exchange Google OAuth2 token: ${errText}`);
+  }
+
+  const tokenData: any = await tokenRes.json();
+  cachedGoogleAccessToken = {
+    token: tokenData.access_token,
+    expiresAt: nowSec + (tokenData.expires_in || 3600),
+  };
+  return cachedGoogleAccessToken.token;
+}
+
+async function sendFcmPushToAdmins(
+  env: any,
+  title: string,
+  body: string,
+  dataPayload: Record<string, string> = {}
+) {
+  try {
+    const tokensRes: any = await env.DB.prepare(
+      `SELECT t.id, t.token FROM user_fcm_tokens t
+       JOIN users u ON u.id = t.user_id
+       WHERE u.role = 'ADMIN'`
+    ).all();
+
+    const tokens: { id: string; token: string }[] = tokensRes?.results || [];
+    if (tokens.length === 0) {
+      console.log("[FCM] No registered admin device tokens found in database");
+      return;
+    }
+
+    let serviceAccount: any = null;
+    if (env.FIREBASE_SERVICE_ACCOUNT) {
+      try {
+        serviceAccount = typeof env.FIREBASE_SERVICE_ACCOUNT === "string"
+          ? JSON.parse(env.FIREBASE_SERVICE_ACCOUNT)
+          : env.FIREBASE_SERVICE_ACCOUNT;
+      } catch (err) {
+        console.error("[FCM] Failed to parse FIREBASE_SERVICE_ACCOUNT:", err);
+      }
+    }
+
+    if (!serviceAccount) {
+      console.warn("[FCM] FIREBASE_SERVICE_ACCOUNT secret not configured in Cloudflare environment. Remote push notification skipped.");
+      return;
+    }
+
+    const projectId = serviceAccount.project_id || "buddy-matters";
+    const accessToken = await getGoogleAccessToken(serviceAccount);
+
+    for (const item of tokens) {
+      try {
+        const payload = {
+          message: {
+            token: item.token,
+            notification: {
+              title,
+              body,
+            },
+            data: dataPayload,
+            android: {
+              priority: "high",
+              notification: {
+                channel_id: "orders_channel",
+                sound: "default",
+                notification_priority: "PRIORITY_MAX",
+                default_vibrate_timings: true,
+              },
+            },
+          },
+        };
+
+        const fcmRes = await fetch(
+          `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        if (!fcmRes.ok) {
+          const resErr = await fcmRes.json().catch(() => ({}));
+          console.error(`[FCM] Send error for token ${item.token.slice(0, 10)}...:`, resErr);
+          if (fcmRes.status === 404 || fcmRes.status === 410) {
+            await env.DB.prepare("DELETE FROM user_fcm_tokens WHERE id = ?").bind(item.id).run();
+          }
+        } else {
+          console.log(`[FCM] Successfully delivered push notification to admin device!`);
+        }
+      } catch (sendErr) {
+        console.error("[FCM] Failed to send push notification to token:", sendErr);
+      }
+    }
+  } catch (err) {
+    console.error("[FCM] sendFcmPushToAdmins execution error:", err);
+  }
+}
 
 export const onRequest = handle(app);
 export default app;

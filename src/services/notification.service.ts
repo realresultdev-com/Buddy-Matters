@@ -1,4 +1,5 @@
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, NotificationType } from "@capacitor/haptics";
 import { playIosChime } from "../utils/sound";
@@ -44,6 +45,7 @@ class NotificationService {
 
     if (Capacitor.isNativePlatform()) {
       try {
+        // 1. Local Notifications Permissions & Channel
         const perm = await LocalNotifications.checkPermissions();
         if (perm.display !== "granted") {
           await LocalNotifications.requestPermissions();
@@ -61,17 +63,54 @@ class NotificationService {
           lightColor: "#f59e0b",
         });
 
-        // Listen for user tap on native system notification
+        // Listen for user tap on local notification
         LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
-          const extra = action.notification.extra;
-          if (extra?.orderId) {
-            window.location.href = `/admin/orders`;
-          } else {
-            window.location.href = `/admin/orders`;
-          }
+          window.location.href = `/admin/orders`;
+        });
+
+        // 2. Firebase Cloud Messaging (FCM) Remote Push Notifications
+        const pushPerm = await PushNotifications.checkPermissions();
+        if (pushPerm.receive !== "granted") {
+          await PushNotifications.requestPermissions();
+        }
+
+        // Register device with FCM / APNs
+        await PushNotifications.register();
+
+        // Listen for device FCM registration token
+        PushNotifications.addListener("registration", async (token) => {
+          console.log("Device FCM registration token received:", token.value);
+          localStorage.setItem("fcm_device_token", token.value);
+          await this.syncDeviceToken();
+        });
+
+        PushNotifications.addListener("registrationError", (err) => {
+          console.warn("FCM registration error:", err);
+        });
+
+        // Listen for remote push notifications received while app is in foreground
+        PushNotifications.addListener("pushNotificationReceived", async (notification) => {
+          console.log("FCM push notification received in foreground:", notification);
+          const notifItem: AppNotification = {
+            id: notification.id || `fcm-${Date.now()}`,
+            user_id: null,
+            title: notification.title || "🛍️ New Order Alert",
+            message: notification.body || "New order placed by customer",
+            type: (notification.data?.type as string) || "ORDER_CREATED",
+            data: JSON.stringify(notification.data || {}),
+            is_read: 0,
+            created_at: new Date().toISOString(),
+          };
+          await this.triggerAlert(notifItem);
+        });
+
+        // Listen for user tap on native system tray push notification
+        PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
+          console.log("User tapped FCM push notification:", action);
+          window.location.href = `/admin/orders`;
         });
       } catch (err) {
-        console.warn("Native LocalNotifications setup skipped:", err);
+        console.warn("Native Push/LocalNotifications setup skipped or failed:", err);
       }
     }
   }
@@ -148,6 +187,9 @@ class NotificationService {
    */
   startAdminPolling(): void {
     this.stopAdminPolling();
+
+    // Ensure FCM token is synced to database for admin
+    this.syncDeviceToken();
 
     // Perform immediate check
     this.checkNewNotifications();
@@ -254,9 +296,45 @@ class NotificationService {
   /**
    * Mark all as read
    */
+  /**
+   * Mark all as read
+   */
   async markAllAsRead(): Promise<void> {
     await api.post("/notifications/mark-all-read");
+  }
+
+  /**
+   * Sync native FCM device token to backend for current logged-in user
+   */
+  async syncDeviceToken(): Promise<void> {
+    const token = localStorage.getItem("fcm_device_token");
+    const authToken = localStorage.getItem("token");
+    if (!token || !authToken) return;
+
+    try {
+      await api.post("/notifications/fcm-token", {
+        token,
+        platform: Capacitor.getPlatform() || "android",
+      });
+      console.log("FCM device token synced with backend");
+    } catch (err) {
+      console.warn("Failed to sync FCM device token:", err);
+    }
+  }
+
+  /**
+   * Remove native FCM device token on logout
+   */
+  async removeDeviceToken(): Promise<void> {
+    const token = localStorage.getItem("fcm_device_token");
+    if (!token) return;
+    try {
+      await api.delete("/notifications/fcm-token", { data: { token } });
+    } catch (err) {
+      console.warn("Failed to remove FCM device token:", err);
+    }
   }
 }
 
 export const notificationService = new NotificationService();
+
