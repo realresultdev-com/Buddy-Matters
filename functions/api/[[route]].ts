@@ -1476,8 +1476,8 @@ app.post("/orders", authMiddleware, async (c) => {
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_CREATED', ?, 0, ?)"
     ).bind(notifId, notifTitle, notifMessage, notifData, now).run();
 
-    // Dispatch real-time remote FCM push notification to all admin devices
-    sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+    // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
+    await sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
       orderId,
       shortOrderId,
       type: "ORDER_CREATED",
@@ -1727,8 +1727,8 @@ app.post("/payment/verify", authMiddleware, async (c) => {
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_PAID', ?, 0, datetime('now'))"
     ).bind(notifPaidId, notifTitle, notifMessage, notifData).run();
 
-    // Dispatch real-time remote FCM push notification to all admin devices
-    sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+    // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
+    await sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
       orderId,
       shortOrderId,
       type: "ORDER_PAID",
@@ -2016,17 +2016,18 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   const createdNotif = await c.env.DB.prepare("SELECT * FROM notifications WHERE id = ?").bind(notifId).first();
 
-  // Dispatch real-time remote FCM push notification to all admin devices
-  sendFcmPushToAdmins(c.env, title, message, {
+  // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
+  const fcmDiagnostics = await sendFcmPushToAdmins(c.env, title, message, {
     orderId: testOrderId,
     shortOrderId,
     type: "ORDER_CREATED",
     isTest: "true",
-  }).catch((err) => console.error("FCM test push error:", err));
+  }).catch((err: any) => ({ error: err.message || String(err) }));
 
   return c.json({
     success: true,
-    message: "Test push notification queued successfully",
+    message: "Test push notification processed",
+    fcmDiagnostics,
     notification: createdNotif,
   });
 });
@@ -2169,7 +2170,8 @@ async function sendFcmPushToAdmins(
   title: string,
   body: string,
   dataPayload: Record<string, string> = {}
-) {
+): Promise<{ success: boolean; tokensCount: number; deliveredCount: number; errors: any[] }> {
+  const summary = { success: false, tokensCount: 0, deliveredCount: 0, errors: [] as any[] };
   try {
     const tokensRes: any = await env.DB.prepare(
       `SELECT DISTINCT t.id, t.token FROM user_fcm_tokens t
@@ -2178,9 +2180,10 @@ async function sendFcmPushToAdmins(
     ).all();
 
     const tokens: { id: string; token: string }[] = tokensRes?.results || [];
+    summary.tokensCount = tokens.length;
     if (tokens.length === 0) {
       console.log("[FCM] No registered admin device tokens found in database");
-      return;
+      return summary;
     }
 
     let serviceAccount: any = null;
@@ -2196,11 +2199,18 @@ async function sendFcmPushToAdmins(
 
     if (!serviceAccount) {
       console.warn("[FCM] FIREBASE_SERVICE_ACCOUNT secret not configured in Cloudflare environment. Remote push notification skipped.");
-      return;
+      summary.errors.push("FIREBASE_SERVICE_ACCOUNT secret missing");
+      return summary;
     }
 
     const projectId = serviceAccount.project_id || "buddy-matters";
     const accessToken = await getGoogleAccessToken(serviceAccount);
+
+    // FCM v1 strictly requires ALL data payload values to be strings
+    const sanitizedData: Record<string, string> = {};
+    for (const [k, v] of Object.entries(dataPayload)) {
+      sanitizedData[k] = typeof v === "string" ? v : String(v ?? "");
+    }
 
     for (const item of tokens) {
       try {
@@ -2211,7 +2221,7 @@ async function sendFcmPushToAdmins(
               title,
               body,
             },
-            data: dataPayload,
+            data: sanitizedData,
             android: {
               priority: "high",
               notification: {
@@ -2239,19 +2249,25 @@ async function sendFcmPushToAdmins(
         if (!fcmRes.ok) {
           const resErr = await fcmRes.json().catch(() => ({}));
           console.error(`[FCM] Send error for token ${item.token.slice(0, 10)}...:`, resErr);
+          summary.errors.push({ tokenPrefix: item.token.slice(0, 10), error: resErr });
           if (fcmRes.status === 404 || fcmRes.status === 410) {
             await env.DB.prepare("DELETE FROM user_fcm_tokens WHERE id = ?").bind(item.id).run();
           }
         } else {
+          summary.deliveredCount++;
+          summary.success = true;
           console.log(`[FCM] Successfully delivered push notification to admin device!`);
         }
-      } catch (sendErr) {
+      } catch (sendErr: any) {
+        summary.errors.push({ error: sendErr.message || String(sendErr) });
         console.error("[FCM] Failed to send push notification to token:", sendErr);
       }
     }
-  } catch (err) {
+  } catch (err: any) {
+    summary.errors.push({ executionError: err.message || String(err) });
     console.error("[FCM] sendFcmPushToAdmins execution error:", err);
   }
+  return summary;
 }
 
 export const onRequest = handle(app);
