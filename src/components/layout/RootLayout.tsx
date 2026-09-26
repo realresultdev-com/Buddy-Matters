@@ -3,9 +3,13 @@ import { useEffect } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import MobileBottomNav from "./MobileBottomNav";
+import { useCapacitorNative } from "../../hooks/useCapacitorNative";
 
 export default function RootLayout() {
   const { pathname, search } = useLocation();
+
+  // Android Native Hardware back button, status bar, and splash screen handling
+  useCapacitorNative();
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });

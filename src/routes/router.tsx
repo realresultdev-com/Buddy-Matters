@@ -18,6 +18,7 @@ import TermsOfService from "../pages/public/TermsOfService";
 import RefundPolicy from "../pages/public/RefundPolicy";
 import ShippingPolicy from "../pages/public/ShippingPolicy";
 import GrievanceRedressal from "../pages/public/GrievanceRedressal";
+import AccountDeletion from "../pages/public/AccountDeletion";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 
@@ -58,6 +59,8 @@ export const router = createBrowserRouter([
       { path: "shipping-policy", element: <ShippingPolicy /> },
       { path: "grievance", element: <GrievanceRedressal /> },
       { path: "grievance-redressal", element: <GrievanceRedressal /> },
+      { path: "delete-account", element: <AccountDeletion /> },
+      { path: "account-deletion", element: <AccountDeletion /> },
       { path: "product/:id", element: <ProductDetail /> },
       { path: "category/:id", element: <CategoryPage /> },
       { path: "cart", element: <Cart /> },

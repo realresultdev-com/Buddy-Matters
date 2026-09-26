@@ -21,6 +21,8 @@ import {
   ShieldCheck,
   Globe,
   HelpCircle,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function Profile() {
@@ -37,6 +39,22 @@ export default function Profile() {
   const [returnReason, setReturnReason] = useState("Too firm / comfort preference");
   const [returnNotes, setReturnNotes] = useState("");
   const [returnSubmitted, setReturnSubmitted] = useState(false);
+
+  // Account deletion state (Google Play Policy Compliance)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  const handleConfirmDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      localStorage.removeItem(`buddy_addresses_${user?.id}`);
+      await logout();
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Account deletion failed:", err);
+      setIsDeletingAccount(false);
+    }
+  };
 
   useEffect(() => {
     // Load user orders
@@ -488,7 +506,40 @@ export default function Profile() {
         )}
       </div>
 
-      {/* 5. Return & Exchange Request Modal */}
+      {/* 5. Account Security & Privacy (Google Play Compliance) */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-gray-700" />
+            <h2 className="text-sm font-bold text-gray-900">Account Privacy & Security</h2>
+          </div>
+          <Link
+            to="/privacy"
+            className="text-xs font-semibold text-blue-600 hover:underline"
+          >
+            Privacy Policy
+          </Link>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-600">
+          <div>
+            <p className="font-semibold text-gray-900">Delete Account & Associated Data</p>
+            <p className="text-gray-500 mt-0.5">
+              Permanently remove your account, saved addresses, and profile data from our records.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDeleteModalOpen(true)}
+            className="px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl font-semibold text-xs transition-colors shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete Account
+          </button>
+        </div>
+      </div>
+
+      {/* 6. Return & Exchange Request Modal */}
       {returnModalOpen && selectedOrderForReturn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-150">
@@ -585,6 +636,49 @@ export default function Profile() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Account Deletion Confirmation Modal (Google Play Policy) */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-150 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="text-lg font-bold text-gray-900">Delete Account & Data?</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                This action is permanent and cannot be undone. All your profile information, order history records, and saved addresses will be purged.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 text-xs text-gray-600">
+              <span className="block font-semibold text-gray-800">Account:</span>
+              <span className="font-mono">{user.email}</span>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteModalOpen(false)}
+                disabled={isDeletingAccount}
+                className="flex-1 py-2.5 rounded-xl border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteAccount}
+                disabled={isDeletingAccount}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {isDeletingAccount ? "Deleting..." : "Yes, Delete Account"}
+              </button>
+            </div>
           </div>
         </div>
       )}
