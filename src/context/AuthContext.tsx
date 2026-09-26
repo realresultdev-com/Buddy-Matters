@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { User } from "../types/user.types";
 import { authService } from "../services/auth.service";
+import { notificationService } from "../services/notification.service";
 
 interface AuthContextType {
   user: User | null;
@@ -23,7 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedToken) {
         try {
           const res = await authService.me();
-          setUser(res.data);
+          const validUser = (res.data as any)?.user || res.data;
+          setUser(validUser);
+          // Sync device token on startup so native FCM push tokens stay linked
+          notificationService.syncDeviceToken();
         } catch {
           localStorage.removeItem("token");
           setToken(null);
@@ -36,9 +40,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (u: User, t: string) => {
-    setUser(u);
+    const validUser = (u as any)?.user || u;
+    setUser(validUser);
     setToken(t);
     localStorage.setItem("token", t);
+    // Immediately ensure device token is synced with backend upon login
+    notificationService.syncDeviceToken();
   };
 
   const logout = () => {

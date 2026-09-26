@@ -280,7 +280,7 @@ app.get("/auth/me", authMiddleware, async (c) => {
     return c.json({ message: "User not found" }, 404);
   }
 
-  return c.json(user);
+  return c.json({ ...user, user });
 });
 
 /* ==========================================================================
@@ -2172,9 +2172,9 @@ async function sendFcmPushToAdmins(
 ) {
   try {
     const tokensRes: any = await env.DB.prepare(
-      `SELECT t.id, t.token FROM user_fcm_tokens t
+      `SELECT DISTINCT t.id, t.token FROM user_fcm_tokens t
        JOIN users u ON u.id = t.user_id
-       WHERE u.role = 'ADMIN'`
+       WHERE UPPER(u.role) = 'ADMIN'`
     ).all();
 
     const tokens: { id: string; token: string }[] = tokensRes?.results || [];

@@ -78,7 +78,7 @@ export default function MobileBottomNav() {
       ? [
           {
             name: "Admin",
-            to: "/admin",
+            to: "/admin/orders",
             icon: ShieldCheck,
             active: currentPath.startsWith("/admin"),
           },

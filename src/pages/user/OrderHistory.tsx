@@ -3,10 +3,12 @@ import { orderService } from "../../services/order.service";
 import type { Order } from "../../types/order.types";
 import Loader from "../../components/common/Loader";
 import { Link } from "react-router-dom";
-import { Search, ShoppingBag } from "lucide-react";
+import { Search, ShoppingBag, ShieldCheck } from "lucide-react";
 import { getProductUrl } from "../../utils/urlSecurity";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function OrderHistory() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("Orders");
@@ -74,6 +76,29 @@ export default function OrderHistory() {
           </div>
         </div>
       </div>
+
+      {/* Admin Notice Bar */}
+      {user?.role === "ADMIN" && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-amber-800 shrink-0">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-amber-900">Administrator Store Management</p>
+              <p className="text-[11px] text-amber-700">
+                You are viewing personal customer orders. To view all customer orders and live store transactions:
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/admin/orders"
+            className="px-3.5 py-1.5 bg-gray-900 hover:bg-black text-white rounded-lg text-xs font-semibold shrink-0 text-center transition-colors shadow-2xs"
+          >
+            Manage All Orders →
+          </Link>
+        </div>
+      )}
 
       {/* Navigation Tabs */}
       <div className="flex border-b border-slate-200 text-xs font-medium text-slate-600 gap-8 overflow-x-auto scrollbar-none">
