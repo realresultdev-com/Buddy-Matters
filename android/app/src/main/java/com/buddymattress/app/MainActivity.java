@@ -111,9 +111,32 @@ public class MainActivity extends BridgeActivity {
                 });
 
                 popupWebView.setWebViewClient(new WebViewClient() {
+                    private boolean checkAndForwardAuth(String url) {
+                        if (url == null) return false;
+                        if ((url.contains("/login") || url.contains("buddy-mattress-46f.pages.dev") || url.contains("localhost")) &&
+                            (url.contains("access_token=") || url.contains("id_token=") || url.contains("code=") || url.contains("credential="))) {
+                            webView.loadUrl(url);
+                            try {
+                                dialog.dismiss();
+                            } catch (Exception ignored) {}
+                            return true;
+                        }
+                        return false;
+                    }
+
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest request) {
+                        String url = request.getUrl() != null ? request.getUrl().toString() : "";
+                        if (checkAndForwardAuth(url)) {
+                            return true;
+                        }
                         return false;
+                    }
+
+                    @Override
+                    public void onPageStarted(WebView v, String url, android.graphics.Bitmap favicon) {
+                        super.onPageStarted(v, url, favicon);
+                        checkAndForwardAuth(url);
                     }
                 });
 
