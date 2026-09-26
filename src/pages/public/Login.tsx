@@ -102,8 +102,36 @@ export default function Login() {
     setError(null);
     setSuccessUser(loggedInUser);
     setIsVerifying(false);
+    setOauthHandoffUrl(null);
 
-    // Provide a smooth 400ms transition so user sees positive feedback before page switch
+    // 1. If opened in a popup window (window.opener), post message to parent and close popup!
+    if (window.opener && window.opener !== window) {
+      try {
+        window.opener.postMessage(
+          {
+            type: "OAUTH_SUCCESS",
+            user: loggedInUser,
+            token: localStorage.getItem("token"),
+          },
+          "*"
+        );
+      } catch (_) {}
+      setTimeout(() => {
+        try {
+          window.close();
+        } catch (_) {}
+      }, 200);
+      return;
+    }
+
+    // 2. If opened in Capacitor Browser, attempt to close
+    try {
+      import("@capacitor/browser").then(({ Browser }) => {
+        Browser.close().catch(() => {});
+      }).catch(() => {});
+    } catch (_) {}
+
+    // 3. Smooth transition to destination
     setTimeout(() => {
       navigate(redirectPath, { replace: true });
     }, 400);
@@ -137,12 +165,27 @@ export default function Login() {
           <p className="text-sm text-slate-400 max-w-xs mb-6">
             Returning to the Buddy Mattress app...
           </p>
-          <a
-            href={oauthHandoffUrl}
-            className="w-full max-w-xs py-3.5 px-6 rounded-2xl bg-[#0ea9df] hover:bg-[#0c96c7] text-white font-bold text-sm shadow-lg shadow-[#0ea9df]/25 active:scale-95 transition-all text-center block"
-          >
-            Continue to App
-          </a>
+          <div className="flex flex-col gap-3 w-full max-w-xs">
+            <a
+              href={oauthHandoffUrl}
+              onClick={() => {
+                setTimeout(() => setOauthHandoffUrl(null), 800);
+              }}
+              className="w-full py-3.5 px-6 rounded-2xl bg-[#0ea9df] hover:bg-[#0c96c7] text-white font-bold text-sm shadow-lg shadow-[#0ea9df]/25 active:scale-95 transition-all text-center block"
+            >
+              Continue to App
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                setOauthHandoffUrl(null);
+                navigate(redirectPath, { replace: true });
+              }}
+              className="text-xs text-slate-400 hover:text-white underline py-1 cursor-pointer"
+            >
+              Close this window
+            </button>
+          </div>
         </div>
       )}
 

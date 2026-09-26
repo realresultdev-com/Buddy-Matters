@@ -41,12 +41,32 @@ export default function GoogleLoginButton({
 
   const isNative = Capacitor.isNativePlatform();
 
+  // Listen for OAuth completion from popup window
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === "OAUTH_SUCCESS" && event.data?.user && event.data?.token) {
+        login(event.data.user, event.data.token);
+        setIsVerifying(false);
+        onLoadingChange?.(false);
+        if (onSuccess) {
+          onSuccess(event.data.user);
+        } else {
+          navigate("/", { replace: true });
+        }
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [login, onSuccess, navigate, onLoadingChange]);
+
   const handleCredentialResponse = async (response: any) => {
     try {
       setIsVerifying(true);
       onLoadingChange?.(true);
       const res = await authService.googleLogin(response.credential);
       login(res.data.user, res.data.token);
+      setIsVerifying(false);
+      onLoadingChange?.(false);
       if (onSuccess) {
         onSuccess(res.data.user);
       } else {
@@ -70,6 +90,8 @@ export default function GoogleLoginButton({
       onLoadingChange?.(true);
       const res = await authService.googleAccessTokenLogin(tokenResponse.access_token);
       login(res.data.user, res.data.token);
+      setIsVerifying(false);
+      onLoadingChange?.(false);
       if (onSuccess) {
         onSuccess(res.data.user);
       } else {
@@ -156,6 +178,8 @@ export default function GoogleLoginButton({
             : await authService.googleAccessTokenLogin(accessToken!);
 
           login(authRes.data.user, authRes.data.token);
+          setIsVerifying(false);
+          onLoadingChange?.(false);
           if (onSuccess) {
             onSuccess(authRes.data.user);
           } else {
