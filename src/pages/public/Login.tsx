@@ -9,6 +9,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [successUser, setSuccessUser] = useState<any>(null);
+  const [oauthHandoffUrl, setOauthHandoffUrl] = useState<string | null>(null);
 
   // Email / Password states
   const [showEmailLogin, setShowEmailLogin] = useState(false);
@@ -35,22 +36,39 @@ export default function Login() {
     }
   }, [user, loading, isVerifying, successUser, navigate, redirectPath]);
 
-  // Check URL hash for OAuth redirect token
+  // Check URL hash / search for OAuth redirect token
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && (hash.includes("access_token=") || hash.includes("id_token="))) {
+    const search = window.location.search;
+    const hasTokens =
+      (hash && (hash.includes("access_token=") || hash.includes("id_token="))) ||
+      (search && (search.includes("access_token=") || search.includes("id_token=")));
+
+    if (hasTokens) {
+      const rawHash = hash ? hash.substring(1) : "";
+      const queryStr = rawHash ? `?${rawHash}` : search;
+      const androidIntent = `intent://login${queryStr}#Intent;scheme=com.buddymattress.app;package=com.buddymattress.app;end`;
+      const customScheme = `com.buddymattress.app://login${queryStr}`;
+
       // 1. If running in external browser / Chrome Custom Tab on mobile, trigger app deep link
       try {
         const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
         if (isMobile && !(window as any).Capacitor?.isNativePlatform?.()) {
-          window.location.href = `com.buddymattress.app://login${hash}`;
+          setOauthHandoffUrl(androidIntent);
+          try {
+            window.location.replace(androidIntent);
+          } catch (_) {
+            window.location.replace(customScheme);
+          }
         }
       } catch (_) {}
 
       // 2. Also authenticate directly in the current web context
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get("access_token");
-      const idToken = params.get("id_token");
+      const hashParams = new URLSearchParams(rawHash);
+      const searchParams = new URLSearchParams(search);
+      const accessToken =
+        hashParams.get("access_token") || searchParams.get("access_token");
+      const idToken = hashParams.get("id_token") || searchParams.get("id_token");
 
       if (accessToken) {
         setIsVerifying(true);
@@ -109,7 +127,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-between items-center px-4 py-8 select-none font-sans">
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-between items-center px-4 py-8 select-none font-sans relative">
+      {oauthHandoffUrl && (
+        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-4 ring-8 ring-emerald-500/10 animate-pulse">
+            <CheckCircle2 className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Google Sign-in Successful!</h2>
+          <p className="text-sm text-slate-400 max-w-xs mb-6">
+            Returning to the Buddy Mattress app...
+          </p>
+          <a
+            href={oauthHandoffUrl}
+            className="w-full max-w-xs py-3.5 px-6 rounded-2xl bg-[#0ea9df] hover:bg-[#0c96c7] text-white font-bold text-sm shadow-lg shadow-[#0ea9df]/25 active:scale-95 transition-all text-center block"
+          >
+            Continue to App
+          </a>
+        </div>
+      )}
+
       <div className="w-full flex-1 flex flex-col items-center justify-center">
         {/* Modern Floating Card */}
         <div className="w-full max-w-[370px] bg-white rounded-[28px] p-6 sm:p-8 shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-black/[0.05] text-center space-y-5 transition-all duration-300">

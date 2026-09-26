@@ -80,26 +80,34 @@ export function useCapacitorNative() {
         const rawUrl = event.url;
         if (!rawUrl) return;
 
-        // Check for Google OAuth tokens in URL hash
-        // e.g. com.buddymattress.app://login#access_token=... or https://buddy-mattress-46f.pages.dev/login#access_token=...
-        const hashIdx = rawUrl.indexOf("#");
-        if (hashIdx !== -1) {
-          const hashStr = rawUrl.substring(hashIdx + 1);
-          const params = new URLSearchParams(hashStr);
-          const accessToken = params.get("access_token");
-          const idToken = params.get("id_token");
+        // Check for Google OAuth tokens in URL query params or hash fragment
+        let accessToken: string | null = null;
+        let idToken: string | null = null;
 
-          if (accessToken || idToken) {
-            try {
-              const res = accessToken
-                ? await authService.googleAccessTokenLogin(accessToken)
-                : await authService.googleLogin(idToken!);
-              login(res.data.user, res.data.token);
-              navigate("/", { replace: true });
-              return;
-            } catch (err: any) {
-              console.error("Deep Link Google Auth verification error:", err);
-            }
+        if (rawUrl.includes("#")) {
+          const hashStr = rawUrl.substring(rawUrl.indexOf("#") + 1);
+          const params = new URLSearchParams(hashStr);
+          accessToken = params.get("access_token") || accessToken;
+          idToken = params.get("id_token") || idToken;
+        }
+
+        if (rawUrl.includes("?")) {
+          const queryStr = rawUrl.substring(rawUrl.indexOf("?") + 1).split("#")[0];
+          const params = new URLSearchParams(queryStr);
+          accessToken = params.get("access_token") || accessToken;
+          idToken = params.get("id_token") || idToken;
+        }
+
+        if (accessToken || idToken) {
+          try {
+            const res = accessToken
+              ? await authService.googleAccessTokenLogin(accessToken)
+              : await authService.googleLogin(idToken!);
+            login(res.data.user, res.data.token);
+            navigate("/", { replace: true });
+            return;
+          } catch (err: any) {
+            console.error("Deep Link Google Auth verification error:", err);
           }
         }
 

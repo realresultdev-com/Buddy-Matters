@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
+import { SocialLogin } from "@capgo/capacitor-social-login";
 
 declare global {
   interface Window {
@@ -116,16 +117,66 @@ export default function GoogleLoginButton({
     return () => clearInterval(interval);
   }, [shape, width, isNative]);
 
-  // Click trigger (Handles both Native Chrome Custom Tabs and Web OAuth)
+  // Click trigger (Handles Native Android Credential Manager, Custom Tabs, and Web OAuth)
   const handleCustomButtonClick = async () => {
     if (isVerifying) return;
 
-    // 1. Native Android / iOS: Open in Chrome Custom Tabs with device account picker
+    // 1. Native Android / iOS Flow
     if (isNative) {
-      try {
-        setIsVerifying(true);
-        onLoadingChange?.(true);
+      setIsVerifying(true);
+      onLoadingChange?.(true);
 
+      // A. Attempt Native Android Credential Manager (Instant 1-Tap bottom sheet without browser)
+      try {
+        await SocialLogin.initialize({
+          google: {
+            webClientId: GOOGLE_CLIENT_ID,
+            mode: "online",
+          },
+        });
+
+        const res = await SocialLogin.login({
+          provider: "google",
+          options: {
+            scopes: ["profile", "email"],
+            style: "bottom",
+          },
+        });
+
+        const resultAny = res.result as any;
+        const idToken = resultAny?.idToken;
+        const accessToken =
+          typeof resultAny?.accessToken === "string"
+            ? resultAny.accessToken
+            : resultAny?.accessToken?.token;
+
+        if (idToken || accessToken) {
+          const authRes = idToken
+            ? await authService.googleLogin(idToken)
+            : await authService.googleAccessTokenLogin(accessToken!);
+
+          login(authRes.data.user, authRes.data.token);
+          if (onSuccess) {
+            onSuccess(authRes.data.user);
+          } else {
+            navigate("/", { replace: true });
+          }
+          return;
+        }
+      } catch (nativeErr: any) {
+        console.warn("Native SocialLogin attempt:", nativeErr);
+        if (
+          nativeErr?.code === "USER_CANCELLED" ||
+          nativeErr?.message?.toLowerCase().includes("cancel")
+        ) {
+          setIsVerifying(false);
+          onLoadingChange?.(false);
+          return;
+        }
+      }
+
+      // B. Fallback to Chrome Custom Tabs with device account picker
+      try {
         const redirectUri = "https://buddy-mattress-46f.pages.dev/login";
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
           GOOGLE_CLIENT_ID
