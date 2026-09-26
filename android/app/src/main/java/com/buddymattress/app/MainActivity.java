@@ -10,6 +10,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.browser.customtabs.CustomTabsIntent;
 import com.getcapacitor.BridgeActivity;
 import com.getcapacitor.BridgeWebChromeClient;
 
@@ -44,6 +47,12 @@ public class MainActivity extends BridgeActivity {
         super.onBackPressed();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
     private void configureWebViewSettings() {
         if (bridge == null || bridge.getWebView() == null) return;
 
@@ -58,7 +67,7 @@ public class MainActivity extends BridgeActivity {
         final String cleanUA = defaultUA.replace("; wv", "").replaceAll("Version\\/\\d+\\.\\d+\\s*", "");
         settings.setUserAgentString(cleanUA);
 
-        // 3. Multi-window / popup window support for Google OAuth popup
+        // 3. Multi-window / popup window support
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
@@ -74,74 +83,34 @@ public class MainActivity extends BridgeActivity {
         settings.setCacheMode(WebSettings.LOAD_DEFAULT);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
 
-        // 6. Setup BridgeWebChromeClient override to handle popups (Google Auth window.open)
+        // 6. Setup BridgeWebChromeClient override: Route any popup / window.open to Chrome Custom Tabs
+        // This ensures the user's real device Google accounts are available instead of an isolated incognito WebView!
         webView.setWebChromeClient(new BridgeWebChromeClient(bridge) {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-                WebView popupWebView = new WebView(MainActivity.this);
-                WebSettings popupSettings = popupWebView.getSettings();
-                popupSettings.setJavaScriptEnabled(true);
-                popupSettings.setDomStorageEnabled(true);
-                popupSettings.setDatabaseEnabled(true);
-                popupSettings.setSupportMultipleWindows(true);
-                popupSettings.setJavaScriptCanOpenWindowsAutomatically(true);
-                popupSettings.setMediaPlaybackRequiresUserGesture(false);
-                popupSettings.setCacheMode(WebSettings.LOAD_DEFAULT);
-                popupSettings.setUserAgentString(cleanUA);
-
-                CookieManager.getInstance().setAcceptThirdPartyCookies(popupWebView, true);
-
-                final Dialog dialog = new Dialog(MainActivity.this, android.R.style.Theme_DeviceDefault_Light_NoActionBar_Fullscreen);
-                activePopupDialog = dialog;
-                dialog.setContentView(popupWebView);
-                dialog.setOnDismissListener(d -> {
-                    if (activePopupDialog == dialog) {
-                        activePopupDialog = null;
-                    }
-                });
-                dialog.show();
-
-                popupWebView.setWebChromeClient(new WebChromeClient() {
-                    @Override
-                    public void onCloseWindow(WebView window) {
-                        try {
-                            dialog.dismiss();
-                        } catch (Exception ignored) {}
-                    }
-                });
-
-                popupWebView.setWebViewClient(new WebViewClient() {
-                    private boolean checkAndForwardAuth(String url) {
-                        if (url == null) return false;
-                        if ((url.contains("/login") || url.contains("buddy-mattress-46f.pages.dev") || url.contains("localhost")) &&
-                            (url.contains("access_token=") || url.contains("id_token=") || url.contains("code=") || url.contains("credential="))) {
-                            webView.loadUrl(url);
-                            try {
-                                dialog.dismiss();
-                            } catch (Exception ignored) {}
-                            return true;
-                        }
-                        return false;
-                    }
-
+                WebView tempWebView = new WebView(MainActivity.this);
+                tempWebView.getSettings().setUserAgentString(cleanUA);
+                tempWebView.setWebViewClient(new WebViewClient() {
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest request) {
-                        String url = request.getUrl() != null ? request.getUrl().toString() : "";
-                        if (checkAndForwardAuth(url)) {
-                            return true;
+                        String targetUrl = request.getUrl() != null ? request.getUrl().toString() : "";
+                        if (!targetUrl.isEmpty()) {
+                            try {
+                                CustomTabsIntent customTabsIntent = new CustomTabsIntent.Builder().build();
+                                customTabsIntent.launchUrl(MainActivity.this, Uri.parse(targetUrl));
+                                return true;
+                            } catch (Exception e) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl));
+                                startActivity(intent);
+                                return true;
+                            }
                         }
                         return false;
-                    }
-
-                    @Override
-                    public void onPageStarted(WebView v, String url, android.graphics.Bitmap favicon) {
-                        super.onPageStarted(v, url, favicon);
-                        checkAndForwardAuth(url);
                     }
                 });
 
                 WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
-                transport.setWebView(popupWebView);
+                transport.setWebView(tempWebView);
                 resultMsg.sendToTarget();
                 return true;
             }

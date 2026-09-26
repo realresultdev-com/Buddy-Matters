@@ -24,6 +24,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- Custom URL Scheme Deep Link for OAuth & In-App Navigation -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="com.buddymattress.app" />
+            </intent-filter>
+
+            <!-- App Links for domain redirect callback -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="buddy-mattress-46f.pages.dev" android:pathPrefix="/login" />
+            </intent-filter>
+
         </activity>
 
         <provider

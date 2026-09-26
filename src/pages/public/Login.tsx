@@ -38,13 +38,36 @@ export default function Login() {
   // Check URL hash for OAuth redirect token
   useEffect(() => {
     const hash = window.location.hash;
-    if (hash && hash.includes("access_token=")) {
+    if (hash && (hash.includes("access_token=") || hash.includes("id_token="))) {
+      // 1. If running in external browser / Chrome Custom Tab on mobile, trigger app deep link
+      try {
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        if (isMobile && !(window as any).Capacitor?.isNativePlatform?.()) {
+          window.location.href = `com.buddymattress.app://login${hash}`;
+        }
+      } catch (_) {}
+
+      // 2. Also authenticate directly in the current web context
       const params = new URLSearchParams(hash.substring(1));
       const accessToken = params.get("access_token");
+      const idToken = params.get("id_token");
+
       if (accessToken) {
         setIsVerifying(true);
         authService
           .googleAccessTokenLogin(accessToken)
+          .then((res) => {
+            login(res.data.user, res.data.token);
+            handleSuccess(res.data.user);
+          })
+          .catch((err) => {
+            setIsVerifying(false);
+            setError(err.response?.data?.message || "Google authentication failed");
+          });
+      } else if (idToken) {
+        setIsVerifying(true);
+        authService
+          .googleLogin(idToken)
           .then((res) => {
             login(res.data.user, res.data.token);
             handleSuccess(res.data.user);

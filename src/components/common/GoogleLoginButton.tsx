@@ -3,6 +3,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { authService } from "../../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
 declare global {
   interface Window {
@@ -35,6 +37,8 @@ export default function GoogleLoginButton({
   const [gisRendered, setGisRendered] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const isNative = Capacitor.isNativePlatform();
 
   const handleCredentialResponse = async (response: any) => {
     try {
@@ -79,8 +83,10 @@ export default function GoogleLoginButton({
     }
   };
 
-  // Try to render official GIS button
+  // Only render official GIS iframe on Web (not inside native WebViews)
   useEffect(() => {
+    if (isNative) return;
+
     let checkCount = 0;
     const interval = setInterval(() => {
       checkCount++;
@@ -108,14 +114,45 @@ export default function GoogleLoginButton({
     }, 100);
 
     return () => clearInterval(interval);
-  }, [shape, width]);
+  }, [shape, width, isNative]);
 
-  // Fallback direct trigger if user taps the custom button
-  const handleCustomButtonClick = () => {
+  // Click trigger (Handles both Native Chrome Custom Tabs and Web OAuth)
+  const handleCustomButtonClick = async () => {
     if (isVerifying) return;
 
+    // 1. Native Android / iOS: Open in Chrome Custom Tabs with device account picker
+    if (isNative) {
+      try {
+        setIsVerifying(true);
+        onLoadingChange?.(true);
+
+        const redirectUri = "https://buddy-mattress-46f.pages.dev/login";
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(
+          GOOGLE_CLIENT_ID
+        )}&redirect_uri=${encodeURIComponent(
+          redirectUri
+        )}&response_type=token%20id_token&scope=openid%20profile%20email&prompt=select_account&nonce=${Math.random().toString(36).substring(2)}`;
+
+        Browser.addListener("browserFinished", () => {
+          setIsVerifying(false);
+          onLoadingChange?.(false);
+        });
+
+        await Browser.open({
+          url: authUrl,
+          presentationStyle: "popover",
+          toolbarColor: "#0f172a",
+        });
+      } catch (err: any) {
+        setIsVerifying(false);
+        onLoadingChange?.(false);
+        onError?.(err?.message || "Failed to open Google sign in");
+      }
+      return;
+    }
+
+    // 2. Web: Use Google Identity Services Token Client if available
     try {
-      // 1. If GIS tokenClient is available, use it for reliable token flow
       if (window.google?.accounts?.oauth2) {
         setIsVerifying(true);
         onLoadingChange?.(true);
@@ -136,7 +173,7 @@ export default function GoogleLoginButton({
         return;
       }
 
-      // 2. If GIS One Tap is available
+      // 3. Web: One Tap fallback
       if (window.google?.accounts?.id) {
         window.google.accounts.id.prompt((notification: any) => {
           if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
@@ -146,7 +183,7 @@ export default function GoogleLoginButton({
         return;
       }
 
-      // 3. Direct OAuth URL fallback
+      // 4. Web: Direct OAuth URL fallback
       openGoogleOAuthUrl();
     } catch (e: any) {
       console.error("Google login trigger error:", e);
@@ -160,7 +197,7 @@ export default function GoogleLoginButton({
       GOOGLE_CLIENT_ID
     )}&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}&response_type=token%20id_token&scope=openid%20profile%20email&nonce=${Math.random().toString(36).substring(2)}`;
+    )}&response_type=token%20id_token&scope=openid%20profile%20email&prompt=select_account&nonce=${Math.random().toString(36).substring(2)}`;
 
     window.open(googleAuthUrl, "_blank");
   };

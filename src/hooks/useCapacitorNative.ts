@@ -2,12 +2,16 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { SplashScreen } from "@capacitor/splash-screen";
+import { authService } from "../services/auth.service";
+import { useAuth } from "./useAuth";
 
 export function useCapacitorNative() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   useEffect(() => {
     // Only run on native Android/iOS
@@ -32,7 +36,9 @@ export function useCapacitorNative() {
     // 3. Android Hardware Back Button listener
     const backListener = App.addListener("backButton", ({ canGoBack }) => {
       // Check if any modal or drawer is open
-      const closeBtn = document.querySelector<HTMLButtonElement>("[data-modal-close], button[aria-label='Close']");
+      const closeBtn = document.querySelector<HTMLButtonElement>(
+        "[data-modal-close], button[aria-label='Close']"
+      );
       if (closeBtn) {
         closeBtn.click();
         return;
@@ -65,9 +71,52 @@ export function useCapacitorNative() {
       }
     });
 
+    // 5. Deep Link & OAuth Redirect Handler (Chrome Custom Tabs callback)
+    const appUrlListener = App.addListener("appUrlOpen", async (event) => {
+      try {
+        // Automatically close Chrome Custom Tabs popover
+        await Browser.close().catch(() => {});
+
+        const rawUrl = event.url;
+        if (!rawUrl) return;
+
+        // Check for Google OAuth tokens in URL hash
+        // e.g. com.buddymattress.app://login#access_token=... or https://buddy-mattress-46f.pages.dev/login#access_token=...
+        const hashIdx = rawUrl.indexOf("#");
+        if (hashIdx !== -1) {
+          const hashStr = rawUrl.substring(hashIdx + 1);
+          const params = new URLSearchParams(hashStr);
+          const accessToken = params.get("access_token");
+          const idToken = params.get("id_token");
+
+          if (accessToken || idToken) {
+            try {
+              const res = accessToken
+                ? await authService.googleAccessTokenLogin(accessToken)
+                : await authService.googleLogin(idToken!);
+              login(res.data.user, res.data.token);
+              navigate("/", { replace: true });
+              return;
+            } catch (err: any) {
+              console.error("Deep Link Google Auth verification error:", err);
+            }
+          }
+        }
+
+        // Generic in-app deep link route
+        const sanitized = rawUrl.replace("com.buddymattress.app://", "/");
+        if (sanitized && sanitized !== "/" && sanitized !== "/login") {
+          navigate(sanitized);
+        }
+      } catch (err) {
+        console.warn("Failed to process appUrlOpen event:", err);
+      }
+    });
+
     return () => {
       backListener.then((handle) => handle.remove()).catch(() => {});
       appStateListener.then((handle) => handle.remove()).catch(() => {});
+      appUrlListener.then((handle) => handle.remove()).catch(() => {});
     };
-  }, [location.pathname, navigate]);
+  }, [location.pathname, navigate, login]);
 }
