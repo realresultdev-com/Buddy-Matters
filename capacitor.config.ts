@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Buddy Mattress',
   webDir: 'dist',
   server: {
-    url: 'https://buddy-mattress-46f.pages.dev',
+    url: 'https://buddy-mattress.pages.dev',
     cleartext: false,
     androidScheme: 'https',
   },
