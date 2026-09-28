@@ -29,12 +29,17 @@ export default function Login() {
     redirectPath = "/";
   }
 
-  // Auto redirect if already logged in and not currently in OAuth flow
+  // Auto redirect if already logged in
   useEffect(() => {
-    if (user && !loading && !isVerifying && !successUser) {
-      navigate(redirectPath, { replace: true });
+    if (user && !loading && !isVerifying) {
+      if (window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("id_token"))) {
+        try {
+          window.history.replaceState(null, "", window.location.pathname);
+        } catch (_) {}
+      }
+      window.location.replace(redirectPath);
     }
-  }, [user, loading, isVerifying, successUser, navigate, redirectPath]);
+  }, [user, loading, isVerifying, redirectPath]);
 
   // Check URL hash / search for OAuth redirect token
   useEffect(() => {
@@ -104,7 +109,17 @@ export default function Login() {
     setIsVerifying(false);
     setOauthHandoffUrl(null);
 
-    // 1. If opened in a popup window (window.opener), post message to parent and close popup!
+    // Save user object immediately in localStorage
+    localStorage.setItem("user", JSON.stringify(loggedInUser));
+
+    // Clear hash tokens from browser bar
+    try {
+      if (window.location.hash && (window.location.hash.includes("access_token") || window.location.hash.includes("id_token"))) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    } catch (_) {}
+
+    // 1. If opened in a popup window (window.opener), post message to parent
     if (window.opener && window.opener !== window) {
       try {
         window.opener.postMessage(
@@ -116,12 +131,9 @@ export default function Login() {
           "*"
         );
       } catch (_) {}
-      setTimeout(() => {
-        try {
-          window.close();
-        } catch (_) {}
-      }, 200);
-      return;
+      try {
+        window.close();
+      } catch (_) {}
     }
 
     // 2. If opened in Capacitor Browser, attempt to close
@@ -131,10 +143,10 @@ export default function Login() {
       }).catch(() => {});
     } catch (_) {}
 
-    // 3. Smooth transition to destination
+    // 3. Immediately redirect to home page or target destination
     setTimeout(() => {
-      navigate(redirectPath, { replace: true });
-    }, 400);
+      window.location.replace(redirectPath);
+    }, 150);
   };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {

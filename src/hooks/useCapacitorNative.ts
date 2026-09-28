@@ -104,7 +104,7 @@ export function useCapacitorNative() {
               ? await authService.googleAccessTokenLogin(accessToken)
               : await authService.googleLogin(idToken!);
             login(res.data.user, res.data.token);
-            navigate("/", { replace: true });
+            window.location.replace("/");
             return;
           } catch (err: any) {
             console.error("Deep Link Google Auth verification error:", err);

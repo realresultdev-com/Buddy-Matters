@@ -51,7 +51,7 @@ export default function GoogleLoginButton({
         if (onSuccess) {
           onSuccess(event.data.user);
         } else {
-          navigate("/", { replace: true });
+          window.location.replace("/");
         }
       }
     };
@@ -70,7 +70,7 @@ export default function GoogleLoginButton({
       if (onSuccess) {
         onSuccess(res.data.user);
       } else {
-        navigate("/", { replace: true });
+        window.location.replace("/");
       }
     } catch (err: any) {
       setIsVerifying(false);
@@ -95,7 +95,7 @@ export default function GoogleLoginButton({
       if (onSuccess) {
         onSuccess(res.data.user);
       } else {
-        navigate("/", { replace: true });
+        window.location.replace("/");
       }
     } catch (err: any) {
       setIsVerifying(false);
@@ -183,7 +183,7 @@ export default function GoogleLoginButton({
           if (onSuccess) {
             onSuccess(authRes.data.user);
           } else {
-            navigate("/", { replace: true });
+            window.location.replace("/");
           }
           return;
         }

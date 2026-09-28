@@ -44,6 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(validUser);
     setToken(t);
     localStorage.setItem("token", t);
+    localStorage.setItem("user", JSON.stringify(validUser));
     // Immediately ensure device token is synced with backend upon login
     notificationService.syncDeviceToken();
   };
