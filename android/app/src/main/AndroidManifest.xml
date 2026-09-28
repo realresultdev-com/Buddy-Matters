@@ -46,14 +46,18 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- Default Notification Channel & Icon for Firebase Cloud Messaging -->
+        <!-- Default Notification Channel & Amazon-style Order Icon for Firebase Cloud Messaging -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="orders_channel"
         />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@mipmap/ic_launcher"
+            android:resource="@drawable/ic_stat_order_placed"
+        />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_accent_color"
         />
     </application>
 

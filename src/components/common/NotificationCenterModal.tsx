@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, CheckCheck, Send, X, ShoppingBag, Loader2 } from "lucide-react";
+import { Bell, CheckCheck, Send, X, PackageCheck, Loader2 } from "lucide-react";
 import { notificationService, AppNotification } from "../../services/notification.service";
 
 interface NotificationCenterModalProps {
@@ -74,11 +74,7 @@ export default function NotificationCenterModal({
 
   const cleanMessage = (msg: string) => {
     if (!msg) return "";
-    return msg
-      .replace(/for\s*₹[\d,]+(?:\s*\(\d+\s*items?\))?/gi, "")
-      .replace(/Received\s*₹[\d,]+\s*for/gi, "Received payment for")
-      .replace(/\s{2,}/g, " ")
-      .trim();
+    return msg.replace(/\s{2,}/g, " ").trim();
   };
 
   return (
@@ -182,13 +178,13 @@ export default function NotificationCenterModal({
                   }`}
                 >
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                       notif.is_read
                         ? "bg-gray-100 text-gray-500"
-                        : "bg-[#0ea9df]/10 text-[#0ea9df]"
+                        : "bg-gradient-to-br from-[#FF9900]/20 to-[#FF9900]/10 text-[#D97706] border border-amber-200/80"
                     }`}
                   >
-                    <ShoppingBag className="w-4 h-4" />
+                    <PackageCheck className="w-4 h-4" />
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -196,7 +192,7 @@ export default function NotificationCenterModal({
                       <h4 className="text-xs sm:text-sm font-semibold text-gray-900 truncate flex items-center gap-1.5">
                         {notif.title}
                         {!notif.is_read && (
-                          <span className="w-2 h-2 rounded-full bg-[#0ea9df] shrink-0" />
+                          <span className="w-2 h-2 rounded-full bg-[#FF9900] shrink-0" />
                         )}
                       </h4>
                       <span className="text-[11px] text-gray-400 shrink-0">
@@ -211,20 +207,23 @@ export default function NotificationCenterModal({
                       {cleanMessage(notif.message)}
                     </p>
 
-                    {(parsed.customerName || parsed.firstItemName) && (
-                      <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] text-gray-500">
-                        {parsed.customerName && (
-                          <span className="font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">
-                            {parsed.customerName}
-                          </span>
-                        )}
-                        {parsed.firstItemName && (
-                          <span className="text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md truncate max-w-[220px]">
-                            {parsed.firstItemName}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] text-gray-500">
+                      {(parsed.formattedAmount || parsed.totalAmount) && (
+                        <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          {parsed.formattedAmount || `₹${Number(parsed.totalAmount).toLocaleString("en-IN")}`}
+                        </span>
+                      )}
+                      {parsed.customerName && (
+                        <span className="font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">
+                          {parsed.customerName}
+                        </span>
+                      )}
+                      {(parsed.productSummary || parsed.firstItemName) && (
+                        <span className="text-gray-600 bg-gray-100 px-2 py-0.5 rounded-md truncate max-w-[200px]">
+                          {parsed.productSummary || parsed.firstItemName}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

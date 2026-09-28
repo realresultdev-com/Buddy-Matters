@@ -19,11 +19,15 @@ export interface AppNotification {
 export interface ParsedNotificationData {
   orderId?: string;
   shortOrderId?: string;
-  totalAmount?: number;
+  totalAmount?: number | string;
+  formattedAmount?: string;
   customerName?: string;
   customerEmail?: string;
-  itemsCount?: number;
+  customerPhone?: string;
+  city?: string;
+  itemsCount?: number | string;
   firstItemName?: string;
+  productSummary?: string;
   isTest?: boolean;
   createdAt?: string;
 }
@@ -34,7 +38,33 @@ class NotificationService {
   private listeners: Set<NotificationListener> = new Set();
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private isInitialized = false;
+  private hasInitializedSync = false;
   private lastSeenNotifId: string | null = localStorage.getItem("last_seen_notif_id");
+  private processedNotifIds: Set<string> = new Set();
+
+  constructor() {
+    try {
+      const cached = sessionStorage.getItem("processed_notif_ids");
+      if (cached) {
+        JSON.parse(cached).forEach((id: string) => this.processedNotifIds.add(id));
+      }
+    } catch {}
+  }
+
+  private isDuplicate(id?: string, orderId?: string): boolean {
+    if (id && this.processedNotifIds.has(id)) return true;
+    if (orderId && this.processedNotifIds.has(`order-${orderId}`)) return true;
+    return false;
+  }
+
+  private markProcessed(id?: string, orderId?: string): void {
+    if (id) this.processedNotifIds.add(id);
+    if (orderId) this.processedNotifIds.add(`order-${orderId}`);
+    try {
+      const arr = Array.from(this.processedNotifIds).slice(-100);
+      sessionStorage.setItem("processed_notif_ids", JSON.stringify(arr));
+    } catch {}
+  }
 
   /**
    * Initialize native channels and action listeners
@@ -51,7 +81,7 @@ class NotificationService {
           await LocalNotifications.requestPermissions();
         }
 
-        // Create high-priority Android channel for Order notifications on both LocalNotifications and PushNotifications
+        // Create high-priority Android channel for Order notifications with Amazon amber color #FF9900
         await LocalNotifications.createChannel({
           id: "orders_channel",
           name: "Order Notifications",
@@ -60,7 +90,7 @@ class NotificationService {
           visibility: 1, // Public on lock screen
           vibration: true,
           lights: true,
-          lightColor: "#f59e0b",
+          lightColor: "#FF9900",
         });
 
         try {
@@ -72,14 +102,18 @@ class NotificationService {
             visibility: 1,
             vibration: true,
             lights: true,
-            lightColor: "#f59e0b",
+            lightColor: "#FF9900",
           });
         } catch (e) {
           console.warn("PushNotifications.createChannel fallback:", e);
         }
 
         // Listen for user tap on local notification
-        LocalNotifications.addListener("localNotificationActionPerformed", () => {
+        LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
+          const extra = action.notification?.extra || {};
+          if (extra.notifId || extra.orderId) {
+            this.markProcessed(extra.notifId, extra.orderId);
+          }
           const userStr = localStorage.getItem("user");
           let isAdmin = false;
           try {
@@ -114,22 +148,44 @@ class NotificationService {
         // Listen for remote push notifications received while app is in foreground
         PushNotifications.addListener("pushNotificationReceived", async (notification) => {
           console.log("FCM push notification received in foreground:", notification);
+          const data = (notification.data || {}) as Record<string, string>;
+          const orderId = data.orderId || notification.id;
+          const notifId = notification.id || (orderId ? `fcm-${orderId}` : `fcm-${Date.now()}`);
+
+          // Deduplicate if already processed
+          if (this.isDuplicate(notifId, orderId)) {
+            console.log("[NotificationService] Ignoring duplicate FCM push:", notifId);
+            return;
+          }
+          this.markProcessed(notifId, orderId);
+
+          const formattedAmount = data.formattedAmount || (data.totalAmount ? `₹${Number(data.totalAmount).toLocaleString("en-IN")}` : "");
+          const shortOrderId = data.shortOrderId || (orderId ? orderId.slice(-6).toUpperCase() : "");
+          const title = notification.title || (formattedAmount ? `📦 Order Placed: ${formattedAmount} • #${shortOrderId}` : `📦 Order Placed #${shortOrderId}`);
+          const message = notification.body || (data.customerName ? `${data.customerName} placed an order for ${data.productSummary || data.firstItemName || 'Buddy Mattress'}` : "New order placed by customer");
+
           const notifItem: AppNotification = {
-            id: notification.id || `fcm-${Date.now()}`,
+            id: notifId,
             user_id: null,
-            title: notification.title || "🛍️ New Order Alert",
-            message: notification.body || "New order placed by customer",
-            type: (notification.data?.type as string) || "ORDER_CREATED",
-            data: JSON.stringify(notification.data || {}),
+            title,
+            message,
+            type: data.type || "ORDER_CREATED",
+            data: JSON.stringify(data),
             is_read: 0,
-            created_at: new Date().toISOString(),
+            created_at: data.createdAt || new Date().toISOString(),
           };
-          await this.triggerAlert(notifItem);
+
+          // Show in-app banner with chime & haptic (skip system tray since app is active in foreground)
+          await this.triggerAlert(notifItem, { skipSystemTray: true });
         });
 
         // Listen for user tap on native system tray push notification
         PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
           console.log("User tapped FCM push notification:", action);
+          const data = (action.notification?.data || {}) as Record<string, string>;
+          if (data.orderId || action.notification?.id) {
+            this.markProcessed(action.notification?.id, data.orderId);
+          }
           const userStr = localStorage.getItem("user");
           let isAdmin = false;
           try {
@@ -165,7 +221,7 @@ class NotificationService {
   /**
    * Trigger in-app + native device push notification alert
    */
-  async triggerAlert(notif: AppNotification): Promise<void> {
+  async triggerAlert(notif: AppNotification, options: { skipSystemTray?: boolean; force?: boolean } = {}): Promise<void> {
     let parsedData: ParsedNotificationData = {};
     try {
       if (notif.data) {
@@ -175,28 +231,35 @@ class NotificationService {
       parsedData = {};
     }
 
-    // 1. Play crystal-clear synthesized iOS chime
+    // Deduplication check
+    if (!options.force && this.isDuplicate(notif.id, parsedData.orderId)) {
+      console.log("[NotificationService] Deduplicated alert for:", notif.id, parsedData.orderId);
+      return;
+    }
+    this.markProcessed(notif.id, parsedData.orderId);
+
+    // 1. Play crystal-clear synthesized chime
     playIosChime();
 
-    // 2. Trigger high-end iOS haptic feedback
+    // 2. Trigger high-end haptic feedback
     try {
       await Haptics.notification({ type: NotificationType.Success });
     } catch {
       // Haptics not available on non-mobile browsers
     }
 
-    // 3. Emit to in-app iOS Banner component
+    // 3. Emit to in-app Banner component
     Array.from(this.listeners).forEach((listener) => listener(notif, parsedData));
 
-    // 4. Schedule Native Android System Notification
-    if (Capacitor.isNativePlatform()) {
+    // 4. Schedule Native Android System Notification ONLY if explicitly needed and not skipped
+    // (FCM handles system tray notifications when app is in background/closed)
+    if (Capacitor.isNativePlatform() && !options.skipSystemTray) {
       try {
-        // Generate an integer ID for Android notification manager
+        const uniqueKey = parsedData.orderId || notif.id;
         const numId = Math.abs(
-          notif.id.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)
+          uniqueKey.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)
         ) % 1000000;
 
-        // Post immediate local system notification without AlarmManager/exact alarms
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -204,8 +267,9 @@ class NotificationService {
               title: notif.title,
               body: notif.message,
               channelId: "orders_channel",
-              smallIcon: "ic_launcher",
-              largeIcon: "ic_launcher",
+              smallIcon: "ic_stat_order_placed",
+              largeIcon: "ic_order_large",
+              iconColor: "#FF9900",
               // CRITICAL: Disable exact alarm so Android never opens the "Alarms & Reminders" settings screen
               // @ts-ignore
               isExactNotification: false,
@@ -233,16 +297,15 @@ class NotificationService {
     // Ensure FCM token is synced to database for admin
     this.syncDeviceToken();
 
-    // Perform immediate check
-    this.checkNewNotifications();
+    // Perform initial synchronization without firing alerts
+    this.checkNewNotifications({ isInitialSync: true });
 
-    // Poll every 5 seconds for real-time responsiveness
+    // Poll every 6 seconds for in-app updates while window is active
     this.pollingInterval = setInterval(() => {
-      // Only poll when window is visible or active to conserve battery
       if (!document.hidden) {
-        this.checkNewNotifications();
+        this.checkNewNotifications({ isInitialSync: false });
       }
-    }, 5000);
+    }, 6000);
   }
 
   /**
@@ -258,7 +321,7 @@ class NotificationService {
   /**
    * Check for new notifications from server
    */
-  async checkNewNotifications(): Promise<AppNotification[]> {
+  async checkNewNotifications(options: { isInitialSync?: boolean } = {}): Promise<AppNotification[]> {
     try {
       const res = await api.get("/notifications");
       const notifs: AppNotification[] = Array.isArray(res.data?.notifications) ? res.data.notifications : [];
@@ -267,10 +330,17 @@ class NotificationService {
 
       const latestNotif = notifs[0];
 
-      // If first run, set the last seen to prevent alert bomb on login
-      if (!this.lastSeenNotifId) {
+      // On initial app launch / startup sync, mark existing notifications as seen/processed
+      // NEVER trigger alerts on app open for past notifications that FCM already delivered!
+      if (options.isInitialSync || !this.hasInitializedSync || !this.lastSeenNotifId) {
+        this.hasInitializedSync = true;
         this.lastSeenNotifId = latestNotif.id;
         localStorage.setItem("last_seen_notif_id", latestNotif.id);
+        notifs.forEach((n) => {
+          let p: ParsedNotificationData = {};
+          try { if (n.data) p = JSON.parse(n.data); } catch {}
+          this.markProcessed(n.id, p.orderId);
+        });
         return notifs;
       }
 
@@ -278,17 +348,20 @@ class NotificationService {
       const newItems: AppNotification[] = [];
       for (const item of notifs) {
         if (item.id === this.lastSeenNotifId) break;
-        newItems.push(item);
+        let p: ParsedNotificationData = {};
+        try { if (item.data) p = JSON.parse(item.data); } catch {}
+        if (!this.isDuplicate(item.id, p.orderId)) {
+          newItems.push(item);
+        }
       }
 
       if (newItems.length > 0) {
-        // Update last seen
         this.lastSeenNotifId = latestNotif.id;
         localStorage.setItem("last_seen_notif_id", latestNotif.id);
 
-        // Alert for each new notification (most recent first)
+        // Alert for each new notification in-app only (skip system tray to avoid duplicating FCM)
         for (const notif of newItems) {
-          await this.triggerAlert(notif);
+          await this.triggerAlert(notif, { skipSystemTray: true });
         }
       }
 
@@ -300,14 +373,15 @@ class NotificationService {
   }
 
   /**
-   * Send a test order notification to test the push notification and iOS banner
+   * Send a test order notification to test the push notification and in-app banner
    */
   async triggerTestOrder(): Promise<AppNotification | null> {
     try {
       const res = await api.post("/admin/notifications/test");
       if (res.data?.notification) {
         const notif: AppNotification = res.data.notification;
-        await this.triggerAlert(notif);
+        // On explicit user click of "Test Push Alert", trigger with force: true
+        await this.triggerAlert(notif, { force: true, skipSystemTray: false });
         return notif;
       }
       return null;

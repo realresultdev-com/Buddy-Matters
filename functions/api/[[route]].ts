@@ -22,6 +22,8 @@ type UserPayload = {
   userId: string;
   role: string;
   exp: number;
+  name?: string;
+  email?: string;
 };
 
 const app = new Hono<{ Bindings: Env; Variables: { user?: UserPayload } }>().basePath("/api");
@@ -1497,24 +1499,26 @@ app.post("/orders", authMiddleware, async (c) => {
       : "Product";
 
     const shortOrderId = orderId.slice(-6).toUpperCase();
+    const formattedAmount = `₹${Number(totalAmount).toLocaleString("en-IN")}`;
     const notifId = `notif-${crypto.randomUUID()}`;
-    const notifTitle = `🛍️ New Order #${shortOrderId}`;
+    const notifTitle = `📦 Order Placed: ${formattedAmount} • #${shortOrderId}`;
 
-    let notifMessage = `${customerName}`;
-    if (customerPhone) notifMessage += ` (${customerPhone})`;
-    if (city) notifMessage += ` from ${city}`;
-    notifMessage += ` placed an order for: ${productSummary}`;
+    let notifMessage = `${customerName} placed an order for ${productSummary}`;
+    if (city) notifMessage += ` • Delivery to ${city}`;
 
     const notifData = JSON.stringify({
       orderId,
       shortOrderId,
       totalAmount,
+      formattedAmount,
       customerName,
       customerEmail,
       customerPhone,
+      city,
       shippingAddress: addressStr,
       itemsCount: items.length,
-      firstItemName: pricedItems[0]?.name || "Product",
+      firstItemName: pricedItems[0]?.name || "Buddy Mattress",
+      productSummary,
       type: "ORDER_CREATED",
       createdAt: now,
     });
@@ -1529,9 +1533,14 @@ app.post("/orders", authMiddleware, async (c) => {
       shortOrderId,
       type: "ORDER_CREATED",
       totalAmount: String(totalAmount),
+      formattedAmount,
       customerName,
       customerPhone,
+      city,
       customerAddress: addressStr,
+      itemsCount: String(items.length),
+      firstItemName: pricedItems[0]?.name || "Buddy Mattress",
+      productSummary,
     }).catch((err) => console.error("FCM order push error:", err));
   } catch (notifErr) {
     console.error("Failed to insert order notification:", notifErr);
@@ -1990,30 +1999,83 @@ app.post("/notifications/mark-all-read", optionalAuthMiddleware, async (c) => {
 
 // POST /admin/notifications/test - Trigger an instantaneous test order notification for push notification verification
 app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c) => {
-  const testOrderId = `ord-TEST-${Math.floor(1000 + Math.random() * 9000)}`;
-  const shortOrderId = testOrderId.slice(-4);
-  const sampleAmounts = [12999, 18499, 24999, 34999];
-  const sampleCustomers = ["Vikram Malhotra", "Pooja Hegde", "Arjun Reddy", "Ananya Sharma"];
-  const sampleItems = ["Buddy Royal Pocket Spring Mattress (King)", "Buddy Super Latex Luxury (Queen)", "Buddy Travel Quilt Rollaway"];
-  
-  const amount = sampleAmounts[Math.floor(Math.random() * sampleAmounts.length)];
-  const customerName = sampleCustomers[Math.floor(Math.random() * sampleCustomers.length)];
-  const itemName = sampleItems[Math.floor(Math.random() * sampleItems.length)];
-  const now = new Date().toISOString();
+  const user = c.get("user") as UserPayload | undefined;
+  const currentUser: any = user?.userId
+    ? await c.env.DB.prepare("SELECT name, email FROM users WHERE id = ?").bind(user.userId).first()
+    : null;
 
+  // 1. Dynamic original order query from database
+  const latestOrder: any = await c.env.DB.prepare(
+    `SELECT o.*, u.name as customer_name, u.email as customer_email 
+     FROM orders o 
+     LEFT JOIN users u ON o.user_id = u.id 
+     ORDER BY o.created_at DESC LIMIT 1`
+  ).first();
+
+  let targetOrderId: string;
+  let shortOrderId: string;
+  let totalAmount: number;
+  let customerName: string;
+  let customerEmail: string;
+  let productSummary: string;
+  let firstItemName: string;
+  let itemsCount: number;
+
+  if (latestOrder) {
+    targetOrderId = latestOrder.id;
+    shortOrderId = latestOrder.id.slice(-6).toUpperCase();
+    totalAmount = Number(latestOrder.total_amount) || 18999;
+    customerName = latestOrder.customer_name || currentUser?.name || "Customer";
+    customerEmail = latestOrder.customer_email || currentUser?.email || "";
+
+    const orderItemsRes: any = await c.env.DB.prepare(
+      `SELECT oi.*, p.name as product_name 
+       FROM order_items oi 
+       LEFT JOIN products p ON oi.product_id = p.id 
+       WHERE oi.order_id = ?`
+    ).bind(latestOrder.id).all();
+    const orderItems = orderItemsRes?.results || [];
+
+    itemsCount = orderItems.length || 1;
+    firstItemName = orderItems[0]?.product_name || "Buddy Mattress";
+    const pNames = orderItems.map((i: any) => i.product_name).filter(Boolean);
+    productSummary = pNames.length > 0 
+      ? pNames.slice(0, 2).join(", ") + (pNames.length > 2 ? ` +${pNames.length - 2} more` : "")
+      : firstItemName;
+  } else {
+    // If no order in DB yet, query real products and current user dynamically
+    const prodRes: any = await c.env.DB.prepare("SELECT name, price FROM products LIMIT 2").all();
+    const prods = prodRes?.results || [];
+    const prod = prods[0] || { name: "Buddy Royal Pocket Spring Mattress", price: 18999 };
+    
+    targetOrderId = `ord-${crypto.randomUUID()}`;
+    shortOrderId = targetOrderId.slice(-6).toUpperCase();
+    totalAmount = Number(prod.price) || 18999;
+    customerName = currentUser?.name || "Verified Customer";
+    customerEmail = currentUser?.email || "";
+    itemsCount = 1;
+    firstItemName = prod.name;
+    productSummary = prod.name;
+  }
+
+  const formattedAmount = `₹${totalAmount.toLocaleString("en-IN")}`;
+  const now = new Date().toISOString();
   const notifId = `notif-${crypto.randomUUID()}`;
-  const title = `🛍️ New Order #${shortOrderId}`;
-  const message = `${customerName} (9876543210) from Bengaluru placed an order for: ${itemName}`;
+  const title = `📦 Order Placed: ${formattedAmount} • #${shortOrderId}`;
+  const message = `${customerName} placed an order for ${productSummary} • Order #${shortOrderId}`;
+
   const data = JSON.stringify({
-    orderId: testOrderId,
+    orderId: targetOrderId,
     shortOrderId,
-    totalAmount: amount,
+    totalAmount,
+    formattedAmount,
     customerName,
-    customerPhone: "9876543210",
-    customerAddress: "Indiranagar 100ft Road, Bengaluru, Karnataka - 560038",
-    itemsCount: 1,
-    firstItemName: itemName,
-    isTest: true,
+    customerEmail,
+    itemsCount,
+    firstItemName,
+    productSummary,
+    type: "ORDER_CREATED",
+    isTest: false,
     createdAt: now,
   });
 
@@ -2025,10 +2087,16 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   // Dispatch real-time remote FCM push notification to all installed native app devices and admins
   const fcmDiagnostics = await sendFcmPushToAllDevices(c.env, title, message, {
-    orderId: testOrderId,
+    orderId: targetOrderId,
     shortOrderId,
     type: "ORDER_CREATED",
-    isTest: "true",
+    totalAmount: String(totalAmount),
+    formattedAmount,
+    customerName,
+    customerEmail,
+    itemsCount: String(itemsCount),
+    firstItemName,
+    productSummary,
   }).catch((err: any) => ({ error: err.message || String(err) }));
 
   return c.json({
@@ -2271,7 +2339,9 @@ async function sendFcmPushToAllDevices(
                 default_vibrate_timings: true,
                 notification_priority: "PRIORITY_MAX",
                 visibility: "PUBLIC",
-                icon: "ic_launcher",
+                icon: "ic_stat_order_placed",
+                color: "#FF9900",
+                tag: sanitizedData.orderId || undefined,
               },
             },
           },
