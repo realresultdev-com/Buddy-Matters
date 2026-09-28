@@ -196,6 +196,7 @@ class NotificationService {
           notif.id.split("").reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)
         ) % 1000000;
 
+        // Post immediate local system notification without AlarmManager/exact alarms
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -205,7 +206,11 @@ class NotificationService {
               channelId: "orders_channel",
               smallIcon: "ic_launcher",
               largeIcon: "ic_launcher",
-              schedule: { at: new Date(Date.now() + 100) },
+              // CRITICAL: Disable exact alarm so Android never opens the "Alarms & Reminders" settings screen
+              // @ts-ignore
+              isExactNotification: false,
+              // @ts-ignore
+              isExactMandatory: false,
               extra: {
                 notifId: notif.id,
                 orderId: parsedData.orderId,
