@@ -1429,7 +1429,7 @@ app.post("/orders", authMiddleware, async (c) => {
       state?: string;
       pincode?: string;
     };
-  }>().catch(() => ({ items: [] }));
+  }>().catch(() => ({ items: [], shippingAddress: undefined }));
   const items = body.items || [];
   const shippingAddress = body.shippingAddress;
 
