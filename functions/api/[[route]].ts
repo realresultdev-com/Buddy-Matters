@@ -1491,6 +1491,11 @@ app.post("/orders", authMiddleware, async (c) => {
     const addressStr = shippingAddress
       ? `${shippingAddress.street || ""}, ${shippingAddress.city || ""}, ${shippingAddress.state || ""} ${shippingAddress.pincode || ""}`.trim()
       : "";
+    const productNames = pricedItems.map((p: any) => p.name).filter(Boolean);
+    const productSummary = productNames.length > 0 
+      ? productNames.slice(0, 2).join(", ") + (productNames.length > 2 ? ` +${productNames.length - 2} more` : "")
+      : "Product";
+
     const shortOrderId = orderId.slice(-6).toUpperCase();
     const notifId = `notif-${crypto.randomUUID()}`;
     const notifTitle = `🛍️ New Order #${shortOrderId}`;
@@ -1498,7 +1503,7 @@ app.post("/orders", authMiddleware, async (c) => {
     let notifMessage = `${customerName}`;
     if (customerPhone) notifMessage += ` (${customerPhone})`;
     if (city) notifMessage += ` from ${city}`;
-    notifMessage += ` placed an order for ₹${totalAmount.toLocaleString('en-IN')} (${items.length} item${items.length > 1 ? 's' : ''})`;
+    notifMessage += ` placed an order for: ${productSummary}`;
 
     const notifData = JSON.stringify({
       orderId,
@@ -1747,41 +1752,6 @@ app.post("/payment/verify", authMiddleware, async (c) => {
   ).bind(razorpay_order_id || null, razorpay_payment_id || null, orderId).run();
 
   const updatedOrder: any = await c.env.DB.prepare("SELECT * FROM orders WHERE id = ?").bind(orderId).first();
-
-  // Trigger real-time Admin notification for verified payment
-  try {
-    const customer: any = updatedOrder?.user_id
-      ? await c.env.DB.prepare("SELECT name, email FROM users WHERE id = ?").bind(updatedOrder.user_id).first()
-      : null;
-    const customerName = customer?.name || "Customer";
-    const shortOrderId = orderId.slice(-6).toUpperCase();
-    const notifPaidId = `notif-${crypto.randomUUID()}`;
-    const notifTitle = `💳 Payment Verified #${shortOrderId}`;
-    const notifMessage = `Received ₹${(updatedOrder?.total_amount || 0).toLocaleString('en-IN')} for Order #${shortOrderId} from ${customerName}`;
-    const notifData = JSON.stringify({
-      orderId,
-      shortOrderId,
-      totalAmount: updatedOrder?.total_amount || 0,
-      customerName,
-      paymentId: razorpay_payment_id || null,
-      createdAt: new Date().toISOString(),
-    });
-
-    await c.env.DB.prepare(
-      "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_PAID', ?, 0, datetime('now'))"
-    ).bind(notifPaidId, notifTitle, notifMessage, notifData).run();
-
-    // Dispatch real-time remote FCM push notification to all installed native devices and admins
-    await sendFcmPushToAllDevices(c.env, notifTitle, notifMessage, {
-      orderId,
-      shortOrderId,
-      type: "ORDER_PAID",
-      totalAmount: String(updatedOrder?.total_amount || 0),
-      customerName,
-    }).catch((err) => console.error("FCM payment push error:", err));
-  } catch (notifErr) {
-    console.error("Failed to insert payment notification:", notifErr);
-  }
 
   return c.json({ success: true, order: updatedOrder });
 });
