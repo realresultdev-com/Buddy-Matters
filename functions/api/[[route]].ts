@@ -2003,7 +2003,7 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   const notifId = `notif-${crypto.randomUUID()}`;
   const title = `🛍️ New Order #${shortOrderId}`;
-  const message = `${customerName} (9876543210) from Bengaluru placed an order for ₹${amount.toLocaleString('en-IN')} (1 item: ${itemName})`;
+  const message = `${customerName} (9876543210) from Bengaluru placed an order for: ${itemName}`;
   const data = JSON.stringify({
     orderId: testOrderId,
     shortOrderId,
