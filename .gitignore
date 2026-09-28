@@ -5,3 +5,6 @@ dist/
 !.env.example
 .wrangler/
 .DS_Store
+*.apk
+*.aab
+downloads/

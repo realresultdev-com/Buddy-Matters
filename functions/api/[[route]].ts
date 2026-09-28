@@ -2080,6 +2080,32 @@ app.delete("/notifications/fcm-token", optionalAuthMiddleware, async (c) => {
   return c.json({ success: true, message: "FCM token updated" });
 });
 
+// GET /app/latest - Get latest APK release info from D1 database
+app.get("/app/latest", async (c) => {
+  const release: any = await c.env.DB.prepare(
+    "SELECT * FROM app_releases WHERE is_latest = 1 ORDER BY created_at DESC LIMIT 1"
+  ).first();
+
+  if (!release) {
+    return c.json({ message: "No release found" }, 404);
+  }
+
+  if (c.req.query("download") === "true") {
+    return c.redirect(release.download_url, 302);
+  }
+
+  return c.json(release);
+});
+
+// GET /downloads/buddy-mattress.apk - Seamless 302 redirect directly to R2 bucket object
+app.get("/downloads/buddy-mattress.apk", async (c) => {
+  const release: any = await c.env.DB.prepare(
+    "SELECT download_url FROM app_releases WHERE is_latest = 1 ORDER BY created_at DESC LIMIT 1"
+  ).first();
+  const targetUrl = release?.download_url || "https://pub-e9f02df81ad34d8da252578b86423390.r2.dev/apk/buddy-mattress.apk";
+  return c.redirect(targetUrl, 302);
+});
+
 /* ==========================================================================
    9. FIREBASE CLOUD MESSAGING (FCM) v1 DISPATCH HELPER
    ========================================================================== */
