@@ -1,7 +1,7 @@
 -- Migration: Create user_fcm_tokens table for Firebase Cloud Messaging (FCM) push notifications
 CREATE TABLE IF NOT EXISTS user_fcm_tokens (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
   token TEXT NOT NULL UNIQUE,
   platform TEXT NOT NULL DEFAULT 'android',
   created_at TEXT NOT NULL DEFAULT (datetime('now')),

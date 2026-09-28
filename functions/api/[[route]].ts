@@ -5,6 +5,8 @@ import { cors } from "hono/cors";
 import { sign, verify } from "hono/jwt";
 import bcrypt from "bcryptjs";
 
+import { DEFAULT_FIREBASE_SERVICE_ACCOUNT } from "./firebase-config";
+
 export type Env = {
   DB: D1Database;
   BUCKET?: R2Bucket;
@@ -13,6 +15,7 @@ export type Env = {
   RAZORPAY_KEY_ID?: string;
   RAZORPAY_KEY_SECRET?: string;
   GOOGLE_CLIENT_ID?: string;
+  FIREBASE_SERVICE_ACCOUNT?: string | Record<string, any>;
 };
 
 type UserPayload = {
@@ -111,6 +114,19 @@ const authMiddleware = async (c: any, next: any) => {
   } catch {
     return c.json({ message: "Unauthorized: Invalid or expired token" }, 401);
   }
+};
+
+// Middleware: Optional Authentication (allows guests or attached user)
+const optionalAuthMiddleware = async (c: any, next: any) => {
+  const authHeader = c.req.header("Authorization");
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    try {
+      const payload = (await verify(token, getJwtSecret(c.env), "HS256")) as unknown as UserPayload;
+      c.set("user", payload);
+    } catch {}
+  }
+  await next();
 };
 
 // Middleware: Admin Role (Dynamic from D1 database)
@@ -1402,7 +1418,20 @@ app.get("/admin/media", authMiddleware, adminMiddleware, async (c) => {
 
 app.post("/orders", authMiddleware, async (c) => {
   const user = c.get("user")!;
-  const { items } = await c.req.json<{ items: { productId: string; quantity: number }[] }>();
+  const body = await c.req.json<{
+    items: { productId: string; quantity: number }[];
+    shippingAddress?: {
+      fullName?: string;
+      email?: string;
+      phone?: string;
+      street?: string;
+      city?: string;
+      state?: string;
+      pincode?: string;
+    };
+  }>().catch(() => ({ items: [] }));
+  const items = body.items || [];
+  const shippingAddress = body.shippingAddress;
 
   if (!items || !items.length) {
     return c.json({ message: "Order must contain at least one item" }, 400);
@@ -1452,23 +1481,36 @@ app.post("/orders", authMiddleware, async (c) => {
     ).bind(itemId, orderId, resolvedProductId, item.quantity, price).run();
   }
 
-  // Trigger real-time Admin notification for new order
+  // Trigger real-time Admin & Native App notification for new order
   try {
     const customer: any = await c.env.DB.prepare("SELECT name, email FROM users WHERE id = ?").bind(user.userId).first();
-    const customerName = customer?.name || "Customer";
-    const customerEmail = customer?.email || "";
+    const customerName = shippingAddress?.fullName || customer?.name || "Customer";
+    const customerEmail = shippingAddress?.email || customer?.email || "";
+    const customerPhone = shippingAddress?.phone || "";
+    const city = shippingAddress?.city || "";
+    const addressStr = shippingAddress
+      ? `${shippingAddress.street || ""}, ${shippingAddress.city || ""}, ${shippingAddress.state || ""} ${shippingAddress.pincode || ""}`.trim()
+      : "";
     const shortOrderId = orderId.slice(-6).toUpperCase();
     const notifId = `notif-${crypto.randomUUID()}`;
     const notifTitle = `🛍️ New Order #${shortOrderId}`;
-    const notifMessage = `${customerName} placed an order for ₹${totalAmount.toLocaleString('en-IN')} (${items.length} item${items.length > 1 ? 's' : ''})`;
+
+    let notifMessage = `${customerName}`;
+    if (customerPhone) notifMessage += ` (${customerPhone})`;
+    if (city) notifMessage += ` from ${city}`;
+    notifMessage += ` placed an order for ₹${totalAmount.toLocaleString('en-IN')} (${items.length} item${items.length > 1 ? 's' : ''})`;
+
     const notifData = JSON.stringify({
       orderId,
       shortOrderId,
       totalAmount,
       customerName,
       customerEmail,
+      customerPhone,
+      shippingAddress: addressStr,
       itemsCount: items.length,
       firstItemName: pricedItems[0]?.name || "Product",
+      type: "ORDER_CREATED",
       createdAt: now,
     });
 
@@ -1476,13 +1518,15 @@ app.post("/orders", authMiddleware, async (c) => {
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_CREATED', ?, 0, ?)"
     ).bind(notifId, notifTitle, notifMessage, notifData, now).run();
 
-    // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
-    await sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+    // Dispatch real-time remote FCM push notification to all installed native devices and admins
+    await sendFcmPushToAllDevices(c.env, notifTitle, notifMessage, {
       orderId,
       shortOrderId,
       type: "ORDER_CREATED",
       totalAmount: String(totalAmount),
       customerName,
+      customerPhone,
+      customerAddress: addressStr,
     }).catch((err) => console.error("FCM order push error:", err));
   } catch (notifErr) {
     console.error("Failed to insert order notification:", notifErr);
@@ -1727,8 +1771,8 @@ app.post("/payment/verify", authMiddleware, async (c) => {
       "INSERT INTO notifications (id, user_id, title, message, type, data, is_read, created_at) VALUES (?, NULL, ?, ?, 'ORDER_PAID', ?, 0, datetime('now'))"
     ).bind(notifPaidId, notifTitle, notifMessage, notifData).run();
 
-    // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
-    await sendFcmPushToAdmins(c.env, notifTitle, notifMessage, {
+    // Dispatch real-time remote FCM push notification to all installed native devices and admins
+    await sendFcmPushToAllDevices(c.env, notifTitle, notifMessage, {
       orderId,
       shortOrderId,
       type: "ORDER_PAID",
@@ -1913,71 +1957,62 @@ app.delete("/admin/hero-videos/:id", authMiddleware, adminMiddleware, async (c) 
    ========================================================================== */
 
 // GET /notifications - Fetch notifications for admin or user
-app.get("/notifications", authMiddleware, async (c) => {
-  const user = c.get("user")!;
-  const dbUser: any = await c.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user.userId).first();
-  const isAdmin = dbUser?.role === "ADMIN";
-
+app.get("/notifications", optionalAuthMiddleware, async (c) => {
+  const user = c.get("user") as UserPayload | undefined;
   const since = c.req.query("since"); // optional timestamp filter
 
   let notifs: any[] = [];
-  if (isAdmin) {
-    if (since) {
-      const res = await c.env.DB.prepare(
-        "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND created_at > ? ORDER BY created_at DESC LIMIT 50"
-      ).bind(user.userId, since).all();
-      notifs = res.results || [];
-    } else {
-      const res = await c.env.DB.prepare(
-        "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) ORDER BY created_at DESC LIMIT 50"
-      ).bind(user.userId).all();
-      notifs = res.results || [];
-    }
+  if (since) {
+    const res = await c.env.DB.prepare(
+      user?.userId
+        ? "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND created_at > ? ORDER BY created_at DESC LIMIT 50"
+        : "SELECT * FROM notifications WHERE user_id IS NULL AND created_at > ? ORDER BY created_at DESC LIMIT 50"
+    ).bind(...(user?.userId ? [user.userId, since] : [since])).all();
+    notifs = res.results || [];
   } else {
-    if (since) {
-      const res = await c.env.DB.prepare(
-        "SELECT * FROM notifications WHERE user_id = ? AND created_at > ? ORDER BY created_at DESC LIMIT 50"
-      ).bind(user.userId, since).all();
-      notifs = res.results || [];
-    } else {
-      const res = await c.env.DB.prepare(
-        "SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50"
-      ).bind(user.userId).all();
-      notifs = res.results || [];
-    }
+    const res = await c.env.DB.prepare(
+      user?.userId
+        ? "SELECT * FROM notifications WHERE (user_id IS NULL OR user_id = ?) ORDER BY created_at DESC LIMIT 50"
+        : "SELECT * FROM notifications WHERE user_id IS NULL ORDER BY created_at DESC LIMIT 50"
+    ).bind(...(user?.userId ? [user.userId] : [])).all();
+    notifs = res.results || [];
   }
 
   // Count unread
-  const unreadCountResult: any = await c.env.DB.prepare(
-    isAdmin
-      ? "SELECT count(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND is_read = 0"
-      : "SELECT count(*) as count FROM notifications WHERE user_id = ? AND is_read = 0"
-  ).bind(user.userId).first();
+  let unreadCount = 0;
+  if (user?.userId) {
+    const unreadCountResult: any = await c.env.DB.prepare(
+      "SELECT count(*) as count FROM notifications WHERE (user_id IS NULL OR user_id = ?) AND is_read = 0"
+    ).bind(user.userId).first();
+    unreadCount = unreadCountResult?.count || 0;
+  } else {
+    const unreadCountResult: any = await c.env.DB.prepare(
+      "SELECT count(*) as count FROM notifications WHERE user_id IS NULL AND is_read = 0"
+    ).first();
+    unreadCount = unreadCountResult?.count || 0;
+  }
 
   return c.json({
     success: true,
     notifications: notifs,
-    unreadCount: unreadCountResult?.count || 0,
+    unreadCount,
   });
 });
 
 // PATCH /notifications/:id/read - Mark single notification as read
-app.patch("/notifications/:id/read", authMiddleware, async (c) => {
+app.patch("/notifications/:id/read", optionalAuthMiddleware, async (c) => {
   const id = c.req.param("id");
   await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE id = ?").bind(id).run();
   return c.json({ success: true });
 });
 
 // POST /notifications/mark-all-read - Mark all notifications as read
-app.post("/notifications/mark-all-read", authMiddleware, async (c) => {
-  const user = c.get("user")!;
-  const dbUser: any = await c.env.DB.prepare("SELECT role FROM users WHERE id = ?").bind(user.userId).first();
-  const isAdmin = dbUser?.role === "ADMIN";
-
-  if (isAdmin) {
+app.post("/notifications/mark-all-read", optionalAuthMiddleware, async (c) => {
+  const user = c.get("user") as UserPayload | undefined;
+  if (user?.userId) {
     await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id IS NULL OR user_id = ?").bind(user.userId).run();
   } else {
-    await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?").bind(user.userId).run();
+    await c.env.DB.prepare("UPDATE notifications SET is_read = 1 WHERE user_id IS NULL").run();
   }
 
   return c.json({ success: true });
@@ -1998,12 +2033,14 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   const notifId = `notif-${crypto.randomUUID()}`;
   const title = `🛍️ New Order #${shortOrderId}`;
-  const message = `${customerName} placed an order for ₹${amount.toLocaleString('en-IN')} (1 item: ${itemName})`;
+  const message = `${customerName} (9876543210) from Bengaluru placed an order for ₹${amount.toLocaleString('en-IN')} (1 item: ${itemName})`;
   const data = JSON.stringify({
     orderId: testOrderId,
     shortOrderId,
     totalAmount: amount,
     customerName,
+    customerPhone: "9876543210",
+    customerAddress: "Indiranagar 100ft Road, Bengaluru, Karnataka - 560038",
     itemsCount: 1,
     firstItemName: itemName,
     isTest: true,
@@ -2016,8 +2053,8 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
 
   const createdNotif = await c.env.DB.prepare("SELECT * FROM notifications WHERE id = ?").bind(notifId).first();
 
-  // Dispatch real-time remote FCM push notification to all admin devices (must await in Workers/Pages)
-  const fcmDiagnostics = await sendFcmPushToAdmins(c.env, title, message, {
+  // Dispatch real-time remote FCM push notification to all installed native app devices and admins
+  const fcmDiagnostics = await sendFcmPushToAllDevices(c.env, title, message, {
     orderId: testOrderId,
     shortOrderId,
     type: "ORDER_CREATED",
@@ -2032,9 +2069,9 @@ app.post("/admin/notifications/test", authMiddleware, adminMiddleware, async (c)
   });
 });
 
-// POST /notifications/fcm-token - Register device FCM token
-app.post("/notifications/fcm-token", authMiddleware, async (c) => {
-  const user = c.get("user")!;
+// POST /notifications/fcm-token - Register device FCM token for all app installations (guests & logged-in users)
+app.post("/notifications/fcm-token", optionalAuthMiddleware, async (c) => {
+  const user = c.get("user") as UserPayload | undefined;
   const body = await c.req.json().catch(() => ({}));
   const token = body.token;
   const platform = body.platform || "android";
@@ -2045,31 +2082,32 @@ app.post("/notifications/fcm-token", authMiddleware, async (c) => {
 
   const tokenId = `fcm-${crypto.randomUUID()}`;
   const now = new Date().toISOString();
+  const userId = user?.userId || null;
 
   // Remove existing entry for this token to prevent duplicates
   await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE token = ?").bind(token).run();
 
-  // Save token for user
+  // Save token for user or guest device
   await c.env.DB.prepare(
     "INSERT INTO user_fcm_tokens (id, user_id, token, platform, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)"
-  ).bind(tokenId, user.userId, token, platform, now, now).run();
+  ).bind(tokenId, userId, token, platform, now, now).run();
 
-  return c.json({ success: true, message: "FCM device token registered" });
+  return c.json({ success: true, message: "FCM device token registered", registered: true });
 });
 
-// DELETE /notifications/fcm-token - Unregister device FCM token
-app.delete("/notifications/fcm-token", authMiddleware, async (c) => {
-  const user = c.get("user")!;
+// DELETE /notifications/fcm-token - Unbind device FCM token on logout without breaking device notifications
+app.delete("/notifications/fcm-token", optionalAuthMiddleware, async (c) => {
+  const user = c.get("user") as UserPayload | undefined;
   const body = await c.req.json().catch(() => ({}));
   const token = body.token;
 
   if (token) {
     await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE token = ?").bind(token).run();
-  } else {
-    await c.env.DB.prepare("DELETE FROM user_fcm_tokens WHERE user_id = ?").bind(user.userId).run();
+  } else if (user?.userId) {
+    await c.env.DB.prepare("UPDATE user_fcm_tokens SET user_id = NULL WHERE user_id = ?").bind(user.userId).run();
   }
 
-  return c.json({ success: true, message: "FCM token unregistered" });
+  return c.json({ success: true, message: "FCM token updated" });
 });
 
 /* ==========================================================================
@@ -2165,7 +2203,7 @@ async function getGoogleAccessToken(serviceAccount: { client_email: string; priv
   return cachedGoogleAccessToken.token;
 }
 
-async function sendFcmPushToAdmins(
+async function sendFcmPushToAllDevices(
   env: any,
   title: string,
   body: string,
@@ -2173,16 +2211,15 @@ async function sendFcmPushToAdmins(
 ): Promise<{ success: boolean; tokensCount: number; deliveredCount: number; errors: any[] }> {
   const summary = { success: false, tokensCount: 0, deliveredCount: 0, errors: [] as any[] };
   try {
+    // Select all registered devices (admins and users who installed native app)
     const tokensRes: any = await env.DB.prepare(
-      `SELECT DISTINCT t.id, t.token FROM user_fcm_tokens t
-       JOIN users u ON u.id = t.user_id
-       WHERE UPPER(u.role) = 'ADMIN'`
+      `SELECT DISTINCT id, token FROM user_fcm_tokens WHERE token IS NOT NULL AND LENGTH(token) > 10`
     ).all();
 
     const tokens: { id: string; token: string }[] = tokensRes?.results || [];
     summary.tokensCount = tokens.length;
     if (tokens.length === 0) {
-      console.log("[FCM] No registered admin device tokens found in database");
+      console.log("[FCM] No registered device tokens found in database");
       return summary;
     }
 
@@ -2193,12 +2230,16 @@ async function sendFcmPushToAdmins(
           ? JSON.parse(env.FIREBASE_SERVICE_ACCOUNT)
           : env.FIREBASE_SERVICE_ACCOUNT;
       } catch (err) {
-        console.error("[FCM] Failed to parse FIREBASE_SERVICE_ACCOUNT:", err);
+        console.error("[FCM] Failed to parse env.FIREBASE_SERVICE_ACCOUNT:", err);
       }
     }
 
     if (!serviceAccount) {
-      console.warn("[FCM] FIREBASE_SERVICE_ACCOUNT secret not configured in Cloudflare environment. Remote push notification skipped.");
+      serviceAccount = DEFAULT_FIREBASE_SERVICE_ACCOUNT;
+    }
+
+    if (!serviceAccount) {
+      console.warn("[FCM] FIREBASE_SERVICE_ACCOUNT not configured. Remote push notification skipped.");
       summary.errors.push("FIREBASE_SERVICE_ACCOUNT secret missing");
       return summary;
     }
@@ -2211,8 +2252,11 @@ async function sendFcmPushToAdmins(
     for (const [k, v] of Object.entries(dataPayload)) {
       sanitizedData[k] = typeof v === "string" ? v : String(v ?? "");
     }
+    sanitizedData.title = sanitizedData.title || title;
+    sanitizedData.body = sanitizedData.body || body;
 
-    for (const item of tokens) {
+    // Send in parallel to all registered devices for instant delivery
+    const promises = tokens.map(async (item) => {
       try {
         const payload = {
           message: {
@@ -2223,12 +2267,15 @@ async function sendFcmPushToAdmins(
             },
             data: sanitizedData,
             android: {
-              priority: "high",
+              priority: "HIGH",
               notification: {
                 channel_id: "orders_channel",
                 sound: "default",
-                notification_priority: "PRIORITY_MAX",
+                default_sound: true,
                 default_vibrate_timings: true,
+                notification_priority: "PRIORITY_MAX",
+                visibility: "PUBLIC",
+                icon: "ic_launcher",
               },
             },
           },
@@ -2256,16 +2303,18 @@ async function sendFcmPushToAdmins(
         } else {
           summary.deliveredCount++;
           summary.success = true;
-          console.log(`[FCM] Successfully delivered push notification to admin device!`);
+          console.log(`[FCM] Successfully delivered push notification to device!`);
         }
       } catch (sendErr: any) {
         summary.errors.push({ error: sendErr.message || String(sendErr) });
         console.error("[FCM] Failed to send push notification to token:", sendErr);
       }
-    }
+    });
+
+    await Promise.allSettled(promises);
   } catch (err: any) {
     summary.errors.push({ executionError: err.message || String(err) });
-    console.error("[FCM] sendFcmPushToAdmins execution error:", err);
+    console.error("[FCM] sendFcmPushToAllDevices execution error:", err);
   }
   return summary;
 }

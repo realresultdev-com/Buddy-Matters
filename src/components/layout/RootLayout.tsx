@@ -21,11 +21,8 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (user?.role === "ADMIN") {
-      notificationService.startAdminPolling();
-    } else {
-      notificationService.stopAdminPolling();
-    }
+    // Keep real-time polling active for instant order alert banners across browser and app
+    notificationService.startAdminPolling();
     return () => {
       notificationService.stopAdminPolling();
     };

@@ -51,7 +51,7 @@ class NotificationService {
           await LocalNotifications.requestPermissions();
         }
 
-        // Create high-priority Android channel for Order notifications
+        // Create high-priority Android channel for Order notifications on both LocalNotifications and PushNotifications
         await LocalNotifications.createChannel({
           id: "orders_channel",
           name: "Order Notifications",
@@ -63,9 +63,32 @@ class NotificationService {
           lightColor: "#f59e0b",
         });
 
+        try {
+          await PushNotifications.createChannel({
+            id: "orders_channel",
+            name: "Order Notifications",
+            description: "Instant high-priority alerts when customer places an order",
+            importance: 5,
+            visibility: 1,
+            vibration: true,
+            lights: true,
+            lightColor: "#f59e0b",
+          });
+        } catch (e) {
+          console.warn("PushNotifications.createChannel fallback:", e);
+        }
+
         // Listen for user tap on local notification
-        LocalNotifications.addListener("localNotificationActionPerformed", (action) => {
-          window.location.href = `/admin/orders`;
+        LocalNotifications.addListener("localNotificationActionPerformed", () => {
+          const userStr = localStorage.getItem("user");
+          let isAdmin = false;
+          try {
+            if (userStr) {
+              const u = JSON.parse(userStr);
+              isAdmin = u.role === "ADMIN";
+            }
+          } catch {}
+          window.location.href = isAdmin ? `/admin/orders` : `/user/orders`;
         });
 
         // 2. Firebase Cloud Messaging (FCM) Remote Push Notifications
@@ -81,7 +104,7 @@ class NotificationService {
         PushNotifications.addListener("registration", async (token) => {
           console.log("Device FCM registration token received:", token.value);
           localStorage.setItem("fcm_device_token", token.value);
-          await this.syncDeviceToken();
+          await this.syncDeviceToken(token.value);
         });
 
         PushNotifications.addListener("registrationError", (err) => {
@@ -107,8 +130,22 @@ class NotificationService {
         // Listen for user tap on native system tray push notification
         PushNotifications.addListener("pushNotificationActionPerformed", (action) => {
           console.log("User tapped FCM push notification:", action);
-          window.location.href = `/admin/orders`;
+          const userStr = localStorage.getItem("user");
+          let isAdmin = false;
+          try {
+            if (userStr) {
+              const u = JSON.parse(userStr);
+              isAdmin = u.role === "ADMIN";
+            }
+          } catch {}
+          window.location.href = isAdmin ? `/admin/orders` : `/user/orders`;
         });
+
+        // Immediately sync existing token if already stored on device
+        const existingToken = localStorage.getItem("fcm_device_token");
+        if (existingToken) {
+          await this.syncDeviceToken(existingToken);
+        }
       } catch (err) {
         console.warn("Native Push/LocalNotifications setup skipped or failed:", err);
       }
@@ -304,26 +341,26 @@ class NotificationService {
   }
 
   /**
-   * Sync native FCM device token to backend for current logged-in user
+   * Sync native FCM device token to backend for instant push notifications
+   * Works for both authenticated users and newly installed guest devices
    */
-  async syncDeviceToken(): Promise<void> {
-    const token = localStorage.getItem("fcm_device_token");
-    const authToken = localStorage.getItem("token");
-    if (!token || !authToken) return;
+  async syncDeviceToken(customToken?: string): Promise<void> {
+    const token = customToken || localStorage.getItem("fcm_device_token");
+    if (!token) return;
 
     try {
       await api.post("/notifications/fcm-token", {
         token,
         platform: Capacitor.getPlatform() || "android",
       });
-      console.log("FCM device token synced with backend");
+      console.log("FCM device token synced with backend for instant push notifications");
     } catch (err) {
       console.warn("Failed to sync FCM device token:", err);
     }
   }
 
   /**
-   * Remove native FCM device token on logout
+   * Unbind user on logout while preserving device notification capabilities
    */
   async removeDeviceToken(): Promise<void> {
     const token = localStorage.getItem("fcm_device_token");

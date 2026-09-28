@@ -89,9 +89,10 @@ export default function Checkout() {
     setError(null);
 
     try {
-      // 1. Create order on Cloudflare D1
+      // 1. Create order on Cloudflare D1 with entered mobile number and shipping address
       const orderRes = await orderService.createFromCart(
-        items.map((i) => ({ productId: i.productId, quantity: i.quantity }))
+        items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+        shippingAddress
       );
       const order = orderRes.data;
 
