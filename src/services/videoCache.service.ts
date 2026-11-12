@@ -59,7 +59,12 @@ class VideoCacheService {
     if (!this.isCacheSupported || !url || url.startsWith("blob:")) return;
 
     try {
-      const response = await fetch(url, { mode: "cors", cache: "default" });
+      // Use internal proxy for cross-origin media without CORS headers
+      const isCrossOrigin = url.startsWith("http://") || url.startsWith("https://");
+      const isSameOrigin = typeof window !== "undefined" && url.startsWith(window.location.origin);
+      const fetchUrl = isCrossOrigin && !isSameOrigin ? `/api/media/proxy?url=${encodeURIComponent(url)}` : url;
+
+      const response = await fetch(fetchUrl, { mode: "cors", cache: "default" });
       if (!response.ok) return;
 
       const cache = await caches.open(CACHE_NAME);

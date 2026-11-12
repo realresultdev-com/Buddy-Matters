@@ -1312,6 +1312,38 @@ app.delete("/products/:id/images/:imageId", authMiddleware, adminMiddleware, asy
    R2 IMAGE STORAGE & UPLOAD
    ========================================================================== */
 
+// Media proxy with CORS headers for videos and assets
+app.get("/media/proxy", async (c) => {
+  const url = c.req.query("url");
+  if (!url) return c.text("Missing url query param", 400);
+
+  try {
+    const parsed = new URL(url);
+    if (
+      !parsed.hostname.endsWith(".r2.dev") &&
+      !parsed.hostname.endsWith(".cloudflarestorage.com") &&
+      !parsed.hostname.endsWith("unsplash.com")
+    ) {
+      return c.text("Forbidden host", 403);
+    }
+
+    const range = c.req.header("range");
+    const fetchHeaders: Record<string, string> = {};
+    if (range) fetchHeaders["range"] = range;
+
+    const res = await fetch(url, { headers: fetchHeaders });
+    const headers = new Headers(res.headers);
+    headers.set("Access-Control-Allow-Origin", "*");
+    headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "*");
+    headers.set("Cache-Control", "public, max-age=31536000, immutable");
+
+    return new Response(res.body, { status: res.status, headers });
+  } catch (err: any) {
+    return c.text("Failed to proxy media: " + err.message, 502);
+  }
+});
+
 // Serve image directly from R2 (works even when R2 public development URL is disabled)
 app.get("/images/:key{.+}", async (c) => {
   const key = c.req.param("key");
