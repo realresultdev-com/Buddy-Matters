@@ -15,7 +15,7 @@ declare global {
 
 export const GOOGLE_CLIENT_ID =
   import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-  "1081442493959-80so9v205tjto6n4j1geaaj8k85mri2n.apps.googleusercontent.com";
+  "140766667384-e2r0sht8kbdsfdrun72f0rs30rderoeg.apps.googleusercontent.com";
 
 interface GoogleLoginButtonProps {
   onSuccess?: (user?: any) => void;
