@@ -5,12 +5,12 @@ compatibility_date = "2024-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "ecommerce-db"
-database_id = "20cbffcc-c554-4004-9483-bc4a2989d59f"
+database_id = "1c2446c6-c456-4406-8664-d1c6e6885741"
 migrations_dir = "migrations"
 
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "buddymatters"
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "buddymatters"
 
 [vars]
 JWT_SECRET = "supersecret_jwt_key_cf_ecommerce_2024"
