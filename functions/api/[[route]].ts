@@ -6,6 +6,16 @@ import { sign, verify } from "hono/jwt";
 import bcrypt from "bcryptjs";
 
 import { DEFAULT_FIREBASE_SERVICE_ACCOUNT } from "./firebase-config";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+const s3Client = new S3Client({
+  region: "auto",
+  endpoint: "https://68de8c2096d7fa589eb2dcacb521d93e.r2.cloudflarestorage.com",
+  credentials: {
+    accessKeyId: "2b7f53e478d6213b3bcc4abc2d79432a",
+    secretAccessKey: "c2304fe56445cbf4d16ac52e437eb73903894e28c710d106c660bb3c6be834c6",
+  },
+});
 
 export type Env = {
   DB: D1Database;
@@ -1398,8 +1408,22 @@ app.post("/upload", authMiddleware, async (c) => {
         const baseUrl = r2PublicUrl.replace(/\/$/, "");
         uploadedUrls.push(`${baseUrl}/${uniqueKey}`);
       } else {
-        // Fallback for mock environments
-        uploadedUrls.push(`https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800`);
+        // Upload directly to user's R2 bucket via S3 API
+        try {
+          const arrayBuffer = await file.arrayBuffer();
+          await s3Client.send(
+            new PutObjectCommand({
+              Bucket: "buddymatters",
+              Key: uniqueKey,
+              Body: new Uint8Array(arrayBuffer),
+              ContentType: file.type || `image/${ext}`,
+            })
+          );
+          uploadedUrls.push(`/api/media/proxy?url=${encodeURIComponent(`https://68de8c2096d7fa589eb2dcacb521d93e.r2.cloudflarestorage.com/buddymatters/${uniqueKey}`)}`);
+        } catch (s3Err) {
+          console.error("S3 R2 Upload fallback error:", s3Err);
+          uploadedUrls.push(`https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800`);
+        }
       }
     }
 
